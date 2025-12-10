@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - Loan Comparison Tool</title>
+
+    <!-- Security Headers -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        }
+
+        .auth-wrapper {
+            display: flex;
+            width: 100%;
+            max-width: 1000px;
+            min-height: 600px;
+            background: rgba(20, 20, 35, 0.95);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .auth-branding {
+            flex: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f64f59 100%);
+            padding: 60px 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-branding::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+            animation: shimmer 15s infinite linear;
+        }
+
+        @keyframes shimmer {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .branding-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .brand-logo {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .brand-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 15px;
+            line-height: 1.2;
+        }
+
+        .brand-subtitle {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.85);
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+
+        .brand-features {
+            list-style: none;
+        }
+
+        .brand-features li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+
+        .brand-features li::before {
+            content: '✓';
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            font-size: 0.8rem;
+        }
+
+        .auth-form-container {
+            flex: 1;
+            padding: 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .auth-header {
+            margin-bottom: 35px;
+        }
+
+        .auth-header h2 {
+            color: #fff;
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .auth-header p {
+            color: #888;
+            font-size: 0.95rem;
+        }
+
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 5px;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 14px 20px;
+            background: transparent;
+            border: none;
+            color: #888;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .auth-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .auth-tab:hover:not(.active) {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #b0b0b0;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px 18px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.08);
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+        }
+
+        .form-group input::placeholder {
+            color: #555;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .auth-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .auth-message {
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .auth-message.error {
+            background: rgba(244, 67, 54, 0.15);
+            border: 1px solid rgba(244, 67, 54, 0.4);
+            color: #ff6b6b;
+        }
+
+        .auth-message.success {
+            background: rgba(76, 175, 80, 0.15);
+            border: 1px solid rgba(76, 175, 80, 0.4);
+            color: #81c784;
+        }
+
+        .auth-message.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .password-requirements {
+            margin-top: 10px;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+        }
+
+        .password-requirements ul {
+            list-style: none;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .password-requirements li {
+            font-size: 0.8rem;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .password-requirements li::before {
+            content: '○';
+            font-size: 0.7rem;
+        }
+
+        .password-requirements li.valid {
+            color: #81c784;
+        }
+
+        .password-requirements li.valid::before {
+            content: '●';
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 28px 0;
+            color: #555;
+            font-size: 0.85rem;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .divider span {
+            padding: 0 18px;
+        }
+
+        .demo-btn {
+            width: 100%;
+            padding: 14px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            color: #a0a0a0;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .demo-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.25);
+            color: #fff;
+        }
+
+        .server-status {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .server-status.online {
+            color: #81c784;
+        }
+
+        .server-status.offline {
+            color: #ffb74d;
+        }
+
+        /* Responsive */
+        @media (max-width: 850px) {
+            .auth-wrapper {
+                flex-direction: column;
+                max-width: 480px;
+            }
+
+            .auth-branding {
+                padding: 40px 30px;
+            }
+
+            .brand-title {
+                font-size: 1.8rem;
+            }
+
+            .brand-features {
+                display: none;
+            }
+
+            .auth-form-container {
+                padding: 40px 30px;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .password-requirements ul {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="mountain-layer-3"></div>
+    <div class="mountain-layer-2"></div>
+    <div class="mountain-front"></div>
+
+    <div class="auth-wrapper">
+        <div class="auth-branding">
+            <div class="branding-content">
+                <div class="brand-logo">📊</div>
+                <h1 class="brand-title">Loan Comparison Tool</h1>
+                <p class="brand-subtitle">Professional mortgage comparison software for loan officers. Create detailed loan estimates and closing cost breakdowns in minutes.</p>
+                <ul class="brand-features">
+                    <li>Compare multiple loan scenarios side-by-side</li>
+                    <li>Generate professional PDF documents</li>
+                    <li>Save and manage client scenarios</li>
+                    <li>Customizable title company fees</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="auth-form-container">
+            <div class="auth-header">
+                <h2>Welcome back</h2>
+                <p>Sign in to your account to continue</p>
+            </div>
+
+            <div class="auth-tabs">
+                <button class="auth-tab active" data-tab="login">Sign In</button>
+                <button class="auth-tab" data-tab="signup">Create Account</button>
+            </div>
+
+            <div id="authError" class="auth-message error"></div>
+            <div id="authSuccess" class="auth-message success"></div>
+
+            <!-- Login Form -->
+            <form id="loginForm" class="auth-form active">
+                <div class="form-group">
+                    <label for="loginEmail">Email Address</label>
+                    <input type="email" id="loginEmail" placeholder="you@company.com" required autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter your password" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="auth-btn">Sign In</button>
+            </form>
+
+            <!-- Signup Form -->
+            <form id="signupForm" class="auth-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="signupFirstName">First Name</label>
+                        <input type="text" id="signupFirstName" placeholder="John" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signupLastName">Last Name</label>
+                        <input type="text" id="signupLastName" placeholder="Smith" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="signupCompany">Company Name</label>
+                    <input type="text" id="signupCompany" placeholder="ABC Mortgage">
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail">Email Address</label>
+                    <input type="email" id="signupEmail" placeholder="you@company.com" required autocomplete="email">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="signupPhone">Phone Number</label>
+                        <input type="tel" id="signupPhone" placeholder="(555) 123-4567">
+                    </div>
+                    <div class="form-group">
+                        <label for="signupNMLS">NMLS #</label>
+                        <input type="text" id="signupNMLS" placeholder="123456">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" placeholder="Create a password" required autocomplete="new-password">
+                    <div class="password-requirements">
+                        <ul>
+                            <li id="req-length">8+ characters</li>
+                            <li id="req-upper">Uppercase letter</li>
+                            <li id="req-lower">Lowercase letter</li>
+                            <li id="req-number">Number</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="signupConfirm">Confirm Password</label>
+                    <input type="password" id="signupConfirm" placeholder="Confirm your password" required autocomplete="new-password">
+                </div>
+                <button type="submit" class="auth-btn">Create Account</button>
+            </form>
+
+            <div class="divider"><span>or</span></div>
+
+            <button type="button" class="demo-btn" id="demoLogin">Try Demo Account</button>
+
+            <div id="serverStatus" class="server-status"></div>
+        </div>
+    </div>
+
+    <script src="api.js"></script>
+    <script>
+        // Security utilities
+        const Security = {
+            escapeHtml(str) {
+                if (str === null || str === undefined) return '';
+                const div = document.createElement('div');
+                div.textContent = String(str);
+                return div.innerHTML;
+            },
+            sanitizeText(str, maxLength = 100) {
+                if (str === null || str === undefined) return '';
+                return String(str).substring(0, maxLength).trim();
+            },
+            hashPassword(password) {
+                let hash = 0;
+                const str = password + 'loanCompSalt2024';
+                for (let i = 0; i < str.length; i++) {
+                    const char = str.charCodeAt(i);
+                    hash = ((hash << 5) - hash) + char;
+                    hash = hash & hash;
+                }
+                return hash.toString(16);
+            },
+            generateToken() {
+                const array = new Uint8Array(16);
+                crypto.getRandomValues(array);
+                return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+            },
+            rateLimiter: {
+                attempts: {},
+                maxAttempts: 5,
+                windowMs: 60000,
+                check(key) {
+                    const now = Date.now();
+                    if (!this.attempts[key]) {
+                        this.attempts[key] = { count: 1, firstAttempt: now };
+                        return true;
+                    }
+                    const record = this.attempts[key];
+                    if (now - record.firstAttempt > this.windowMs) {
+                        this.attempts[key] = { count: 1, firstAttempt: now };
+                        return true;
+                    }
+                    if (record.count >= this.maxAttempts) {
+                        return false;
+                    }
+                    record.count++;
+                    return true;
+                },
+                reset(key) {
+                    delete this.attempts[key];
+                }
+            }
+        };
+
+        // User management (localStorage fallback)
+        const UserManager = {
+            storageKey: 'loanCompUsers',
+
+            getUsers() {
+                try {
+                    return JSON.parse(localStorage.getItem(this.storageKey) || '{}');
+                } catch {
+                    return {};
+                }
+            },
+
+            saveUsers(users) {
+                localStorage.setItem(this.storageKey, JSON.stringify(users));
+            },
+
+            createUser(userData) {
+                const users = this.getUsers();
+                const email = userData.email.toLowerCase();
+
+                if (users[email]) {
+                    throw new Error('An account with this email already exists');
+                }
+
+                users[email] = {
+                    firstName: Security.sanitizeText(userData.firstName, 50),
+                    lastName: Security.sanitizeText(userData.lastName, 50),
+                    company: Security.sanitizeText(userData.company, 100),
+                    email: email,
+                    phone: Security.sanitizeText(userData.phone, 20),
+                    nmls: Security.sanitizeText(userData.nmls, 20),
+                    passwordHash: Security.hashPassword(userData.password),
+                    createdAt: new Date().toISOString()
+                };
+
+                this.saveUsers(users);
+                return users[email];
+            },
+
+            validateLogin(email, password) {
+                const users = this.getUsers();
+                const user = users[email.toLowerCase()];
+
+                if (!user) {
+                    throw new Error('Invalid email or password');
+                }
+
+                if (user.passwordHash !== Security.hashPassword(password)) {
+                    throw new Error('Invalid email or password');
+                }
+
+                return user;
+            },
+
+            createSession(user) {
+                const token = Security.generateToken();
+                const session = {
+                    token: token,
+                    user: {
+                        firstName: user.firstName,
+                        lastName: user.lastName,
+                        company: user.company,
+                        email: user.email,
+                        phone: user.phone,
+                        nmls: user.nmls
+                    },
+                    createdAt: Date.now()
+                };
+                sessionStorage.setItem('userSession', JSON.stringify(session));
+                return session;
+            }
+        };
+
+        // Tab switching
+        document.querySelectorAll('.auth-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+                tab.classList.add('active');
+
+                const form = document.getElementById(tab.dataset.tab + 'Form');
+                form.classList.add('active');
+
+                // Update header text
+                const header = document.querySelector('.auth-header h2');
+                const subtext = document.querySelector('.auth-header p');
+                if (tab.dataset.tab === 'login') {
+                    header.textContent = 'Welcome back';
+                    subtext.textContent = 'Sign in to your account to continue';
+                } else {
+                    header.textContent = 'Create account';
+                    subtext.textContent = 'Get started with your free account';
+                }
+
+                hideMessages();
+            });
+        });
+
+        // Show/hide messages
+        function showError(message) {
+            const el = document.getElementById('authError');
+            el.textContent = message;
+            el.classList.add('show');
+            document.getElementById('authSuccess').classList.remove('show');
+        }
+
+        function showSuccess(message) {
+            const el = document.getElementById('authSuccess');
+            el.textContent = message;
+            el.classList.add('show');
+            document.getElementById('authError').classList.remove('show');
+        }
+
+        function hideMessages() {
+            document.getElementById('authError').classList.remove('show');
+            document.getElementById('authSuccess').classList.remove('show');
+        }
+
+        // Password validation
+        const passwordInput = document.getElementById('signupPassword');
+        passwordInput.addEventListener('input', () => {
+            const password = passwordInput.value;
+            document.getElementById('req-length').classList.toggle('valid', password.length >= 8);
+            document.getElementById('req-upper').classList.toggle('valid', /[A-Z]/.test(password));
+            document.getElementById('req-lower').classList.toggle('valid', /[a-z]/.test(password));
+            document.getElementById('req-number').classList.toggle('valid', /[0-9]/.test(password));
+        });
+
+        function validatePassword(password) {
+            if (password.length < 8) return 'Password must be at least 8 characters';
+            if (!/[A-Z]/.test(password)) return 'Password must contain an uppercase letter';
+            if (!/[a-z]/.test(password)) return 'Password must contain a lowercase letter';
+            if (!/[0-9]/.test(password)) return 'Password must contain a number';
+            return null;
+        }
+
+        // Check server status
+        let serverOnline = false;
+        async function checkServer() {
+            const statusEl = document.getElementById('serverStatus');
+            try {
+                const status = await API.healthCheck();
+                serverOnline = status.online;
+                if (serverOnline) {
+                    statusEl.textContent = 'Server Connected';
+                    statusEl.className = 'server-status online';
+                } else {
+                    statusEl.textContent = 'Offline Mode (data saved locally)';
+                    statusEl.className = 'server-status offline';
+                }
+            } catch {
+                serverOnline = false;
+                statusEl.textContent = 'Offline Mode (data saved locally)';
+                statusEl.className = 'server-status offline';
+            }
+        }
+        checkServer();
+
+        // Login form
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideMessages();
+
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Signing in...';
+
+            try {
+                if (serverOnline) {
+                    const data = await API.login(email, password);
+                    const session = {
+                        token: data.token,
+                        user: data.user,
+                        createdAt: Date.now()
+                    };
+                    sessionStorage.setItem('userSession', JSON.stringify(session));
+                    showSuccess('Login successful! Redirecting...');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1000);
+                } else {
+                    if (!Security.rateLimiter.check('login')) {
+                        throw new Error('Too many attempts. Please wait 1 minute.');
+                    }
+                    const user = UserManager.validateLogin(email, password);
+                    Security.rateLimiter.reset('login');
+                    UserManager.createSession(user);
+                    showSuccess('Login successful! Redirecting...');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1000);
+                }
+            } catch (error) {
+                showError(error.message);
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Sign In';
+            }
+        });
+
+        // Signup form
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideMessages();
+
+            const firstName = document.getElementById('signupFirstName').value;
+            const lastName = document.getElementById('signupLastName').value;
+            const company = document.getElementById('signupCompany').value;
+            const email = document.getElementById('signupEmail').value;
+            const phone = document.getElementById('signupPhone').value;
+            const nmls = document.getElementById('signupNMLS').value;
+            const password = document.getElementById('signupPassword').value;
+            const confirm = document.getElementById('signupConfirm').value;
+
+            // Validate
+            if (!firstName || !lastName) {
+                showError('Please enter your full name');
+                return;
+            }
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showError('Please enter a valid email address');
+                return;
+            }
+
+            const passwordError = validatePassword(password);
+            if (passwordError) {
+                showError(passwordError);
+                return;
+            }
+
+            if (password !== confirm) {
+                showError('Passwords do not match');
+                return;
+            }
+
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating account...';
+
+            try {
+                if (serverOnline) {
+                    const data = await API.register({
+                        firstName, lastName, company, email, phone, nmls, password
+                    });
+                    const session = {
+                        token: data.token,
+                        user: data.user,
+                        createdAt: Date.now()
+                    };
+                    sessionStorage.setItem('userSession', JSON.stringify(session));
+                    showSuccess('Account created! Redirecting...');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1000);
+                } else {
+                    const user = UserManager.createUser({
+                        firstName, lastName, company, email, phone, nmls, password
+                    });
+                    UserManager.createSession(user);
+                    showSuccess('Account created! Redirecting...');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1000);
+                }
+            } catch (error) {
+                showError(error.message);
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Create Account';
+            }
+        });
+
+        // Demo login
+        document.getElementById('demoLogin').addEventListener('click', () => {
+            const demoUser = {
+                firstName: 'Demo',
+                lastName: 'User',
+                company: 'Demo Mortgage Co.',
+                email: 'demo@example.com',
+                phone: '(555) 123-4567',
+                nmls: '123456'
+            };
+
+            const session = {
+                token: Security.generateToken(),
+                user: demoUser,
+                createdAt: Date.now(),
+                isDemo: true
+            };
+            sessionStorage.setItem('userSession', JSON.stringify(session));
+            showSuccess('Loading demo account...');
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 500);
+        });
+
+        // Check if already logged in
+        const existingSession = sessionStorage.getItem('userSession');
+        if (existingSession) {
+            try {
+                const session = JSON.parse(existingSession);
+                if (session.token && (Date.now() - session.createdAt) < 24 * 60 * 60 * 1000) {
+                    window.location.href = 'index.html';
+                }
+            } catch {}
+        }
+    </script>
+</body>
+</html>

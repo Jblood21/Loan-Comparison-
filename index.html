@@ -40,9 +40,17 @@
                     <p class="subtitle">Compare different loan options to find the best fit for you</p>
                 </div>
                 <div class="header-actions">
-                    <button class="settings-btn" id="settingsBtn" title="Loan Officer & Title Company Settings">
+                    <div class="user-info" id="userInfo">
+                        <span class="user-name" id="userName"></span>
+                        <span class="user-company" id="userCompany"></span>
+                    </div>
+                    <button class="settings-btn" id="settingsBtn" title="Settings">
                         <span class="settings-icon">⚙️</span>
                         <span class="settings-text">Settings</span>
+                    </button>
+                    <button class="logout-btn" id="logoutBtn" title="Sign Out">
+                        <span>🚪</span>
+                        <span class="logout-text">Sign Out</span>
                     </button>
                 </div>
             </div>
@@ -56,10 +64,10 @@
             </div>
 
             <div class="settings-body">
-                <!-- Loan Officer Info -->
+                <!-- Account Info -->
                 <div class="settings-section">
-                    <h3>Loan Officer Information</h3>
-                    <p class="settings-note">This information will auto-fill when generating documents</p>
+                    <h3>My Account</h3>
+                    <p class="settings-note">Your information for documents and contact details</p>
 
                     <div class="settings-form">
                         <div class="form-group">
@@ -1169,6 +1177,7 @@
         </div>
     </div>
 
+    <script src="api.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

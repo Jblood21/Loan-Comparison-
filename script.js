@@ -126,7 +126,102 @@ Object.freeze(Security);
 Object.freeze(Security.rateLimiter);
 
 // ============================================
-// Settings Manager - handles loan officer info and title company fees
+// User Session Manager
+// ============================================
+const UserSession = {
+    getSession() {
+        try {
+            const session = sessionStorage.getItem('userSession');
+            if (!session) return null;
+
+            const parsed = JSON.parse(session);
+            // Check if session is expired (24 hours)
+            if (Date.now() - parsed.createdAt > 24 * 60 * 60 * 1000) {
+                this.clearSession();
+                return null;
+            }
+            return parsed;
+        } catch {
+            return null;
+        }
+    },
+
+    getUser() {
+        const session = this.getSession();
+        return session ? session.user : null;
+    },
+
+    isLoggedIn() {
+        return this.getSession() !== null || (typeof API !== 'undefined' && API.isAuthenticated());
+    },
+
+    async clearSession() {
+        sessionStorage.removeItem('userSession');
+        if (typeof API !== 'undefined') {
+            await API.logout();
+        }
+    },
+
+    requireAuth() {
+        if (!this.isLoggedIn()) {
+            window.location.href = 'login.html';
+            return false;
+        }
+        return true;
+    },
+
+    async updateUserInfo(userData) {
+        const session = this.getSession();
+        if (session) {
+            session.user = { ...session.user, ...userData };
+            sessionStorage.setItem('userSession', JSON.stringify(session));
+        }
+
+        // Also update on server if API is available
+        if (typeof API !== 'undefined' && API.isAuthenticated()) {
+            try {
+                await API.updateProfile(userData);
+            } catch (error) {
+                console.warn('Could not sync profile to server:', error);
+            }
+        }
+    },
+
+    displayUserInfo() {
+        const user = this.getUser();
+        if (user) {
+            const nameEl = document.getElementById('userName');
+            const companyEl = document.getElementById('userCompany');
+            if (nameEl) nameEl.textContent = Security.escapeHtml(`${user.firstName} ${user.lastName}`);
+            if (companyEl) companyEl.textContent = Security.escapeHtml(user.company || '');
+        }
+    },
+
+    // Sync user data from server
+    async syncFromServer() {
+        if (typeof API !== 'undefined' && API.isAuthenticated()) {
+            try {
+                const data = await API.getCurrentUser();
+                if (data.user) {
+                    const session = this.getSession() || { createdAt: Date.now() };
+                    session.user = data.user;
+                    sessionStorage.setItem('userSession', JSON.stringify(session));
+                    this.displayUserInfo();
+                }
+            } catch (error) {
+                console.warn('Could not sync user from server:', error);
+            }
+        }
+    }
+};
+
+// Check authentication on page load
+if (!UserSession.requireAuth()) {
+    // Will redirect to login
+}
+
+// ============================================
+// Settings Manager - handles user info and title company fees
 class SettingsManager {
     constructor() {
         this.storageKey = 'loanComparisonSettings';
@@ -139,6 +234,24 @@ class SettingsManager {
         this.populateLoanOfficerInfo();
         this.updateTitleCompanyList();
         this.updateAllTitleCompanyDropdowns();
+
+        // Display user info in header
+        UserSession.displayUserInfo();
+
+        // Setup logout button
+        document.getElementById('logoutBtn')?.addEventListener('click', async () => {
+            await UserSession.clearSession();
+            window.location.href = 'login.html';
+        });
+
+        // Sync with server if available
+        this.syncWithServer();
+    }
+
+    async syncWithServer() {
+        // Sync user data and settings from server
+        await UserSession.syncFromServer();
+        await this.loadSettingsFromServer();
     }
 
     loadSettings() {
@@ -179,11 +292,43 @@ class SettingsManager {
         };
     }
 
+    // Load settings from server if available
+    async loadSettingsFromServer() {
+        if (typeof API !== 'undefined' && API.isAuthenticated()) {
+            try {
+                const data = await API.getSettings();
+                if (data.settings && Object.keys(data.settings).length > 0) {
+                    // Merge server settings with local (server takes precedence)
+                    this.settings = { ...this.settings, ...data.settings };
+                    // Also save to local storage as cache
+                    localStorage.setItem(this.storageKey, JSON.stringify(this.settings));
+                    this.populateLoanOfficerInfo();
+                    this.updateTitleCompanyList();
+                    this.updateAllTitleCompanyDropdowns();
+                }
+            } catch (error) {
+                console.warn('Could not load settings from server:', error);
+            }
+        }
+    }
+
     saveSettings() {
         try {
             localStorage.setItem(this.storageKey, JSON.stringify(this.settings));
         } catch (e) {
             console.error('Error saving settings:', e);
+        }
+        // Also save to server if available
+        this.saveSettingsToServer();
+    }
+
+    async saveSettingsToServer() {
+        if (typeof API !== 'undefined' && API.isAuthenticated()) {
+            try {
+                await API.saveSettings(this.settings);
+            } catch (error) {
+                console.warn('Could not save settings to server:', error);
+            }
         }
     }
 
@@ -403,12 +548,22 @@ class SettingsManager {
     }
 
     populateLoanOfficerInfo() {
-        const lo = this.settings.loanOfficer;
-        if (document.getElementById('loName')) document.getElementById('loName').value = lo.name || '';
-        if (document.getElementById('loCompany')) document.getElementById('loCompany').value = lo.company || '';
-        if (document.getElementById('loPhone')) document.getElementById('loPhone').value = lo.phone || '';
-        if (document.getElementById('loEmail')) document.getElementById('loEmail').value = lo.email || '';
-        if (document.getElementById('loNMLS')) document.getElementById('loNMLS').value = lo.nmls || '';
+        // Get user from session first, then fall back to saved settings
+        const user = UserSession.getUser();
+        const lo = this.settings.loanOfficer || {};
+
+        // Use session user data if available, otherwise use saved settings
+        const name = user ? `${user.firstName} ${user.lastName}` : lo.name;
+        const company = user ? user.company : lo.company;
+        const phone = user ? user.phone : lo.phone;
+        const email = user ? user.email : lo.email;
+        const nmls = user ? user.nmls : lo.nmls;
+
+        if (document.getElementById('loName')) document.getElementById('loName').value = name || '';
+        if (document.getElementById('loCompany')) document.getElementById('loCompany').value = company || '';
+        if (document.getElementById('loPhone')) document.getElementById('loPhone').value = phone || '';
+        if (document.getElementById('loEmail')) document.getElementById('loEmail').value = email || '';
+        if (document.getElementById('loNMLS')) document.getElementById('loNMLS').value = nmls || '';
 
         // Populate realtor info
         const realtor = this.settings.realtor || {};
@@ -439,19 +594,48 @@ class SettingsManager {
         if (document.getElementById('lenderDisclaimer')) document.getElementById('lenderDisclaimer').value = lender.disclaimer || '';
     }
 
-    saveLoanOfficerInfo() {
+    async saveLoanOfficerInfo() {
+        const fullName = document.getElementById('loName')?.value || '';
+        const nameParts = fullName.trim().split(' ');
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '';
+
         this.settings.loanOfficer = {
-            name: document.getElementById('loName')?.value || '',
+            name: fullName,
             company: document.getElementById('loCompany')?.value || '',
             phone: document.getElementById('loPhone')?.value || '',
             email: document.getElementById('loEmail')?.value || '',
             nmls: document.getElementById('loNMLS')?.value || ''
         };
         this.saveSettings();
-        this.showNotification('Loan officer information saved!');
+
+        // Also update the session user info
+        await UserSession.updateUserInfo({
+            firstName: firstName,
+            lastName: lastName,
+            company: document.getElementById('loCompany')?.value || '',
+            phone: document.getElementById('loPhone')?.value || '',
+            nmls: document.getElementById('loNMLS')?.value || ''
+        });
+
+        // Update header display
+        UserSession.displayUserInfo();
+
+        this.showNotification('Account information saved!');
     }
 
     getLoanOfficerInfo() {
+        // Return user session data if available
+        const user = UserSession.getUser();
+        if (user) {
+            return {
+                name: `${user.firstName} ${user.lastName}`,
+                company: user.company,
+                phone: user.phone,
+                email: user.email,
+                nmls: user.nmls
+            };
+        }
         return this.settings.loanOfficer;
     }
 
