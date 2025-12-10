@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan Comparison Tool</title>
+
+    <!-- Security Headers via Meta Tags -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+    <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=()">
+
+    <!-- Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline';
+        style-src 'self' 'unsafe-inline';
+        img-src 'self' data: blob:;
+        font-src 'self';
+        connect-src 'self';
+        frame-ancestors 'self';
+        form-action 'self';
+        base-uri 'self';
+    ">
+
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="mountain-layer-3"></div>
+    <div class="mountain-layer-2"></div>
+    <div class="mountain-front"></div>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="header-text">
+                    <h1>Loan Comparison Tool</h1>
+                    <p class="subtitle">Compare different loan options to find the best fit for you</p>
+                </div>
+                <div class="header-actions">
+                    <button class="settings-btn" id="settingsBtn" title="Loan Officer & Title Company Settings">
+                        <span class="settings-icon">⚙️</span>
+                        <span class="settings-text">Settings</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Settings Panel (Slide-out) -->
+        <div class="settings-panel hidden" id="settingsPanel">
+            <div class="settings-header">
+                <h2>Settings</h2>
+                <button class="close-settings" id="closeSettings">&times;</button>
+            </div>
+
+            <div class="settings-body">
+                <!-- Loan Officer Info -->
+                <div class="settings-section">
+                    <h3>Loan Officer Information</h3>
+                    <p class="settings-note">This information will auto-fill when generating documents</p>
+
+                    <div class="settings-form">
+                        <div class="form-group">
+                            <label>Your Name</label>
+                            <input type="text" id="loName" placeholder="John Smith">
+                        </div>
+                        <div class="form-group">
+                            <label>Company Name</label>
+                            <input type="text" id="loCompany" placeholder="ABC Mortgage">
+                        </div>
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                            <input type="tel" id="loPhone" placeholder="(555) 123-4567">
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="loEmail" placeholder="john@abcmortgage.com">
+                        </div>
+                        <div class="form-group">
+                            <label>NMLS #</label>
+                            <input type="text" id="loNMLS" placeholder="123456">
+                        </div>
+                    </div>
+
+                    <button class="save-settings-btn" id="saveLOSettings">Save Loan Officer Info</button>
+                </div>
+
+                <!-- Lender Information -->
+                <div class="settings-section">
+                    <h3>Lender Information</h3>
+                    <p class="settings-note">Enter your lending institution's details for documents and branding</p>
+
+                    <div class="settings-form">
+                        <div class="form-group">
+                            <label>Lender Name</label>
+                            <input type="text" id="lenderName" placeholder="First National Bank">
+                        </div>
+                        <div class="form-group">
+                            <label>Lender NMLS #</label>
+                            <input type="text" id="lenderNMLS" placeholder="123456">
+                        </div>
+                        <div class="form-group">
+                            <label>Main Phone</label>
+                            <input type="tel" id="lenderPhone" placeholder="(800) 555-1234">
+                        </div>
+                        <div class="form-group">
+                            <label>Website</label>
+                            <input type="url" id="lenderWebsite" placeholder="www.firstnationalbank.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Address</label>
+                            <input type="text" id="lenderAddress" placeholder="123 Main Street, Suite 100">
+                        </div>
+                        <div class="form-group">
+                            <label>City, State ZIP</label>
+                            <input type="text" id="lenderCityStateZip" placeholder="New York, NY 10001">
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Equal Housing Lender Statement</label>
+                            <textarea id="lenderDisclaimer" rows="2" placeholder="Equal Housing Lender. NMLS# 123456"></textarea>
+                        </div>
+                    </div>
+
+                    <button class="save-settings-btn" id="saveLenderSettings">Save Lender Info</button>
+                </div>
+
+                <!-- Dual Branding - Real Estate Agent -->
+                <div class="settings-section">
+                    <h3>Real Estate Agent (Dual Branding)</h3>
+                    <p class="settings-note">Add a real estate agent's info to appear on generated documents</p>
+
+                    <div class="branding-toggle">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="enableRealtorBranding">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="toggle-text">Include on documents</span>
+                    </div>
+
+                    <div class="settings-form" id="realtorForm">
+                        <div class="form-group">
+                            <label>Agent Name</label>
+                            <input type="text" id="realtorName" placeholder="Jane Doe">
+                        </div>
+                        <div class="form-group">
+                            <label>Brokerage/Company</label>
+                            <input type="text" id="realtorCompany" placeholder="ABC Realty">
+                        </div>
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                            <input type="tel" id="realtorPhone" placeholder="(555) 987-6543">
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="realtorEmail" placeholder="jane@abcrealty.com">
+                        </div>
+                        <div class="form-group">
+                            <label>License #</label>
+                            <input type="text" id="realtorLicense" placeholder="RE-123456">
+                        </div>
+                    </div>
+
+                    <button class="save-settings-btn" id="saveRealtorSettings">Save Real Estate Agent Info</button>
+                </div>
+
+                <!-- Dual Branding - Title Company/Agent -->
+                <div class="settings-section">
+                    <h3>Title Company/Agent (Dual Branding)</h3>
+                    <p class="settings-note">Add a title company or settlement agent's info to appear on generated documents</p>
+
+                    <div class="branding-toggle">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="enableTitleBranding">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="toggle-text">Include on documents</span>
+                    </div>
+
+                    <div class="settings-form" id="titleAgentForm">
+                        <div class="form-group">
+                            <label>Company Name</label>
+                            <input type="text" id="titleAgentCompany" placeholder="First American Title">
+                        </div>
+                        <div class="form-group">
+                            <label>Contact Name</label>
+                            <input type="text" id="titleAgentName" placeholder="John Smith">
+                        </div>
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                            <input type="tel" id="titleAgentPhone" placeholder="(555) 456-7890">
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="titleAgentEmail" placeholder="john@firstamerican.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Address</label>
+                            <input type="text" id="titleAgentAddress" placeholder="123 Main St, City, ST 12345">
+                        </div>
+                    </div>
+
+                    <button class="save-settings-btn" id="saveTitleAgentSettings">Save Title Company Info</button>
+                </div>
+
+                <!-- Title Company Fees -->
+                <div class="settings-section">
+                    <h3>Saved Title Company Fees</h3>
+                    <p class="settings-note">Save fee schedules from title companies for quick reuse</p>
+
+                    <div class="title-company-list" id="titleCompanyList">
+                        <!-- Populated by JS -->
+                    </div>
+
+                    <div class="add-title-company">
+                        <h4>Save Current Fees as Title Company</h4>
+                        <div class="form-group">
+                            <label>Title Company Name</label>
+                            <input type="text" id="newTitleCompanyName" placeholder="e.g., First American Title">
+                        </div>
+                        <button class="save-settings-btn" id="saveTitleCompany">Save Current Title Fees</button>
+                    </div>
+                </div>
+
+                <!-- Admin Section -->
+                <div class="settings-section admin-section">
+                    <h3>Administrator</h3>
+                    <p class="settings-note">Access admin dashboard to view all collected data</p>
+
+                    <div class="admin-login-form" id="adminLoginForm">
+                        <div class="form-group">
+                            <label>Admin Password</label>
+                            <input type="password" id="adminPassword" placeholder="Enter admin password">
+                        </div>
+                        <button class="admin-login-btn" id="adminLoginBtn">Sign In as Admin</button>
+                        <p class="admin-error hidden" id="adminError">Incorrect password</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="settings-overlay hidden" id="settingsOverlay"></div>
+
+        <div class="comparison-container">
+            <!-- Loan comparison tabs -->
+            <div class="loan-tabs-container">
+                <div class="loan-tabs" id="loanTabs">
+                    <button class="loan-tab active" data-index="0">Scenario 1</button>
+                </div>
+                <button class="add-loan-btn" id="addLoanBtn" title="Add another scenario to compare (up to 6)">
+                    <span class="plus-icon">+</span>
+                </button>
+                <div class="scenario-actions">
+                    <button class="scenario-action-btn save-btn" id="saveScenarioBtn" title="Save current scenarios">
+                        <span>💾</span> Save
+                    </button>
+                    <button class="scenario-action-btn load-btn" id="loadScenarioBtn" title="Load saved scenarios">
+                        <span>📂</span> Load
+                    </button>
+                    <button class="scenario-action-btn export-btn" id="exportDataBtn" title="Download to file">
+                        <span>⬇️</span> Export
+                    </button>
+                    <label class="scenario-action-btn import-btn" title="Import from file">
+                        <span>⬆️</span> Import
+                        <input type="file" id="importDataInput" accept=".json,.loancomp" style="display: none;">
+                    </label>
+                </div>
+            </div>
+
+            <!-- Saved Scenarios Modal -->
+            <div class="saved-scenarios-modal hidden" id="savedScenariosModal">
+                <div class="saved-scenarios-content">
+                    <div class="saved-scenarios-header">
+                        <h3>Saved Scenarios</h3>
+                        <button class="close-saved-btn" id="closeSavedModal">&times;</button>
+                    </div>
+                    <div class="saved-scenarios-body">
+                        <div class="saved-list" id="savedScenariosList">
+                            <!-- Populated by JS -->
+                        </div>
+                        <div class="save-new-section">
+                            <h4>Save Current Session</h4>
+                            <div class="save-input-row">
+                                <input type="text" id="saveScenarioName" placeholder="Enter a name for this comparison...">
+                                <button class="btn-save-new" id="saveNewScenarioBtn">Save</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="saved-scenarios-overlay hidden" id="savedScenariosOverlay"></div>
+
+            <!-- All loan panels container -->
+            <div class="loan-panels" id="loanPanels">
+                <!-- First loan panel (template) -->
+                <div class="loan-panel active" data-index="0">
+                    <!-- Purchase/Refinance Toggle -->
+                    <div class="top-toggles">
+                        <div class="transaction-toggle">
+                            <button class="toggle-btn active" data-type="purchase">Purchase</button>
+                            <button class="toggle-btn" data-type="refinance">Refinance</button>
+                        </div>
+
+                        <!-- Borrower Toggle -->
+                        <div class="borrower-toggle">
+                            <span class="toggle-label">Borrowers:</span>
+                            <button class="borrower-btn active" data-borrowers="1">1</button>
+                            <button class="borrower-btn" data-borrowers="2">2</button>
+                        </div>
+                    </div>
+
+                    <!-- Loan Type Tabs -->
+                    <div class="loan-type-tabs">
+                        <button class="type-tab active" data-loan="conventional">Conventional</button>
+                        <button class="type-tab" data-loan="fha">FHA</button>
+                        <button class="type-tab" data-loan="va">VA</button>
+                        <button class="type-tab" data-loan="usda">USDA</button>
+                    </div>
+
+                    <!-- Loan Program Type -->
+                    <div class="loan-program-section">
+                        <label class="program-label">Loan Program:</label>
+                        <div class="loan-program-tabs">
+                            <button class="program-tab active" data-program="standard">Standard</button>
+                            <button class="program-tab" data-program="homeready">HomeReady</button>
+                            <button class="program-tab" data-program="homepossible">Home Possible</button>
+                            <button class="program-tab" data-program="firsttime">First Time Homebuyer</button>
+                            <button class="program-tab" data-program="affordable">Affordable/Community</button>
+                        </div>
+                        <div class="program-info hidden">
+                            <p class="program-description"></p>
+                        </div>
+                    </div>
+
+                    <!-- Loan Form -->
+                    <form class="loan-form">
+                        <!-- Scenario Name -->
+                        <div class="form-section scenario-name-section">
+                            <div class="form-group">
+                                <label>Scenario Name (Optional)</label>
+                                <input type="text" name="scenarioName" placeholder="e.g., Low Down Payment Option">
+                            </div>
+                        </div>
+
+                        <!-- Common Fields -->
+                        <div class="form-section">
+                            <h3>Loan Details</h3>
+
+                            <div class="form-group">
+                                <label>Purchase Price / Home Value</label>
+                                <div class="input-wrapper">
+                                    <span class="currency">$</span>
+                                    <input type="number" name="homePrice" placeholder="300,000" value="300000">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Loan Amount</label>
+                                <div class="input-wrapper">
+                                    <span class="currency">$</span>
+                                    <input type="number" name="loanAmount" placeholder="270,000" value="270000">
+                                </div>
+                            </div>
+
+                            <div class="form-group down-payment-group">
+                                <label>Down Payment</label>
+                                <div class="input-row">
+                                    <div class="input-wrapper">
+                                        <span class="currency">$</span>
+                                        <input type="number" name="downPayment" placeholder="30,000" value="30000">
+                                    </div>
+                                    <div class="input-wrapper percent-wrapper">
+                                        <input type="number" name="downPaymentPercent" placeholder="10" value="10" step="0.1">
+                                        <span class="percent">%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Interest Rate</label>
+                                <div class="input-wrapper percent-wrapper">
+                                    <input type="number" name="interestRate" placeholder="6.5" value="6.5" step="0.125">
+                                    <span class="percent">%</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Loan Term</label>
+                                <select name="loanTerm">
+                                    <option value="30">30 Years</option>
+                                    <option value="20">20 Years</option>
+                                    <option value="15">15 Years</option>
+                                    <option value="10">10 Years</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Credit Score Range</label>
+                                <select name="creditScore">
+                                    <option value="760">760+ (Excellent)</option>
+                                    <option value="740">740-759 (Very Good)</option>
+                                    <option value="720">720-739 (Good)</option>
+                                    <option value="700" selected>700-719 (Good)</option>
+                                    <option value="680">680-699 (Fair)</option>
+                                    <option value="660">660-679 (Fair)</option>
+                                    <option value="640">640-659 (Poor)</option>
+                                    <option value="620">620-639 (Poor)</option>
+                                    <option value="580">580-619 (Very Poor)</option>
+                                </select>
+                            </div>
+
+                            <!-- Second Borrower Credit Score (shown when 2 borrowers) -->
+                            <div class="form-group second-borrower-credit hidden">
+                                <label>Second Borrower Credit Score</label>
+                                <select name="creditScore2">
+                                    <option value="760">760+ (Excellent)</option>
+                                    <option value="740">740-759 (Very Good)</option>
+                                    <option value="720">720-739 (Good)</option>
+                                    <option value="700" selected>700-719 (Good)</option>
+                                    <option value="680">680-699 (Fair)</option>
+                                    <option value="660">660-679 (Fair)</option>
+                                    <option value="640">640-659 (Poor)</option>
+                                    <option value="620">620-639 (Poor)</option>
+                                    <option value="580">580-619 (Very Poor)</option>
+                                </select>
+                                <small class="helper-text">Lenders typically use the lower of the two scores</small>
+                            </div>
+                        </div>
+
+                        <!-- Rate Buydown Section -->
+                        <div class="form-section buydown-section">
+                            <h3>Rate Buydown (Points)</h3>
+
+                            <div class="form-group">
+                                <label>Are you buying down the rate?</label>
+                                <div class="radio-group">
+                                    <label class="radio-label">
+                                        <input type="radio" name="buyingPoints" value="no" checked>
+                                        <span>No</span>
+                                    </label>
+                                    <label class="radio-label">
+                                        <input type="radio" name="buyingPoints" value="yes">
+                                        <span>Yes</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="form-group points-amount hidden">
+                                <label>Discount Points</label>
+                                <div class="input-wrapper">
+                                    <input type="number" name="discountPoints" placeholder="1.0" value="0" step="0.125">
+                                    <span class="percent">pts</span>
+                                </div>
+                                <small class="helper-text">1 point = 1% of loan amount</small>
+                            </div>
+                        </div>
+
+                        <!-- Loan-Specific Fields -->
+                        <div class="form-section loan-specific-fields">
+                            <!-- FHA Specific -->
+                            <div class="fha-fields hidden">
+                                <h3>FHA Specific</h3>
+                                <div class="form-group">
+                                    <label>Upfront MIP Rate</label>
+                                    <div class="input-wrapper percent-wrapper">
+                                        <input type="number" name="upfrontMIPRate" value="1.75" step="0.01">
+                                        <span class="percent">%</span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Upfront MIP Amount</label>
+                                    <div class="calculated-value" data-field="upfrontMIP">$0</div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Annual MIP Rate</label>
+                                    <select name="annualMIPRate">
+                                        <option value="0.55">0.55% (≤15yr, ≤90% LTV)</option>
+                                        <option value="0.70">0.70% (≤15yr, >90% LTV)</option>
+                                        <option value="0.50">0.50% (>15yr, ≤90% LTV)</option>
+                                        <option value="0.55" selected>0.55% (>15yr, >90% LTV)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- VA Specific -->
+                            <div class="va-fields hidden">
+                                <h3>VA Specific</h3>
+                                <div class="form-group">
+                                    <label>First Time VA Loan Use?</label>
+                                    <div class="radio-group">
+                                        <label class="radio-label">
+                                            <input type="radio" name="firstTimeVA" value="yes" checked>
+                                            <span>Yes</span>
+                                        </label>
+                                        <label class="radio-label">
+                                            <input type="radio" name="firstTimeVA" value="no">
+                                            <span>No</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Service Type</label>
+                                    <select name="serviceType">
+                                        <option value="regular">Regular Military</option>
+                                        <option value="reserves">Reserves/National Guard</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Disability Exemption?</label>
+                                    <div class="radio-group">
+                                        <label class="radio-label">
+                                            <input type="radio" name="vaExempt" value="no" checked>
+                                            <span>No</span>
+                                        </label>
+                                        <label class="radio-label">
+                                            <input type="radio" name="vaExempt" value="yes">
+                                            <span>Yes (Exempt from Funding Fee)</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>VA Funding Fee Rate (Override)</label>
+                                    <div class="input-wrapper percent-wrapper">
+                                        <input type="number" name="vaFundingFeeRate" placeholder="Auto" step="0.01">
+                                        <span class="percent">%</span>
+                                    </div>
+                                    <small class="helper-text">Leave blank for auto-calculation</small>
+                                </div>
+                                <div class="form-group">
+                                    <label>VA Funding Fee</label>
+                                    <div class="calculated-value" data-field="vaFundingFee">$0</div>
+                                </div>
+                            </div>
+
+                            <!-- USDA Specific -->
+                            <div class="usda-fields hidden">
+                                <h3>USDA Specific</h3>
+                                <div class="form-group">
+                                    <label>Upfront Guarantee Fee Rate</label>
+                                    <div class="input-wrapper percent-wrapper">
+                                        <input type="number" name="usdaUpfrontRate" value="1.0" step="0.01">
+                                        <span class="percent">%</span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Upfront Guarantee Fee</label>
+                                    <div class="calculated-value" data-field="usdaUpfront">$0</div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Annual Fee Rate</label>
+                                    <div class="input-wrapper percent-wrapper">
+                                        <input type="number" name="usdaAnnualRate" value="0.35" step="0.01">
+                                        <span class="percent">%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Conventional PMI -->
+                            <div class="conventional-fields">
+                                <h3>Private Mortgage Insurance (PMI)</h3>
+                                <div class="form-group pmi-required">
+                                    <label>PMI Required?</label>
+                                    <div class="calculated-value" data-field="pmiRequired">Calculating...</div>
+                                </div>
+                                <div class="form-group pmi-rate-override">
+                                    <label>PMI Rate Override (Annual %)</label>
+                                    <div class="input-wrapper percent-wrapper">
+                                        <input type="number" name="pmiRateOverride" placeholder="Auto" step="0.01">
+                                        <span class="percent">%</span>
+                                    </div>
+                                    <small class="helper-text">Leave blank for auto-calculation based on LTV/credit</small>
+                                </div>
+                                <div class="form-group pmi-rate hidden">
+                                    <label>Estimated Monthly PMI</label>
+                                    <div class="calculated-value" data-field="monthlyPMI">$0</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Refinance Specific -->
+                        <div class="form-section refinance-fields hidden">
+                            <h3>Refinance Details</h3>
+                            <div class="form-group">
+                                <label>Current Loan Balance</label>
+                                <div class="input-wrapper">
+                                    <span class="currency">$</span>
+                                    <input type="number" name="currentBalance" placeholder="250,000">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Current Interest Rate</label>
+                                <div class="input-wrapper percent-wrapper">
+                                    <input type="number" name="currentRate" placeholder="7.5" step="0.125">
+                                    <span class="percent">%</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Cash Out Amount</label>
+                                <div class="input-wrapper">
+                                    <span class="currency">$</span>
+                                    <input type="number" name="cashOut" placeholder="0" value="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Closing Costs Section -->
+                        <div class="form-section closing-costs-section">
+                            <div class="section-header">
+                                <h3>Closing Costs & Fees</h3>
+                                <button type="button" class="toggle-section-btn" data-target="closingCostsContent">
+                                    <span class="toggle-icon">▼</span>
+                                </button>
+                            </div>
+
+                            <div class="section-content closingCostsContent">
+                                <div class="title-company-selector">
+                                    <label>Load Saved Title Company Fees:</label>
+                                    <select name="titleCompanySelect" class="title-company-dropdown">
+                                        <option value="">-- Select Title Company --</option>
+                                    </select>
+                                </div>
+                                <p class="section-note">All fees below are editable - adjust to match your actual loan estimate</p>
+
+                                <h4 class="subsection-title">Lender Fees</h4>
+                                <div class="closing-costs-grid">
+                                    <div class="cost-item">
+                                        <label>Origination Fee</label>
+                                        <div class="input-wrapper">
+                                            <span class="currency">$</span>
+                                            <input type="number" name="originationFee" value="1500">
+                                        </div>
+                                    </div>
+                                    <div class="cost-item">
+                                        <label>Processing Fee</label>
+                                        <div class="input-wrapper">
+                                            <span class="currency">$</span>
+                                            <input type="number" name="processingFee" value="500">
+                                        </div>
+                                    </div>
+                                    <div class="cost-item">
+                                        <label>Underwriting Fee</label>
+                                        <div class="input-wrapper">
+                                            <span class="currency">$</span>
+                                            <input type="number" name="underwritingFee" value="750">
+                                        </div>
+                                    </div>
+                                    <div class="cost-item">
+                                        <label>Application Fee</label>
+                                        <div class="input-wrapper">
+                                            <span class="currency">$</span>
+                                            <input type="number" name="applicationFee" value="0">
+                                        </div>
+                                    </div>
+                                    <div class="cost-item">
+                                        <label>Commitment Fee</label>
+                                        <div class="input-wrapper">
+                                            <span class="currency">$</span>
+                                            <input type="number" name="commitmentFee" value="0">
+                                        </div>
+                                    </div>
+                                    <div class="cost-item">
+                                        <label>Rate Lock Fee</label>
+                                        <div class="input-wrapper">
+                                            <span class="currency">$</span>
+                                            <input type="number" name="rateLockFee" value="0">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <h4 class="subsection-title">Third Party Fees</h4>
+                                <div class="closing-costs-grid">
+                                    <div class="cost-item">
+                                        <label>Appraisal Fee</label>
+                                        <div class="input-wrapper">
+                                            <span class="currency">$</span>
+                                            <input type="number" name="appraisalFee" value="550">
+                                        </div>
+                                    </div>
+                                    <div class="cost-item">
+                                        <label>Credit Report</label>
+                                        <div class="input-wrapper">
+                                            <span class="currency">$</span>
+                                            <input type="number" name="creditReport" value="75">
+                                        </div>
+                                    </div>
+                                    <div class="cost-item">
+                                        <label>Flood Certification</label>
+                                        <div class="input-wrapper">
+                                            <span class="currency">$</span>
+                                            <input type="number" name="floodCert" value="20">
+                                        </div>
+                                    </div>
+                                    <div class="cost-item">
+                                        <label>Tax Service Fee</label>
+                                        <div class="input-wrapper">
+                                            <span class="currency">$</span>
+                                            <input type="number" name="taxServiceFee" value="85">
+                                        </div>
+                                    </div>
+                                    <div class="cost-item">
+                                        <label>Survey</label>
+                                        <div class="input-wrapper">
+                                            <span class="currency">$</span>
+                                            <input type="number" name="survey" value="0">
+                                        </div>
+                                    </div>
+                                    <div class="cost-item">
+                                        <label>Pest Inspection</label>
+                                        <div class="input-wrapper">
+                                            <span class="currency">$</span>
+                                            <input type="number" name="pestInspection" value="0">
+                                        </div>
+                                    </div>
+                                    <div class="cost-item">
+                                        <label>Home Inspection</label>
+                                        <div class="input-wrapper">
+                                            <span class="currency">$</span>
+                                            <input type="number" name="homeInspection" value="0">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <h4 class="subsection-title">Title & Government Fees</h4>
+                                <div class="closing-costs-grid">
+                                    <div class="cost-item">
+                                        <label>Title Insurance (Lender's)</label>
+                                        <div class="input-wrapper">
+                                            <span class="currency">$</span>
+                                            <input type="number" name="titleInsurance" value="900">
+                                        </div>
+                                    </div>
+                                    <div class="cost-item">
+                                        <label>Title Insurance (Owner's)</label>
+                                        <div class="input-wrapper">
+                                            <span class="currency">$</span>
+                                            <input type="number" name="ownersTitleInsurance" value="500">
+                                        </div>
+                                    </div>
+                                    <div class="cost-item">
+                                        <label>Title Search/Exam</label>
+                                        <div class="input-wrapper">
+                                            <span class="currency">$</span>
+                                            <input type="number" name="titleSearch" value="200">
+                                        </div>
+                                    </div>
+                                    <div class="cost-item">
+                                        <label>Settlement/Closing Fee</label>
+                                        <div class="input-wrapper">
+                                            <span class="currency">$</span>
+                                            <input type="number" name="settlementFee" value="500">
+                                        </div>
+                                    </div>
+                                    <div class="cost-item">
+                                        <label>Escrow/Title Fees</label>
+                                        <div class="input-wrapper">
+                                            <span class="currency">$</span>
+                                            <input type="number" name="escrowFees" value="350">
+                                        </div>
+                                    </div>
+                                    <div class="cost-item">
+                                        <label>Recording Fees</label>
+                                        <div class="input-wrapper">
+                                            <span class="currency">$</span>
+                                            <input type="number" name="recordingFees" value="150">
+                                        </div>
+                                    </div>
+                                    <div class="cost-item">
+                                        <label>Transfer Taxes</label>
+                                        <div class="input-wrapper">
+                                            <span class="currency">$</span>
+                                            <input type="number" name="transferTaxes" value="0">
+                                        </div>
+                                    </div>
+                                    <div class="cost-item">
+                                        <label>Attorney Fees</label>
+                                        <div class="input-wrapper">
+                                            <span class="currency">$</span>
+                                            <input type="number" name="attorneyFees" value="0">
+                                        </div>
+                                    </div>
+                                    <div class="cost-item">
+                                        <label>Notary Fees</label>
+                                        <div class="input-wrapper">
+                                            <span class="currency">$</span>
+                                            <input type="number" name="notaryFees" value="50">
+                                        </div>
+                                    </div>
+                                    <div class="cost-item">
+                                        <label>Courier/Wire Fees</label>
+                                        <div class="input-wrapper">
+                                            <span class="currency">$</span>
+                                            <input type="number" name="courierFees" value="75">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <h4 class="subsection-title">Other Fees</h4>
+                                <div class="closing-costs-grid">
+                                    <div class="cost-item">
+                                        <label>HOA Transfer Fee</label>
+                                        <div class="input-wrapper">
+                                            <span class="currency">$</span>
+                                            <input type="number" name="hoaTransferFee" value="0">
+                                        </div>
+                                    </div>
+                                    <div class="cost-item">
+                                        <label>HOA Certification</label>
+                                        <div class="input-wrapper">
+                                            <span class="currency">$</span>
+                                            <input type="number" name="hoaCertification" value="0">
+                                        </div>
+                                    </div>
+                                    <div class="cost-item full-width">
+                                        <label>Other/Miscellaneous Fees</label>
+                                        <div class="input-wrapper">
+                                            <span class="currency">$</span>
+                                            <input type="number" name="otherFees" value="0">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Custom Fees Section -->
+                                <div class="custom-fees-section">
+                                    <h4 class="subsection-title">Custom Fees</h4>
+                                    <div class="custom-fees-list">
+                                        <!-- Custom fees will be added here dynamically -->
+                                    </div>
+                                    <button type="button" class="add-custom-fee-btn">
+                                        <span>+</span> Add Custom Fee
+                                    </button>
+                                </div>
+
+                                <!-- Lender Credits / Seller Credits -->
+                                <h4 class="subsection-title">Credits</h4>
+                                <div class="closing-costs-grid">
+                                    <div class="cost-item">
+                                        <label>Lender Credit</label>
+                                        <div class="input-wrapper">
+                                            <span class="currency">$</span>
+                                            <input type="number" name="lenderCredit" value="0">
+                                        </div>
+                                        <small class="helper-text">Reduces closing costs</small>
+                                    </div>
+                                    <div class="cost-item">
+                                        <label>Seller Credit</label>
+                                        <div class="input-wrapper">
+                                            <span class="currency">$</span>
+                                            <input type="number" name="sellerCredit" value="0">
+                                        </div>
+                                        <small class="helper-text">Seller concessions</small>
+                                    </div>
+                                    <div class="cost-item">
+                                        <label>Other Credits</label>
+                                        <div class="input-wrapper">
+                                            <span class="currency">$</span>
+                                            <input type="number" name="otherCredits" value="0">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Prepaids Section -->
+                        <div class="form-section prepaids-section">
+                            <div class="section-header">
+                                <h3>Prepaid Items & Escrow</h3>
+                                <button type="button" class="toggle-section-btn" data-target="prepaidsContent">
+                                    <span class="toggle-icon">▼</span>
+                                </button>
+                            </div>
+
+                            <div class="section-content prepaidsContent">
+                                <div class="form-group">
+                                    <label>Property Taxes (Annual)</label>
+                                    <div class="input-wrapper">
+                                        <span class="currency">$</span>
+                                        <input type="number" name="annualTaxes" value="3600">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Homeowners Insurance (Annual)</label>
+                                    <div class="input-wrapper">
+                                        <span class="currency">$</span>
+                                        <input type="number" name="annualInsurance" value="1500">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>HOA Dues (Monthly)</label>
+                                    <div class="input-wrapper">
+                                        <span class="currency">$</span>
+                                        <input type="number" name="monthlyHOA" value="0">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Months of Taxes to Prepay</label>
+                                    <input type="number" name="taxMonths" value="3" min="0" max="12">
+                                </div>
+                                <div class="form-group">
+                                    <label>Months of Insurance to Prepay</label>
+                                    <input type="number" name="insuranceMonths" value="14" min="0" max="14">
+                                </div>
+                                <div class="form-group">
+                                    <label>Days of Prepaid Interest</label>
+                                    <input type="number" name="prepaidInterestDays" value="15" min="1" max="30">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="button" class="calculate-btn">Calculate & Compare</button>
+                    </form>
+
+                    <!-- Results Section -->
+                    <div class="results-section">
+                        <h2>Loan Summary</h2>
+
+                        <div class="results-grid">
+                            <div class="result-card primary">
+                                <h4>Monthly Payment</h4>
+                                <div class="result-value" data-result="monthlyPayment">$0</div>
+                                <small>Principal & Interest</small>
+                            </div>
+                            <div class="result-card">
+                                <h4>Total Monthly (PITI + MI)</h4>
+                                <div class="result-value" data-result="totalMonthly">$0</div>
+                                <small>Including taxes, insurance & MI</small>
+                            </div>
+                            <div class="result-card">
+                                <h4>Total Closing Costs</h4>
+                                <div class="result-value" data-result="totalClosing">$0</div>
+                            </div>
+                            <div class="result-card">
+                                <h4>Cash to Close</h4>
+                                <div class="result-value" data-result="cashToClose">$0</div>
+                                <small>Down payment + closing costs</small>
+                            </div>
+                            <div class="result-card">
+                                <h4>APR</h4>
+                                <div class="result-value" data-result="apr">0%</div>
+                            </div>
+                            <div class="result-card">
+                                <h4>Total Interest (Life of Loan)</h4>
+                                <div class="result-value" data-result="totalInterest">$0</div>
+                            </div>
+                        </div>
+
+                        <!-- Borrower Split Section (shown when 2 borrowers) -->
+                        <div class="borrower-split-section hidden">
+                            <h3>Cost Split Between Borrowers</h3>
+                            <div class="split-controls">
+                                <label>Split Ratio:</label>
+                                <div class="split-slider-container">
+                                    <span class="borrower-label">Borrower 1</span>
+                                    <input type="range" name="splitRatio" min="0" max="100" value="50" class="split-slider">
+                                    <span class="borrower-label">Borrower 2</span>
+                                </div>
+                                <div class="split-display">
+                                    <span data-split="borrower1Percent">50%</span> / <span data-split="borrower2Percent">50%</span>
+                                </div>
+                            </div>
+                            <div class="split-results">
+                                <div class="split-card">
+                                    <h4>Borrower 1</h4>
+                                    <div class="split-item">
+                                        <span>Monthly Payment:</span>
+                                        <strong data-split="borrower1Monthly">$0</strong>
+                                    </div>
+                                    <div class="split-item">
+                                        <span>Cash to Close:</span>
+                                        <strong data-split="borrower1CashToClose">$0</strong>
+                                    </div>
+                                </div>
+                                <div class="split-card">
+                                    <h4>Borrower 2</h4>
+                                    <div class="split-item">
+                                        <span>Monthly Payment:</span>
+                                        <strong data-split="borrower2Monthly">$0</strong>
+                                    </div>
+                                    <div class="split-item">
+                                        <span>Cash to Close:</span>
+                                        <strong data-split="borrower2CashToClose">$0</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fee Breakdown -->
+                        <div class="fee-breakdown">
+                            <h3>Fee Breakdown</h3>
+                            <table class="fee-table">
+                                <thead>
+                                    <tr>
+                                        <th>Fee Type</th>
+                                        <th>Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="feeBreakdown">
+                                    <!-- Populated by JavaScript -->
+                                </tbody>
+                                <tfoot>
+                                    <tr class="subtotal-row">
+                                        <td>Subtotal (Before Credits)</td>
+                                        <td data-result="feeSubtotal">$0</td>
+                                    </tr>
+                                    <tr class="credits-row">
+                                        <td>Total Credits</td>
+                                        <td data-result="totalCredits">-$0</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Total</strong></td>
+                                        <td><strong data-result="feeTotal">$0</strong></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparison Summary (shown when multiple loans) -->
+        <div class="comparison-summary hidden" id="comparisonSummary">
+            <h2>Side-by-Side Comparison</h2>
+
+            <!-- Comparison Charts -->
+            <div class="charts-container">
+                <div class="chart-wrapper">
+                    <h3>Monthly Payment Comparison</h3>
+                    <div class="chart-canvas-container">
+                        <canvas id="monthlyPaymentChart" width="400" height="300"></canvas>
+                    </div>
+                </div>
+                <div class="chart-wrapper">
+                    <h3>Cash to Close Comparison</h3>
+                    <div class="chart-canvas-container">
+                        <canvas id="cashToCloseChart" width="400" height="300"></canvas>
+                    </div>
+                </div>
+                <div class="chart-wrapper">
+                    <h3>Total Cost Over Loan Life</h3>
+                    <div class="chart-canvas-container">
+                        <canvas id="totalCostChart" width="400" height="300"></canvas>
+                    </div>
+                </div>
+                <div class="chart-wrapper full-width">
+                    <h3>Monthly Payment Breakdown</h3>
+                    <div class="chart-canvas-container">
+                        <canvas id="paymentBreakdownChart" width="400" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Time Period Selector & Net Cost Comparison -->
+            <div class="time-comparison-section">
+                <div class="time-period-selector">
+                    <h3>Compare Over Time Period</h3>
+                    <div class="time-options">
+                        <button class="time-btn" data-months="12">1 Year</button>
+                        <button class="time-btn" data-months="24">2 Years</button>
+                        <button class="time-btn" data-months="36">3 Years</button>
+                        <button class="time-btn active" data-months="60">5 Years</button>
+                        <button class="time-btn" data-months="84">7 Years</button>
+                        <button class="time-btn" data-months="120">10 Years</button>
+                        <button class="time-btn" data-months="180">15 Years</button>
+                        <button class="time-btn" data-months="360">30 Years</button>
+                        <div class="custom-time-input">
+                            <input type="number" id="customMonths" placeholder="Custom" min="1" max="360">
+                            <span>months</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="net-cost-comparison" id="netCostComparison">
+                    <h3>Net Cost Difference <span class="time-label">(over 5 years)</span></h3>
+                    <div class="net-cost-grid">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="comparison-table-wrapper">
+                <table class="comparison-table" id="comparisonTable">
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <!-- Dynamic columns added by JS -->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="recommendation" id="recommendation">
+                <!-- Recommendation populated by JS -->
+            </div>
+
+            <!-- Generate Document Button -->
+            <div class="document-actions">
+                <button type="button" class="generate-doc-btn" id="generateDocBtn">
+                    <span class="doc-icon">📄</span>
+                    Generate Comparison Document for Borrower
+                </button>
+                <button type="button" class="print-btn" id="printBtn">
+                    <span class="doc-icon">🖨️</span>
+                    Print Comparison
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document Preview Modal -->
+    <div class="modal-overlay hidden" id="documentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Loan Comparison Document</h2>
+                <button class="modal-close" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="document-options">
+                    <div class="form-group">
+                        <label>Borrower Name(s)</label>
+                        <input type="text" id="borrowerName" placeholder="Enter borrower name(s)">
+                    </div>
+                    <div class="form-group">
+                        <label>Property Address</label>
+                        <input type="text" id="propertyAddress" placeholder="Enter property address">
+                    </div>
+                    <div class="form-group">
+                        <label>Loan Officer Name</label>
+                        <input type="text" id="loanOfficerName" placeholder="Your name">
+                    </div>
+                    <div class="form-group">
+                        <label>Company Name</label>
+                        <input type="text" id="companyName" placeholder="Your company">
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Information</label>
+                        <input type="text" id="contactInfo" placeholder="Phone/Email">
+                    </div>
+                    <div class="form-group">
+                        <label>Additional Notes</label>
+                        <textarea id="additionalNotes" rows="3" placeholder="Any additional notes for the borrower..."></textarea>
+                    </div>
+
+                    <div class="email-section">
+                        <h4>Send via Email</h4>
+                        <div class="email-inputs">
+                            <div class="form-group">
+                                <label>Recipient Email</label>
+                                <input type="email" id="recipientEmail" placeholder="borrower@email.com">
+                            </div>
+                            <div class="form-group">
+                                <label>Email Subject</label>
+                                <input type="text" id="emailSubject" placeholder="Your Loan Comparison Summary">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="document-preview" id="documentPreview">
+                    <!-- Document preview generated by JS -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="copyDocBtn">Copy to Clipboard</button>
+                <button class="btn-secondary" id="emailDocBtn">Send via Email</button>
+                <button class="btn-primary" id="downloadDocBtn">Download as HTML</button>
+                <button class="btn-primary" id="printDocBtn">Print Document</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
