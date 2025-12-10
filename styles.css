@@ -684,6 +684,18 @@ header h1 {
     color: #4dd0e1;
 }
 
+.scenario-action-btn.my-scenarios-btn {
+    background: rgba(156, 39, 176, 0.15);
+    border-color: rgba(156, 39, 176, 0.3);
+    color: #ce93d8;
+}
+
+.scenario-action-btn.my-scenarios-btn:hover {
+    background: rgba(156, 39, 176, 0.25);
+    border-color: rgba(156, 39, 176, 0.5);
+    color: #e1bee7;
+}
+
 /* Saved Scenarios Modal */
 .saved-scenarios-overlay {
     position: fixed;

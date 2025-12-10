@@ -1788,6 +1788,7 @@ class LoanManager {
         // Save/Load scenario buttons
         document.getElementById('saveScenarioBtn')?.addEventListener('click', () => this.openSaveModal());
         document.getElementById('loadScenarioBtn')?.addEventListener('click', () => this.openSaveModal());
+        document.getElementById('myScenariosBtn')?.addEventListener('click', () => this.openSaveModal());
         document.getElementById('closeSavedModal')?.addEventListener('click', () => this.closeSaveModal());
         document.getElementById('savedScenariosOverlay')?.addEventListener('click', () => this.closeSaveModal());
         document.getElementById('saveNewScenarioBtn')?.addEventListener('click', () => this.saveCurrentSession());
