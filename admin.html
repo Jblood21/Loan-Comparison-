@@ -506,7 +506,10 @@
             <form id="adminLoginForm">
                 <div class="admin-form-group">
                     <label for="adminPassword">Admin Password</label>
-                    <input type="password" id="adminPassword" placeholder="Enter admin password" required autofocus>
+                    <div style="position: relative;">
+                        <input type="password" id="adminPassword" placeholder="Enter admin password" required autofocus>
+                        <button type="button" id="togglePassword" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #888; cursor: pointer; font-size: 0.9rem;">Show</button>
+                    </div>
                 </div>
                 <button type="submit" class="admin-login-btn" id="loginBtn">Access Dashboard</button>
             </form>
@@ -896,6 +899,19 @@
                     loadLocalSettings();
                     alert('Local data cleared.');
                 }
+            }
+        });
+
+        // Toggle password visibility
+        document.getElementById('togglePassword').addEventListener('click', () => {
+            const passwordInput = document.getElementById('adminPassword');
+            const toggleBtn = document.getElementById('togglePassword');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleBtn.textContent = 'Hide';
+            } else {
+                passwordInput.type = 'password';
+                toggleBtn.textContent = 'Show';
             }
         });
 
