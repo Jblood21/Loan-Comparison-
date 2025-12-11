@@ -2511,6 +2511,7 @@ class LoanManager {
         const companyName = Security.escapeHtml(document.getElementById('companyName')?.value || '[Company Name]');
         const contactInfo = Security.escapeHtml(document.getElementById('contactInfo')?.value || '[Contact Info]');
         const additionalNotes = Security.escapeHtml(document.getElementById('additionalNotes')?.value || '');
+        const showTimePeriod = document.getElementById('showTimePeriodToggle')?.checked !== false;
         const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
         let comparisonRows = '';
@@ -2649,6 +2650,8 @@ class LoanManager {
                 </div>
                 ` : ''}
 
+                ${showTimePeriod && this.loans.length >= 2 ? this.generateTimePeriodSection() : ''}
+
                 <!-- Contact Section -->
                 ${this.generateContactSection(loanOfficerName, companyName, contactInfo)}
 
@@ -2656,11 +2659,144 @@ class LoanManager {
                 <div style="margin-top: 40px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-top: 3px solid #667eea;">
                     ${lender.disclaimer ? `<p style="margin: 0 0 15px 0; font-size: 12px; color: #666; text-align: center; font-weight: 500;">${lender.disclaimer}</p>` : ''}
                     <p style="margin: 0; font-size: 11px; color: #888; line-height: 1.6;">
-                        <strong>Disclaimer:</strong> This loan comparison is for informational purposes only and does not constitute a loan commitment or guarantee. Actual rates, terms, and fees may vary based on your credit profile, property characteristics, and market conditions at the time of application. All information is subject to change without notice. Please contact us for a personalized quote and official Loan Estimate.
+                        <strong>IMPORTANT DISCLOSURES:</strong> This loan comparison is provided for informational and educational purposes only and does not constitute a commitment to lend, a loan approval, or a Loan Estimate as defined under the Real Estate Settlement Procedures Act (RESPA) and the Truth in Lending Act (TILA).
+                    </p>
+                    <p style="margin: 10px 0 0 0; font-size: 11px; color: #888; line-height: 1.6;">
+                        <strong>Not an Official Loan Estimate:</strong> This document is NOT a Loan Estimate (LE) under the TILA-RESPA Integrated Disclosure (TRID) rule. You will receive an official Loan Estimate within three (3) business days of submitting a complete loan application, as required by federal law (12 CFR § 1026.19(e)).
+                    </p>
+                    <p style="margin: 10px 0 0 0; font-size: 11px; color: #888; line-height: 1.6;">
+                        <strong>Rate and Fee Variability:</strong> Interest rates, Annual Percentage Rates (APR), discount points, and closing costs shown are estimates based on current market conditions and are subject to change without notice. Your actual rate, APR, and costs will depend on your credit history, loan-to-value ratio, property type, occupancy, loan amount, and other factors determined at the time of application.
+                    </p>
+                    <p style="margin: 10px 0 0 0; font-size: 11px; color: #888; line-height: 1.6;">
+                        <strong>Equal Housing Lender:</strong> We are committed to the letter and spirit of the federal Equal Credit Opportunity Act (ECOA) and the Fair Housing Act. All loan programs are available on a non-discriminatory basis.
+                    </p>
+                    <p style="margin: 10px 0 0 0; font-size: 10px; color: #999; line-height: 1.5; text-align: center;">
+                        For questions about this comparison or to apply for a loan, please contact your Mortgage Loan Originator. NMLS Consumer Access: <a href="https://www.nmlsconsumeraccess.org" style="color: #667eea;">www.nmlsconsumeraccess.org</a>
                     </p>
                 </div>
             </div>
         `;
+    }
+
+    generateTimePeriodSection() {
+        const months = this.comparisonMonths || 36;
+        const years = months / 12;
+        const timeLabel = months >= 12 ? `${years} Year${years !== 1 ? 's' : ''}` : `${months} Month${months !== 1 ? 's' : ''}`;
+
+        // Calculate costs for the time period
+        let timePeriodRows = '';
+        const costMetrics = [
+            { key: 'closingCosts', label: 'Closing Costs (Upfront)' },
+            { key: 'totalPayments', label: `Total Payments (${timeLabel})` },
+            { key: 'interestPaid', label: `Interest Paid (${timeLabel})` },
+            { key: 'principalPaid', label: `Principal Paid (${timeLabel})` },
+            { key: 'netCost', label: `Net Cost (${timeLabel})` }
+        ];
+
+        // Find the best option for net cost
+        let bestNetCostIndex = 0;
+        let bestNetCost = Infinity;
+
+        this.loans.forEach((loan, i) => {
+            const monthlyPI = loan.results.monthlyPI || 0;
+            const monthlyMI = loan.results.monthlyMI || 0;
+            const totalMonthlyPayment = monthlyPI + monthlyMI;
+            const interestPaid = this.calculateInterestForPeriod(loan, months);
+            const principalPaid = (totalMonthlyPayment * months) - interestPaid;
+            const closingCosts = loan.results.totalFees || 0;
+            const netCost = closingCosts + interestPaid;
+
+            if (netCost < bestNetCost) {
+                bestNetCost = netCost;
+                bestNetCostIndex = i;
+            }
+        });
+
+        costMetrics.forEach((metric, rowIndex) => {
+            const rowBg = metric.key === 'netCost' ? '#f0f7ff' : (rowIndex % 2 === 0 ? '#fff' : '#fafafa');
+            const isHighlight = metric.key === 'netCost';
+            timePeriodRows += `<tr style="background: ${rowBg};">`;
+            timePeriodRows += `<td style="padding: 10px 12px; border: 1px solid #e0e0e0; font-weight: ${isHighlight ? '600' : '500'}; color: ${isHighlight ? '#1e3a5f' : '#333'}; font-size: 13px;">${metric.label}</td>`;
+
+            this.loans.forEach((loan, i) => {
+                const monthlyPI = loan.results.monthlyPI || 0;
+                const monthlyMI = loan.results.monthlyMI || 0;
+                const totalMonthlyPayment = monthlyPI + monthlyMI;
+                const interestPaid = this.calculateInterestForPeriod(loan, months);
+                const principalPaid = (totalMonthlyPayment * months) - interestPaid;
+                const closingCosts = loan.results.totalFees || 0;
+                const totalPayments = totalMonthlyPayment * months;
+                const netCost = closingCosts + interestPaid;
+
+                let value;
+                switch (metric.key) {
+                    case 'closingCosts': value = closingCosts; break;
+                    case 'totalPayments': value = totalPayments; break;
+                    case 'interestPaid': value = interestPaid; break;
+                    case 'principalPaid': value = principalPaid; break;
+                    case 'netCost': value = netCost; break;
+                    default: value = 0;
+                }
+
+                const isBest = metric.key === 'netCost' && i === bestNetCostIndex;
+                const cellStyle = isBest
+                    ? 'background: #e8f5e9; color: #2e7d32; font-weight: 600;'
+                    : (isHighlight ? 'font-weight: 600;' : '');
+
+                timePeriodRows += `<td style="padding: 10px 12px; border: 1px solid #e0e0e0; text-align: center; font-size: 13px; ${cellStyle}">${this.formatCurrency(value)}${isBest ? ' ✓' : ''}</td>`;
+            });
+            timePeriodRows += '</tr>';
+        });
+
+        let headerCells = `<th style="padding: 10px 12px; background: #1e3a5f; color: white; border: 1px solid #ddd; font-size: 12px;">Cost Analysis (${timeLabel})</th>`;
+        this.loans.forEach((loan, i) => {
+            const name = Security.escapeHtml(loan.results.scenarioName || `Option ${i + 1}`);
+            headerCells += `<th style="padding: 10px 12px; background: #1e3a5f; color: white; border: 1px solid #ddd; font-size: 12px;">${name}</th>`;
+        });
+
+        return `
+            <!-- Time Period Cost Analysis -->
+            <div style="margin-bottom: 30px;">
+                <h2 style="color: #1a1a2e; font-size: 16px; margin: 0 0 12px 0; padding-bottom: 8px; border-bottom: 2px solid #eee;">
+                    Cost Comparison Over ${timeLabel}
+                </h2>
+                <p style="margin: 0 0 15px 0; font-size: 12px; color: #666;">
+                    This analysis shows the total cost of each loan option if you keep the loan for ${timeLabel.toLowerCase()}, including upfront costs and interest paid.
+                </p>
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                    <thead>
+                        <tr>${headerCells}</tr>
+                    </thead>
+                    <tbody>
+                        ${timePeriodRows}
+                    </tbody>
+                </table>
+                <p style="margin: 10px 0 0 0; font-size: 11px; color: #888; font-style: italic;">
+                    ✓ indicates the lowest net cost option for this time period. Net cost = Closing costs + Interest paid during the period.
+                </p>
+            </div>
+        `;
+    }
+
+    calculateInterestForPeriod(loan, months) {
+        // Approximate interest calculation for the period
+        const rate = (loan.results.interestRate || 0) / 100 / 12;
+        const principal = loan.results.loanAmount || 0;
+        const monthlyPayment = loan.results.monthlyPI || 0;
+
+        if (rate === 0 || monthlyPayment === 0) return 0;
+
+        let balance = principal;
+        let totalInterest = 0;
+
+        for (let i = 0; i < months && balance > 0; i++) {
+            const interestPayment = balance * rate;
+            totalInterest += interestPayment;
+            const principalPayment = monthlyPayment - interestPayment;
+            balance -= principalPayment;
+        }
+
+        return totalInterest;
     }
 
     generateContactSection(loanOfficerName, companyName, contactInfo) {

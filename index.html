@@ -449,9 +449,9 @@
                             </div>
                         </div>
 
-                        <!-- Rate Buydown Section -->
+                        <!-- Rate Buydown & Credits Section -->
                         <div class="form-section buydown-section">
-                            <h3>Rate Buydown (Points)</h3>
+                            <h3>Rate Buydown & Credits</h3>
 
                             <div class="form-group">
                                 <label>Are you buying down the rate?</label>
@@ -474,6 +474,34 @@
                                     <span class="percent">pts</span>
                                 </div>
                                 <small class="helper-text">1 point = 1% of loan amount</small>
+                            </div>
+
+                            <!-- Credits Section -->
+                            <h4 class="subsection-title" style="margin-top: 20px;">Credits</h4>
+                            <div class="closing-costs-grid">
+                                <div class="cost-item">
+                                    <label>Lender Credit</label>
+                                    <div class="input-wrapper">
+                                        <span class="currency">$</span>
+                                        <input type="number" name="lenderCredit" value="0">
+                                    </div>
+                                    <small class="helper-text">Reduces closing costs</small>
+                                </div>
+                                <div class="cost-item">
+                                    <label>Seller Credit</label>
+                                    <div class="input-wrapper">
+                                        <span class="currency">$</span>
+                                        <input type="number" name="sellerCredit" value="0">
+                                    </div>
+                                    <small class="helper-text">Seller concessions</small>
+                                </div>
+                                <div class="cost-item">
+                                    <label>Other Credits</label>
+                                    <div class="input-wrapper">
+                                        <span class="currency">$</span>
+                                        <input type="number" name="otherCredits" value="0">
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -852,33 +880,6 @@
                                     </button>
                                 </div>
 
-                                <!-- Lender Credits / Seller Credits -->
-                                <h4 class="subsection-title">Credits</h4>
-                                <div class="closing-costs-grid">
-                                    <div class="cost-item">
-                                        <label>Lender Credit</label>
-                                        <div class="input-wrapper">
-                                            <span class="currency">$</span>
-                                            <input type="number" name="lenderCredit" value="0">
-                                        </div>
-                                        <small class="helper-text">Reduces closing costs</small>
-                                    </div>
-                                    <div class="cost-item">
-                                        <label>Seller Credit</label>
-                                        <div class="input-wrapper">
-                                            <span class="currency">$</span>
-                                            <input type="number" name="sellerCredit" value="0">
-                                        </div>
-                                        <small class="helper-text">Seller concessions</small>
-                                    </div>
-                                    <div class="cost-item">
-                                        <label>Other Credits</label>
-                                        <div class="input-wrapper">
-                                            <span class="currency">$</span>
-                                            <input type="number" name="otherCredits" value="0">
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
                         </div>
 
@@ -1162,6 +1163,18 @@
                     <div class="form-group">
                         <label>Additional Notes</label>
                         <textarea id="additionalNotes" rows="3" placeholder="Any additional notes for the borrower..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Report Options</label>
+                        <div class="branding-toggle" style="margin-top: 8px;">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="showTimePeriodToggle" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span class="toggle-text">Show time period comparison on report</span>
+                        </div>
+                        <small class="helper-text" style="margin-top: 8px; display: block;">When enabled, includes the selected time period (months/years) cost analysis in the borrower report</small>
                     </div>
 
                     <div class="email-section">
