@@ -2295,6 +2295,15 @@ class LoanManager {
         }
 
         const months = this.comparisonMonths;
+
+        // If months is 0 (None selected), hide the comparison section
+        if (months === 0) {
+            container.style.display = 'none';
+            return;
+        } else {
+            container.style.display = '';
+        }
+
         const years = months / 12;
         const timeLabel = months >= 12 ?
             (months % 12 === 0 ? `${years} year${years > 1 ? 's' : ''}` : `${months} months`) :
@@ -2679,7 +2688,13 @@ class LoanManager {
     }
 
     generateTimePeriodSection() {
-        const months = this.comparisonMonths || 36;
+        const months = this.comparisonMonths;
+
+        // If no time period selected (0), return empty string
+        if (!months || months === 0) {
+            return '';
+        }
+
         const years = months / 12;
         const timeLabel = months >= 12 ? `${years} Year${years !== 1 ? 's' : ''}` : `${months} Month${months !== 1 ? 's' : ''}`;
 
