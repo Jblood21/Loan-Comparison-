@@ -2601,7 +2601,7 @@ class LoanManager {
                 <div style="border-bottom: 3px solid #667eea; padding-bottom: 25px; margin-bottom: 30px;">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap;">
                         <div>
-                            <h1 style="color: #1a1a2e; margin: 0 0 5px 0; font-size: 28px; font-weight: 600;">Loan Comparison Summary</h1>
+                            <h1 style="color: #1a1a2e; margin: 0 0 5px 0; font-size: 28px; font-weight: 600;">Loan<span style="color: #2e7d32; font-weight: 800;">dr</span> Comparison Summary</h1>
                             <p style="color: #667eea; margin: 0; font-size: 14px; font-weight: 500;">${companyName}${lender.nmls ? ` | NMLS# ${lender.nmls}` : ''}</p>
                         </div>
                         <div style="text-align: right; color: #666; font-size: 13px;">

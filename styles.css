@@ -101,6 +101,55 @@ header {
     text-align: left;
 }
 
+/* Logo Styles */
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--navy-blue);
+    margin: 0;
+    letter-spacing: -0.5px;
+}
+
+.logo-accent {
+    color: var(--green-primary);
+    font-weight: 800;
+}
+
+[data-theme="dark"] .logo h1 {
+    color: #e8e8e8;
+}
+
+[data-theme="dark"] .logo-accent {
+    color: var(--green-light);
+}
+
+[data-theme="dark"] .logo-icon svg circle {
+    stroke: url(#logoGradientDark);
+}
+
+@media (max-width: 768px) {
+    .logo h1 {
+        font-size: 1.6rem;
+    }
+
+    .logo-icon svg {
+        width: 32px;
+        height: 32px;
+    }
+}
+
 .header-actions {
     display: flex;
     align-items: center;

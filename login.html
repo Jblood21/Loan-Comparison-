@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign In - Loan Comparison Tool</title>
+    <title>Sign In - Loandr</title>
 
     <!-- Security Headers -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
@@ -107,16 +107,25 @@
         }
 
         .brand-logo {
-            font-size: 4rem;
             margin-bottom: 20px;
         }
 
+        .brand-logo svg {
+            width: 70px;
+            height: 70px;
+        }
+
         .brand-title {
-            font-size: 2.2rem;
+            font-size: 2.4rem;
             font-weight: 700;
             color: var(--white);
             margin-bottom: 15px;
             line-height: 1.2;
+        }
+
+        .brand-title .logo-accent {
+            color: #81c784;
+            font-weight: 800;
         }
 
         .brand-subtitle {
@@ -445,8 +454,13 @@
     <div class="auth-wrapper">
         <div class="auth-branding">
             <div class="branding-content">
-                <div class="brand-logo">📊</div>
-                <h1 class="brand-title">Loan Comparison Tool</h1>
+                <div class="brand-logo">
+                    <svg width="70" height="70" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="20" cy="20" r="18" stroke="rgba(255,255,255,0.9)" stroke-width="3" fill="none"/>
+                        <path d="M12 20L17 25L28 14" stroke="#81c784" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <h1 class="brand-title">Loan<span class="logo-accent">dr</span></h1>
                 <p class="brand-subtitle">Professional mortgage comparison software for loan officers. Create detailed loan estimates and closing cost breakdowns in minutes.</p>
                 <ul class="brand-features">
                     <li>Compare multiple loan scenarios side-by-side</li>
