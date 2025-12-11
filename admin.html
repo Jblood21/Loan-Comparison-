@@ -13,6 +13,22 @@
 
     <link rel="stylesheet" href="styles.css">
     <style>
+        :root {
+            --navy-blue: #1e3a5f;
+            --navy-dark: #152a45;
+            --navy-light: #2c4f7c;
+            --green-primary: #2e7d32;
+            --green-light: #4caf50;
+            --green-dark: #1b5e20;
+            --white: #ffffff;
+            --off-white: #f8f9fa;
+            --light-gray: #e9ecef;
+            --medium-gray: #6c757d;
+            --dark-gray: #343a40;
+            --text-dark: #212529;
+            --text-muted: #6c757d;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -22,6 +38,7 @@
         body {
             min-height: 100vh;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--off-white);
         }
 
         /* Login Screen */
@@ -34,13 +51,13 @@
         }
 
         .admin-login-card {
-            background: rgba(20, 20, 35, 0.95);
+            background: var(--white);
             border-radius: 24px;
             padding: 50px;
             width: 100%;
             max-width: 420px;
-            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15);
+            border: 1px solid var(--light-gray);
         }
 
         .admin-login-header {
@@ -54,14 +71,14 @@
         }
 
         .admin-login-header h1 {
-            color: #fff;
+            color: var(--navy-blue);
             font-size: 1.8rem;
             font-weight: 600;
             margin-bottom: 8px;
         }
 
         .admin-login-header p {
-            color: #888;
+            color: var(--text-muted);
             font-size: 0.95rem;
         }
 
@@ -71,7 +88,7 @@
 
         .admin-form-group label {
             display: block;
-            color: #b0b0b0;
+            color: var(--dark-gray);
             margin-bottom: 8px;
             font-size: 0.9rem;
             font-weight: 500;
@@ -80,32 +97,32 @@
         .admin-form-group input {
             width: 100%;
             padding: 15px 18px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: var(--white);
+            border: 1px solid var(--light-gray);
             border-radius: 12px;
-            color: #fff;
+            color: var(--text-dark);
             font-size: 1rem;
             transition: all 0.3s ease;
         }
 
         .admin-form-group input:focus {
             outline: none;
-            border-color: #667eea;
-            background: rgba(102, 126, 234, 0.08);
-            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+            border-color: var(--navy-blue);
+            background: var(--white);
+            box-shadow: 0 0 0 4px rgba(30, 58, 95, 0.1);
         }
 
         .admin-form-group input::placeholder {
-            color: #555;
+            color: var(--text-muted);
         }
 
         .admin-login-btn {
             width: 100%;
             padding: 16px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--navy-blue);
             border: none;
             border-radius: 12px;
-            color: #fff;
+            color: var(--white);
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
@@ -113,8 +130,9 @@
         }
 
         .admin-login-btn:hover {
+            background: var(--navy-dark);
             transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 10px 30px rgba(30, 58, 95, 0.3);
         }
 
         .admin-login-btn:disabled {
@@ -124,9 +142,9 @@
         }
 
         .admin-error {
-            background: rgba(244, 67, 54, 0.15);
-            border: 1px solid rgba(244, 67, 54, 0.4);
-            color: #ff6b6b;
+            background: rgba(211, 47, 47, 0.1);
+            border: 1px solid rgba(211, 47, 47, 0.3);
+            color: #d32f2f;
             padding: 14px 18px;
             border-radius: 10px;
             margin-bottom: 20px;
@@ -142,14 +160,14 @@
             display: block;
             text-align: center;
             margin-top: 25px;
-            color: #888;
+            color: var(--text-muted);
             text-decoration: none;
             font-size: 0.9rem;
             transition: color 0.3s ease;
         }
 
         .back-link:hover {
-            color: #667eea;
+            color: var(--navy-blue);
         }
 
         /* Dashboard */
@@ -169,11 +187,11 @@
             align-items: center;
             margin-bottom: 35px;
             padding-bottom: 25px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            border-bottom: 1px solid var(--light-gray);
         }
 
         .dashboard-header h1 {
-            color: #fff;
+            color: var(--navy-blue);
             font-size: 1.8rem;
             font-weight: 600;
             display: flex;
@@ -192,10 +210,10 @@
 
         .nav-btn {
             padding: 12px 24px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: var(--white);
+            border: 1px solid var(--light-gray);
             border-radius: 10px;
-            color: #b0b0b0;
+            color: var(--dark-gray);
             text-decoration: none;
             font-size: 0.9rem;
             cursor: pointer;
@@ -203,19 +221,19 @@
         }
 
         .nav-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-            border-color: rgba(255, 255, 255, 0.2);
+            background: var(--off-white);
+            color: var(--navy-blue);
+            border-color: var(--navy-blue);
         }
 
         .nav-btn.danger {
-            background: rgba(244, 67, 54, 0.1);
-            border-color: rgba(244, 67, 54, 0.3);
-            color: #ff6b6b;
+            background: rgba(211, 47, 47, 0.1);
+            border-color: rgba(211, 47, 47, 0.3);
+            color: #d32f2f;
         }
 
         .nav-btn.danger:hover {
-            background: rgba(244, 67, 54, 0.2);
+            background: rgba(211, 47, 47, 0.2);
         }
 
         /* Stats Grid */
@@ -227,8 +245,8 @@
         }
 
         .stat-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: var(--white);
+            border: 1px solid var(--light-gray);
             border-radius: 16px;
             padding: 28px;
             text-align: center;
@@ -236,22 +254,19 @@
         }
 
         .stat-card:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(102, 126, 234, 0.3);
+            border-color: var(--navy-light);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         }
 
         .stat-card .value {
             font-size: 2.5rem;
             font-weight: 700;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: var(--navy-blue);
             margin-bottom: 8px;
         }
 
         .stat-card .label {
-            color: #888;
+            color: var(--text-muted);
             font-size: 0.9rem;
         }
 
@@ -265,30 +280,30 @@
 
         .tab-btn {
             padding: 12px 24px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--white);
+            border: 1px solid var(--light-gray);
             border-radius: 10px;
-            color: #888;
+            color: var(--text-muted);
             font-size: 0.9rem;
             cursor: pointer;
             transition: all 0.3s ease;
         }
 
         .tab-btn:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: #b0b0b0;
+            background: var(--off-white);
+            color: var(--navy-blue);
         }
 
         .tab-btn.active {
-            background: rgba(102, 126, 234, 0.15);
-            border-color: rgba(102, 126, 234, 0.4);
-            color: #fff;
+            background: var(--navy-blue);
+            border-color: var(--navy-blue);
+            color: var(--white);
         }
 
         /* Content Panels */
         .content-panel {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: var(--white);
+            border: 1px solid var(--light-gray);
             border-radius: 16px;
             padding: 30px;
             display: none;
@@ -305,11 +320,11 @@
         }
 
         .content-panel h2 {
-            color: #fff;
+            color: var(--navy-blue);
             font-size: 1.3rem;
             margin-bottom: 20px;
             padding-bottom: 15px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            border-bottom: 1px solid var(--light-gray);
         }
 
         /* Data Table */
@@ -322,12 +337,12 @@
         .data-table td {
             padding: 14px 18px;
             text-align: left;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            border-bottom: 1px solid var(--light-gray);
         }
 
         .data-table th {
-            background: rgba(102, 126, 234, 0.1);
-            color: #fff;
+            background: var(--navy-blue);
+            color: var(--white);
             font-weight: 500;
             font-size: 0.85rem;
             text-transform: uppercase;
@@ -335,18 +350,18 @@
         }
 
         .data-table td {
-            color: #c0c0c0;
+            color: var(--text-dark);
             font-size: 0.95rem;
         }
 
         .data-table tr:hover td {
-            background: rgba(255, 255, 255, 0.02);
+            background: var(--off-white);
         }
 
         .no-data {
             text-align: center;
             padding: 50px;
-            color: #666;
+            color: var(--text-muted);
         }
 
         /* Action Buttons */
@@ -366,34 +381,35 @@
         }
 
         .action-btn.primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #fff;
+            background: var(--green-primary);
+            color: var(--white);
         }
 
         .action-btn.primary:hover {
+            background: var(--green-dark);
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 8px 25px rgba(46, 125, 50, 0.3);
         }
 
         .action-btn.danger {
-            background: rgba(244, 67, 54, 0.15);
-            border: 1px solid rgba(244, 67, 54, 0.4);
-            color: #ff6b6b;
+            background: rgba(211, 47, 47, 0.1);
+            border: 1px solid rgba(211, 47, 47, 0.3);
+            color: #d32f2f;
         }
 
         .action-btn.danger:hover {
-            background: rgba(244, 67, 54, 0.25);
+            background: rgba(211, 47, 47, 0.2);
         }
 
         /* JSON Viewer */
         .json-viewer {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: var(--off-white);
+            border: 1px solid var(--light-gray);
             border-radius: 12px;
             padding: 25px;
             font-family: 'Consolas', 'Monaco', monospace;
             font-size: 0.85rem;
-            color: #81c784;
+            color: var(--green-dark);
             overflow: auto;
             max-height: 500px;
             white-space: pre-wrap;
@@ -408,31 +424,31 @@
         }
 
         .user-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: var(--off-white);
+            border: 1px solid var(--light-gray);
             border-radius: 12px;
             padding: 20px;
         }
 
         .user-card h3 {
-            color: #fff;
+            color: var(--navy-blue);
             font-size: 1.1rem;
             margin-bottom: 12px;
         }
 
         .user-card p {
-            color: #888;
+            color: var(--text-muted);
             font-size: 0.9rem;
             margin-bottom: 6px;
         }
 
         .user-card .email {
-            color: #667eea;
+            color: var(--navy-blue);
         }
 
         .user-card .date {
             font-size: 0.8rem;
-            color: #666;
+            color: var(--text-muted);
             margin-top: 10px;
         }
 
@@ -448,13 +464,13 @@
         }
 
         .server-badge.online {
-            background: rgba(76, 175, 80, 0.15);
-            color: #81c784;
+            background: rgba(46, 125, 50, 0.15);
+            color: var(--green-primary);
         }
 
         .server-badge.offline {
-            background: rgba(255, 183, 77, 0.15);
-            color: #ffb74d;
+            background: rgba(255, 152, 0, 0.15);
+            color: #f57c00;
         }
 
         .server-badge::before {
