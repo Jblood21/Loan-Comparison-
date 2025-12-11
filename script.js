@@ -3657,8 +3657,88 @@ If you have any questions about these loan options, please don't hesitate to rea
     }
 }
 
+// ============================================
+// Dark Mode Manager
+// ============================================
+const DarkMode = {
+    storageKey: 'loanComparisonDarkMode',
+
+    init() {
+        // Check for saved preference
+        const savedMode = localStorage.getItem(this.storageKey);
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        // Apply dark mode if saved or system prefers it
+        if (savedMode === 'true' || (savedMode === null && prefersDark)) {
+            this.enable(false); // Don't save, just apply
+        }
+
+        // Set up toggle listener
+        const toggle = document.getElementById('darkModeToggle');
+        if (toggle) {
+            toggle.checked = document.documentElement.getAttribute('data-theme') === 'dark';
+            toggle.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    this.enable(true);
+                } else {
+                    this.disable(true);
+                }
+            });
+        }
+
+        // Listen for system preference changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            const savedMode = localStorage.getItem(this.storageKey);
+            // Only auto-switch if user hasn't set a preference
+            if (savedMode === null) {
+                if (e.matches) {
+                    this.enable(false);
+                } else {
+                    this.disable(false);
+                }
+                // Update toggle if present
+                const toggle = document.getElementById('darkModeToggle');
+                if (toggle) toggle.checked = e.matches;
+            }
+        });
+    },
+
+    enable(save = true) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        if (save) {
+            localStorage.setItem(this.storageKey, 'true');
+        }
+        const toggle = document.getElementById('darkModeToggle');
+        if (toggle) toggle.checked = true;
+    },
+
+    disable(save = true) {
+        document.documentElement.removeAttribute('data-theme');
+        if (save) {
+            localStorage.setItem(this.storageKey, 'false');
+        }
+        const toggle = document.getElementById('darkModeToggle');
+        if (toggle) toggle.checked = false;
+    },
+
+    toggle() {
+        if (document.documentElement.getAttribute('data-theme') === 'dark') {
+            this.disable(true);
+        } else {
+            this.enable(true);
+        }
+    },
+
+    isDark() {
+        return document.documentElement.getAttribute('data-theme') === 'dark';
+    }
+};
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize dark mode first (before other components render)
+    DarkMode.init();
+
     window.settingsManager = new SettingsManager();
     window.loanManager = new LoanManager();
 });
