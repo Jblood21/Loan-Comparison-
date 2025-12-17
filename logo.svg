@@ -1,11 +1,18 @@
-<svg width="250" height="80" viewBox="0 0 250 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <g transform="translate(10, 10)">
-    <path d="M30 5 L5 25 V55 H55 V25 L30 5 Z" stroke="#004e64" stroke-width="4" stroke-linejoin="round" fill="none"/>
+<svg width="300" height="200" viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#004e64;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#25a18e;stop-opacity:1" />
+    </linearGradient>
+  </defs>
 
-    <path d="M30 22 V42 M20 32 H40" stroke="#25a18e" stroke-width="5" stroke-linecap="round"/>
-  </g>
+  <path d="M70 60 L110 25 L125 40 V30 H135 V50 L150 60 V105 H70 V60 Z"
+        stroke="url(#logoGradient)" stroke-width="6" fill="none" stroke-linejoin="round" />
 
-  <text x="75" y="55" font-family="Segoe UI, Arial, sans-serif" font-size="38" font-weight="bold" fill="#004e64">
+  <path d="M110 55 V85 M95 70 H125"
+        stroke="url(#logoGradient)" stroke-width="8" stroke-linecap="round" />
+
+  <text x="110" y="150" text-anchor="middle" font-family="Arial, sans-serif" font-size="42" font-weight="900" fill="#002b36">
     Loan<tspan fill="#25a18e">Dr.</tspan>
   </text>
 </svg>
