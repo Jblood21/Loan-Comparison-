@@ -262,8 +262,216 @@ const HECMCalculator = {
     }
 };
 
+// Settings Manager
+const SettingsManager = {
+    init() {
+        this.settingsBtn = document.getElementById('settingsBtn');
+        this.settingsPanel = document.getElementById('settingsPanel');
+        this.settingsOverlay = document.getElementById('settingsOverlay');
+        this.closeSettingsBtn = document.getElementById('closeSettings');
+        this.darkModeToggle = document.getElementById('darkModeToggle');
+
+        // Bind events
+        this.settingsBtn?.addEventListener('click', () => this.openSettings());
+        this.closeSettingsBtn?.addEventListener('click', () => this.closeSettings());
+        this.settingsOverlay?.addEventListener('click', () => this.closeSettings());
+        this.darkModeToggle?.addEventListener('change', () => this.toggleDarkMode());
+
+        // Load saved settings
+        this.loadSettings();
+
+        // Save buttons
+        document.getElementById('saveLOSettings')?.addEventListener('click', () => this.saveLOInfo());
+        document.getElementById('saveLenderSettings')?.addEventListener('click', () => this.saveLenderInfo());
+        document.getElementById('saveRealtorSettings')?.addEventListener('click', () => this.saveRealtorInfo());
+        document.getElementById('saveTitleAgentSettings')?.addEventListener('click', () => this.saveTitleAgentInfo());
+
+        // Admin login
+        document.getElementById('adminLoginBtn')?.addEventListener('click', () => this.adminLogin());
+        document.getElementById('adminPassword')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.adminLogin();
+        });
+
+        // Escape key to close
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !this.settingsPanel?.classList.contains('hidden')) {
+                this.closeSettings();
+            }
+        });
+    },
+
+    openSettings() {
+        this.settingsPanel?.classList.remove('hidden');
+        this.settingsOverlay?.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    },
+
+    closeSettings() {
+        this.settingsPanel?.classList.add('hidden');
+        this.settingsOverlay?.classList.add('hidden');
+        document.body.style.overflow = '';
+    },
+
+    toggleDarkMode() {
+        const isDark = this.darkModeToggle?.checked;
+        if (isDark) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            document.documentElement.removeAttribute('data-theme');
+            localStorage.setItem('theme', 'light');
+        }
+    },
+
+    loadSettings() {
+        // Load theme
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            if (this.darkModeToggle) this.darkModeToggle.checked = true;
+        }
+
+        // Load LO info
+        const loInfo = JSON.parse(localStorage.getItem('loandrUserInfo') || '{}');
+        if (loInfo.name) document.getElementById('loName').value = loInfo.name;
+        if (loInfo.company) document.getElementById('loCompany').value = loInfo.company;
+        if (loInfo.phone) document.getElementById('loPhone').value = loInfo.phone;
+        if (loInfo.email) document.getElementById('loEmail').value = loInfo.email;
+        if (loInfo.nmls) document.getElementById('loNMLS').value = loInfo.nmls;
+
+        // Update header display
+        if (loInfo.name) document.getElementById('userName').textContent = loInfo.name;
+        if (loInfo.company) document.getElementById('userCompany').textContent = loInfo.company;
+
+        // Load lender info
+        const lenderInfo = JSON.parse(localStorage.getItem('loandrLenderInfo') || '{}');
+        if (lenderInfo.name) document.getElementById('lenderName').value = lenderInfo.name;
+        if (lenderInfo.nmls) document.getElementById('lenderNMLS').value = lenderInfo.nmls;
+        if (lenderInfo.phone) document.getElementById('lenderPhone').value = lenderInfo.phone;
+        if (lenderInfo.website) document.getElementById('lenderWebsite').value = lenderInfo.website;
+        if (lenderInfo.address) document.getElementById('lenderAddress').value = lenderInfo.address;
+        if (lenderInfo.cityStateZip) document.getElementById('lenderCityStateZip').value = lenderInfo.cityStateZip;
+        if (lenderInfo.disclaimer) document.getElementById('lenderDisclaimer').value = lenderInfo.disclaimer;
+
+        // Load realtor info
+        const realtorInfo = JSON.parse(localStorage.getItem('loandrRealtorInfo') || '{}');
+        if (realtorInfo.enabled) document.getElementById('enableRealtorBranding').checked = true;
+        if (realtorInfo.name) document.getElementById('realtorName').value = realtorInfo.name;
+        if (realtorInfo.company) document.getElementById('realtorCompany').value = realtorInfo.company;
+        if (realtorInfo.phone) document.getElementById('realtorPhone').value = realtorInfo.phone;
+        if (realtorInfo.email) document.getElementById('realtorEmail').value = realtorInfo.email;
+        if (realtorInfo.license) document.getElementById('realtorLicense').value = realtorInfo.license;
+
+        // Load title agent info
+        const titleInfo = JSON.parse(localStorage.getItem('loandrTitleAgentInfo') || '{}');
+        if (titleInfo.enabled) document.getElementById('enableTitleBranding').checked = true;
+        if (titleInfo.company) document.getElementById('titleAgentCompany').value = titleInfo.company;
+        if (titleInfo.name) document.getElementById('titleAgentName').value = titleInfo.name;
+        if (titleInfo.phone) document.getElementById('titleAgentPhone').value = titleInfo.phone;
+        if (titleInfo.email) document.getElementById('titleAgentEmail').value = titleInfo.email;
+        if (titleInfo.address) document.getElementById('titleAgentAddress').value = titleInfo.address;
+    },
+
+    saveLOInfo() {
+        const info = {
+            name: document.getElementById('loName')?.value || '',
+            company: document.getElementById('loCompany')?.value || '',
+            phone: document.getElementById('loPhone')?.value || '',
+            email: document.getElementById('loEmail')?.value || '',
+            nmls: document.getElementById('loNMLS')?.value || ''
+        };
+        localStorage.setItem('loandrUserInfo', JSON.stringify(info));
+
+        // Update header
+        document.getElementById('userName').textContent = info.name;
+        document.getElementById('userCompany').textContent = info.company;
+
+        this.showSaveConfirmation('Loan Officer info saved!');
+    },
+
+    saveLenderInfo() {
+        const info = {
+            name: document.getElementById('lenderName')?.value || '',
+            nmls: document.getElementById('lenderNMLS')?.value || '',
+            phone: document.getElementById('lenderPhone')?.value || '',
+            website: document.getElementById('lenderWebsite')?.value || '',
+            address: document.getElementById('lenderAddress')?.value || '',
+            cityStateZip: document.getElementById('lenderCityStateZip')?.value || '',
+            disclaimer: document.getElementById('lenderDisclaimer')?.value || ''
+        };
+        localStorage.setItem('loandrLenderInfo', JSON.stringify(info));
+        this.showSaveConfirmation('Lender info saved!');
+    },
+
+    saveRealtorInfo() {
+        const info = {
+            enabled: document.getElementById('enableRealtorBranding')?.checked || false,
+            name: document.getElementById('realtorName')?.value || '',
+            company: document.getElementById('realtorCompany')?.value || '',
+            phone: document.getElementById('realtorPhone')?.value || '',
+            email: document.getElementById('realtorEmail')?.value || '',
+            license: document.getElementById('realtorLicense')?.value || ''
+        };
+        localStorage.setItem('loandrRealtorInfo', JSON.stringify(info));
+        this.showSaveConfirmation('Real Estate Agent info saved!');
+    },
+
+    saveTitleAgentInfo() {
+        const info = {
+            enabled: document.getElementById('enableTitleBranding')?.checked || false,
+            company: document.getElementById('titleAgentCompany')?.value || '',
+            name: document.getElementById('titleAgentName')?.value || '',
+            phone: document.getElementById('titleAgentPhone')?.value || '',
+            email: document.getElementById('titleAgentEmail')?.value || '',
+            address: document.getElementById('titleAgentAddress')?.value || ''
+        };
+        localStorage.setItem('loandrTitleAgentInfo', JSON.stringify(info));
+        this.showSaveConfirmation('Title Company info saved!');
+    },
+
+    showSaveConfirmation(message) {
+        // Create and show a toast notification
+        const toast = document.createElement('div');
+        toast.className = 'save-toast';
+        toast.textContent = message;
+        toast.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--primary-color, #2563eb);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            z-index: 10000;
+            animation: slideIn 0.3s ease;
+        `;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            toast.style.animation = 'fadeOut 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 2000);
+    },
+
+    adminLogin() {
+        const password = document.getElementById('adminPassword')?.value;
+        const errorEl = document.getElementById('adminError');
+
+        // Simple password check (in production, this should be server-side)
+        if (password === 'LoanAdmin2024!') {
+            window.location.href = 'admin.html';
+        } else {
+            errorEl?.classList.remove('hidden');
+            setTimeout(() => errorEl?.classList.add('hidden'), 3000);
+        }
+    }
+};
+
 // Tab Management
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize settings
+    SettingsManager.init();
+
     // Scenario tabs
     const tabs = document.querySelectorAll('.loan-tab');
     const panels = document.querySelectorAll('.loan-panel');
@@ -315,21 +523,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Dark mode
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-        document.documentElement.setAttribute('data-theme', 'dark');
-    }
-
-    // Load user info
-    const userInfo = JSON.parse(localStorage.getItem('loandrUserInfo') || '{}');
-    if (userInfo.name) {
-        document.getElementById('userName').textContent = userInfo.name;
-    }
-    if (userInfo.company) {
-        document.getElementById('userCompany').textContent = userInfo.company;
-    }
-
     // Sticky tabs
     const tabsContainer = document.querySelector('.loan-tabs-container');
     if (tabsContainer) {
@@ -345,5 +538,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Print button
     document.getElementById('printHecmBtn')?.addEventListener('click', () => {
         window.print();
+    });
+
+    // Logout button
+    document.getElementById('logoutBtn')?.addEventListener('click', () => {
+        if (confirm('Are you sure you want to sign out?')) {
+            window.location.href = 'login.html';
+        }
     });
 });
