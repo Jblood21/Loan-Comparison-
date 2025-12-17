@@ -1,5 +1,34 @@
 // HECM Reverse Mortgage Calculator
 const HECMCalculator = {
+    // Program descriptions
+    programDescriptions: {
+        'hecm-standard': {
+            name: 'HECM Standard',
+            description: 'The traditional FHA-insured reverse mortgage. Available to homeowners 62+. Includes upfront MIP (2%) and annual MIP (0.5%). Maximum claim amount of $1,149,825 (2024).',
+            mipRate: 2.0,
+            annualMipRate: 0.5
+        },
+        'hecm-purchase': {
+            name: 'HECM for Purchase',
+            description: 'Use a reverse mortgage to purchase a new primary residence. Combine proceeds with down payment to buy a home without monthly mortgage payments. Great for downsizing or relocating.',
+            mipRate: 2.0,
+            annualMipRate: 0.5
+        },
+        'hecm-refi': {
+            name: 'HECM-to-HECM Refinance',
+            description: 'Refinance an existing HECM to access more equity, get a better rate, or add a spouse to the loan. Must provide "significant benefit" to the borrower per HUD guidelines.',
+            mipRate: 2.0,
+            annualMipRate: 0.5
+        },
+        'proprietary': {
+            name: 'Proprietary/Jumbo Reverse',
+            description: 'Non-FHA reverse mortgages for high-value homes exceeding FHA limits. No government insurance, but can access more equity. Terms vary by lender. Not subject to FHA lending limits.',
+            mipRate: 0,
+            annualMipRate: 0,
+            noFhaLimit: true
+        }
+    },
+
     // Format currency
     formatCurrency(amount) {
         return new Intl.NumberFormat('en-US', {
@@ -17,10 +46,12 @@ const HECMCalculator = {
 
         const hecmType = panel.querySelector('.hecm-type-tab.active')?.dataset.type || 'fixed';
         const paymentType = panel.querySelector(`input[name="payment-type-${scenarioId}"]:checked`)?.value || 'lump-sum';
+        const loanProgram = panel.querySelector('.hecm-program-tabs .program-tab.active')?.dataset.program || 'hecm-standard';
 
         return {
             scenarioName: panel.querySelector('.scenario-name')?.value || `Scenario ${scenarioId}`,
             hecmType: hecmType,
+            loanProgram: loanProgram,
             borrowerAge: parseFloat(panel.querySelector('.borrower-age')?.value) || 70,
             spouseAge: parseFloat(panel.querySelector('.spouse-age')?.value) || 0,
             homeValue: parseFloat(panel.querySelector('.home-value')?.value) || 0,
@@ -66,10 +97,24 @@ const HECMCalculator = {
         return initialAmount * Math.pow(1 + growthRate, years);
     },
 
+    // Calculate line of credit growth with custom MIP rate
+    calculateLOCGrowthWithMip(initialAmount, rate, annualMipRate, years) {
+        // LOC grows at interest rate + annual MIP rate
+        const growthRate = (rate + annualMipRate) / 100;
+        return initialAmount * Math.pow(1 + growthRate, years);
+    },
+
     // Calculate loan balance projection
     calculateBalanceProjection(initialBalance, rate, years) {
         // Balance grows at interest rate + 0.5% annual MIP
         const growthRate = (rate + 0.5) / 100;
+        return initialBalance * Math.pow(1 + growthRate, years);
+    },
+
+    // Calculate loan balance projection with custom MIP rate
+    calculateBalanceProjectionWithMip(initialBalance, rate, annualMipRate, years) {
+        // Balance grows at interest rate + annual MIP rate
+        const growthRate = (rate + annualMipRate) / 100;
         return initialBalance * Math.pow(1 + growthRate, years);
     },
 
@@ -105,21 +150,25 @@ const HECMCalculator = {
         const data = this.getFormData(scenarioId);
         if (!data) return;
 
-        // Validate age
-        if (data.borrowerAge < 62) {
+        // Validate age (not required for proprietary)
+        if (data.loanProgram !== 'proprietary' && data.borrowerAge < 62) {
             alert('Borrower must be at least 62 years old for a HECM.');
             return;
         }
 
-        // Calculate Max Claim Amount
-        const maxClaimAmount = Math.min(data.homeValue, data.fhaLimit);
+        // Get program-specific settings
+        const programInfo = this.programDescriptions[data.loanProgram] || this.programDescriptions['hecm-standard'];
+        const isProprietary = data.loanProgram === 'proprietary';
+
+        // Calculate Max Claim Amount (no limit for proprietary)
+        const maxClaimAmount = isProprietary ? data.homeValue : Math.min(data.homeValue, data.fhaLimit);
 
         // Calculate Principal Limit
         const principalLimit = maxClaimAmount * (data.plf / 100);
 
-        // Calculate costs
-        const initialMIP = this.calculateInitialMIP(data.homeValue, data.fhaLimit);
-        const originationFee = this.calculateOriginationFee(data.homeValue, data.fhaLimit) - data.lenderCredit;
+        // Calculate costs (proprietary has no MIP)
+        const initialMIP = isProprietary ? 0 : this.calculateInitialMIP(data.homeValue, data.fhaLimit);
+        const originationFee = this.calculateOriginationFee(data.homeValue, isProprietary ? data.homeValue : data.fhaLimit) - data.lenderCredit;
         const totalClosingCosts = initialMIP + Math.max(0, originationFee) + data.thirdPartyCosts;
 
         // Calculate Net Principal Limit
@@ -169,20 +218,23 @@ const HECMCalculator = {
         document.getElementById(`loc-amount-${scenarioId}`).textContent = this.formatCurrency(Math.max(0, locAmount));
         document.getElementById(`monthly-payment-${scenarioId}`).textContent = this.formatCurrency(monthlyPayment);
 
+        // Annual MIP rate (0 for proprietary)
+        const annualMipRate = isProprietary ? 0 : programInfo.annualMipRate;
+
         // LOC Growth projections
         if (locAmount > 0) {
-            document.getElementById(`loc-year5-${scenarioId}`).textContent = this.formatCurrency(this.calculateLOCGrowth(locAmount, effectiveRate, 5));
-            document.getElementById(`loc-year10-${scenarioId}`).textContent = this.formatCurrency(this.calculateLOCGrowth(locAmount, effectiveRate, 10));
-            document.getElementById(`loc-year15-${scenarioId}`).textContent = this.formatCurrency(this.calculateLOCGrowth(locAmount, effectiveRate, 15));
-            document.getElementById(`loc-year20-${scenarioId}`).textContent = this.formatCurrency(this.calculateLOCGrowth(locAmount, effectiveRate, 20));
+            document.getElementById(`loc-year5-${scenarioId}`).textContent = this.formatCurrency(this.calculateLOCGrowthWithMip(locAmount, effectiveRate, annualMipRate, 5));
+            document.getElementById(`loc-year10-${scenarioId}`).textContent = this.formatCurrency(this.calculateLOCGrowthWithMip(locAmount, effectiveRate, annualMipRate, 10));
+            document.getElementById(`loc-year15-${scenarioId}`).textContent = this.formatCurrency(this.calculateLOCGrowthWithMip(locAmount, effectiveRate, annualMipRate, 15));
+            document.getElementById(`loc-year20-${scenarioId}`).textContent = this.formatCurrency(this.calculateLOCGrowthWithMip(locAmount, effectiveRate, annualMipRate, 20));
         }
 
         // Balance projections (starting from total closing costs + existing mortgage payoff)
         const initialBalance = totalClosingCosts + data.existingMortgage;
-        document.getElementById(`balance-year5-${scenarioId}`).textContent = this.formatCurrency(this.calculateBalanceProjection(initialBalance, effectiveRate, 5));
-        document.getElementById(`balance-year10-${scenarioId}`).textContent = this.formatCurrency(this.calculateBalanceProjection(initialBalance, effectiveRate, 10));
-        document.getElementById(`balance-year15-${scenarioId}`).textContent = this.formatCurrency(this.calculateBalanceProjection(initialBalance, effectiveRate, 15));
-        document.getElementById(`balance-year20-${scenarioId}`).textContent = this.formatCurrency(this.calculateBalanceProjection(initialBalance, effectiveRate, 20));
+        document.getElementById(`balance-year5-${scenarioId}`).textContent = this.formatCurrency(this.calculateBalanceProjectionWithMip(initialBalance, effectiveRate, annualMipRate, 5));
+        document.getElementById(`balance-year10-${scenarioId}`).textContent = this.formatCurrency(this.calculateBalanceProjectionWithMip(initialBalance, effectiveRate, annualMipRate, 10));
+        document.getElementById(`balance-year15-${scenarioId}`).textContent = this.formatCurrency(this.calculateBalanceProjectionWithMip(initialBalance, effectiveRate, annualMipRate, 15));
+        document.getElementById(`balance-year20-${scenarioId}`).textContent = this.formatCurrency(this.calculateBalanceProjectionWithMip(initialBalance, effectiveRate, annualMipRate, 20));
 
         // Cost breakdown
         document.getElementById(`cost-mip-${scenarioId}`).textContent = this.formatCurrency(initialMIP);
@@ -198,6 +250,8 @@ const HECMCalculator = {
         this.results = this.results || {};
         this.results[scenarioId] = {
             name: data.scenarioName,
+            loanProgram: data.loanProgram,
+            programName: programInfo.name,
             maxClaimAmount,
             principalLimit,
             netPrincipalLimit: Math.max(0, netPrincipalLimit),
@@ -205,6 +259,7 @@ const HECMCalculator = {
             locAmount: Math.max(0, locAmount),
             monthlyPayment,
             totalClosingCosts,
+            initialMIP,
             existingMortgage: data.existingMortgage,
             interestRate: data.interestRate,
             paymentType: data.paymentType
@@ -224,12 +279,14 @@ const HECMCalculator = {
         document.getElementById('compare-name-2').textContent = r2.name;
 
         const metrics = [
+            { label: 'Loan Program', key: 'programName', isText: true },
             { label: 'Max Claim Amount', key: 'maxClaimAmount' },
             { label: 'Principal Limit', key: 'principalLimit' },
             { label: 'Net Principal Limit', key: 'netPrincipalLimit' },
             { label: 'Cash to Borrower', key: 'cashToBorrower' },
             { label: 'Line of Credit', key: 'locAmount' },
             { label: 'Monthly Payment', key: 'monthlyPayment' },
+            { label: 'Upfront MIP', key: 'initialMIP' },
             { label: 'Total Closing Costs', key: 'totalClosingCosts' },
             { label: 'Interest Rate', key: 'interestRate', isPercent: true }
         ];
@@ -238,6 +295,16 @@ const HECMCalculator = {
         tbody.innerHTML = metrics.map(m => {
             const v1 = r1[m.key];
             const v2 = r2[m.key];
+
+            if (m.isText) {
+                return `<tr>
+                    <td>${m.label}</td>
+                    <td>${v1}</td>
+                    <td>${v2}</td>
+                    <td>-</td>
+                </tr>`;
+            }
+
             const diff = v2 - v1;
             const diffClass = diff > 0 ? 'positive' : diff < 0 ? 'negative' : '';
 
@@ -530,7 +597,7 @@ const DocumentGenerator = {
         scenarios.forEach((s, i) => {
             scenarioRows += `
                 <tr>
-                    <td><strong>${s.name || `Scenario ${i + 1}`}</strong></td>
+                    <td><strong>${s.name || `Scenario ${i + 1}`}</strong><br><small style="color: #6b7280;">${s.programName || 'HECM Standard'}</small></td>
                     <td>${HECMCalculator.formatCurrency(s.maxClaimAmount)}</td>
                     <td>${HECMCalculator.formatCurrency(s.principalLimit)}</td>
                     <td>${HECMCalculator.formatCurrency(s.netPrincipalLimit)}</td>
@@ -556,7 +623,7 @@ const DocumentGenerator = {
                     <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
                         <thead>
                             <tr style="background: #f3f4f6;">
-                                <th style="padding: 10px; text-align: left; border: 1px solid #e5e7eb;">Scenario</th>
+                                <th style="padding: 10px; text-align: left; border: 1px solid #e5e7eb;">Scenario / Program</th>
                                 <th style="padding: 10px; text-align: right; border: 1px solid #e5e7eb;">Max Claim</th>
                                 <th style="padding: 10px; text-align: right; border: 1px solid #e5e7eb;">Principal Limit</th>
                                 <th style="padding: 10px; text-align: right; border: 1px solid #e5e7eb;">Net Principal</th>
@@ -779,6 +846,7 @@ const ScenarioManager = {
             scenarios[id] = {
                 scenarioName: panel.querySelector('.scenario-name')?.value || '',
                 hecmType: panel.querySelector('.hecm-type-tab.active')?.dataset.type || 'fixed',
+                loanProgram: panel.querySelector('.hecm-program-tabs .program-tab.active')?.dataset.program || 'hecm-standard',
                 borrowerAge: panel.querySelector('.borrower-age')?.value || '70',
                 spouseAge: panel.querySelector('.spouse-age')?.value || '',
                 homeValue: panel.querySelector('.home-value')?.value || '450000',
@@ -788,6 +856,7 @@ const ScenarioManager = {
                 initialRate: panel.querySelector('.initial-rate')?.value || '5.5',
                 margin: panel.querySelector('.margin')?.value || '2.0',
                 lenderCredit: panel.querySelector('.lender-credit')?.value || '0',
+                fhaLimit: panel.querySelector('.fha-limit')?.value || '1149825',
                 plf: panel.querySelector('.plf')?.value || '52.4',
                 paymentType: panel.querySelector(`input[name="payment-type-${id}"]:checked`)?.value || 'lump-sum',
                 termMonths: panel.querySelector('.term-months')?.value || '120',
@@ -815,6 +884,7 @@ const ScenarioManager = {
             if (s.initialRate) panel.querySelector('.initial-rate').value = s.initialRate;
             if (s.margin) panel.querySelector('.margin').value = s.margin;
             if (s.lenderCredit) panel.querySelector('.lender-credit').value = s.lenderCredit;
+            if (s.fhaLimit) panel.querySelector('.fha-limit').value = s.fhaLimit;
             if (s.plf) panel.querySelector('.plf').value = s.plf;
             if (s.termMonths) panel.querySelector('.term-months').value = s.termMonths;
             if (s.thirdPartyCosts) panel.querySelector('.third-party-costs').value = s.thirdPartyCosts;
@@ -826,6 +896,25 @@ const ScenarioManager = {
             panel.querySelectorAll('.adjustable-only').forEach(el => {
                 el.style.display = s.hecmType === 'adjustable' ? 'block' : 'none';
             });
+
+            // Set loan program
+            if (s.loanProgram) {
+                panel.querySelectorAll('.hecm-program-tabs .program-tab').forEach(tab => {
+                    tab.classList.toggle('active', tab.dataset.program === s.loanProgram);
+                });
+                // Update program description
+                const programInfo = HECMCalculator.programDescriptions[s.loanProgram];
+                const descEl = panel.querySelector('.program-description');
+                if (descEl && programInfo) {
+                    descEl.textContent = programInfo.description;
+                    descEl.closest('.program-info')?.classList.remove('hidden');
+                }
+                // Handle FHA limit for proprietary
+                const fhaLimitInput = panel.querySelector('.fha-limit');
+                if (fhaLimitInput && s.loanProgram === 'proprietary') {
+                    fhaLimitInput.removeAttribute('readonly');
+                }
+            }
 
             // Set payment type
             const paymentRadio = panel.querySelector(`input[name="payment-type-${id}"][value="${s.paymentType}"]`);
@@ -925,6 +1014,47 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (tab.dataset.type === 'fixed') {
                     const lumpSumRadio = panel.querySelector('input[value="lump-sum"]');
                     if (lumpSumRadio) lumpSumRadio.checked = true;
+                }
+            });
+        });
+    });
+
+    // HECM Loan Program tabs
+    document.querySelectorAll('.hecm-program-tabs').forEach(container => {
+        container.querySelectorAll('.program-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                container.querySelectorAll('.program-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                const panel = container.closest('.loan-panel');
+                const programKey = tab.dataset.program;
+                const programInfo = HECMCalculator.programDescriptions[programKey];
+
+                // Update program description
+                const descEl = panel.querySelector('.program-description');
+                if (descEl && programInfo) {
+                    descEl.textContent = programInfo.description;
+                    descEl.closest('.program-info')?.classList.remove('hidden');
+                }
+
+                // Handle proprietary program specifics
+                const fhaLimitInput = panel.querySelector('.fha-limit');
+                const isProprietary = programKey === 'proprietary';
+
+                if (fhaLimitInput) {
+                    if (isProprietary) {
+                        fhaLimitInput.removeAttribute('readonly');
+                        fhaLimitInput.placeholder = 'No FHA limit';
+                    } else {
+                        fhaLimitInput.setAttribute('readonly', true);
+                        fhaLimitInput.value = 1149825;
+                    }
+                }
+
+                // Update helper text for proprietary
+                const helperText = panel.querySelector('.fha-limit')?.closest('.form-group')?.querySelector('.helper-text');
+                if (helperText) {
+                    helperText.textContent = isProprietary ? 'No FHA limit for proprietary loans' : 'Current FHA maximum claim amount';
                 }
             });
         });
