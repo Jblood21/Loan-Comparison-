@@ -75,7 +75,11 @@ const HECMCalculator = {
             annualTaxes: parseFloat(panel.querySelector('.annual-taxes')?.value) || 0,
             annualInsurance: parseFloat(panel.querySelector('.annual-insurance')?.value) || 0,
             annualHoa: parseFloat(panel.querySelector('.annual-hoa')?.value) || 0,
-            annualFlood: parseFloat(panel.querySelector('.annual-flood')?.value) || 0
+            annualFlood: parseFloat(panel.querySelector('.annual-flood')?.value) || 0,
+            // Desired draw amounts
+            desiredCashDraw: parseFloat(panel.querySelector('.desired-cash-draw')?.value) || 0,
+            desiredLocAmount: parseFloat(panel.querySelector('.desired-loc-amount')?.value) || 0,
+            useMaxAvailable: panel.querySelector('.use-max-available')?.checked ?? true
         };
     },
 
@@ -199,27 +203,54 @@ const HECMCalculator = {
 
         const effectiveRate = data.hecmType === 'adjustable' ? data.initialRate : data.interestRate;
 
-        switch (data.paymentType) {
-            case 'lump-sum':
-                cashToBorrower = netPrincipalLimit;
-                break;
-            case 'line-of-credit':
-                locAmount = netPrincipalLimit;
-                break;
-            case 'tenure':
-                monthlyPayment = this.calculateTenurePayment(netPrincipalLimit, data.interestRate);
-                break;
-            case 'term':
-                monthlyPayment = this.calculateTermPayment(netPrincipalLimit, data.interestRate, data.termMonths);
-                break;
-            case 'modified-tenure':
-                locAmount = netPrincipalLimit * 0.5;
-                monthlyPayment = this.calculateTenurePayment(netPrincipalLimit * 0.5, data.interestRate);
-                break;
-            case 'modified-term':
-                locAmount = netPrincipalLimit * 0.5;
-                monthlyPayment = this.calculateTermPayment(netPrincipalLimit * 0.5, data.interestRate, data.termMonths);
-                break;
+        // Check if using custom draw amounts
+        if (!data.useMaxAvailable && (data.desiredCashDraw > 0 || data.desiredLocAmount > 0)) {
+            // Custom draw amounts - validate they don't exceed net principal limit
+            const totalRequested = data.desiredCashDraw + data.desiredLocAmount;
+
+            if (totalRequested > netPrincipalLimit) {
+                // Cap at available amount
+                const ratio = netPrincipalLimit / totalRequested;
+                cashToBorrower = Math.round(data.desiredCashDraw * ratio);
+                locAmount = Math.round(data.desiredLocAmount * ratio);
+            } else {
+                cashToBorrower = data.desiredCashDraw;
+                locAmount = data.desiredLocAmount;
+            }
+
+            // Calculate monthly payment if there's remaining principal for tenure/term
+            const remainingForPayments = netPrincipalLimit - cashToBorrower - locAmount;
+            if (remainingForPayments > 0 && ['tenure', 'term', 'modified-tenure', 'modified-term'].includes(data.paymentType)) {
+                if (data.paymentType.includes('tenure')) {
+                    monthlyPayment = this.calculateTenurePayment(remainingForPayments, data.interestRate);
+                } else {
+                    monthlyPayment = this.calculateTermPayment(remainingForPayments, data.interestRate, data.termMonths);
+                }
+            }
+        } else {
+            // Use maximum available - standard calculation
+            switch (data.paymentType) {
+                case 'lump-sum':
+                    cashToBorrower = netPrincipalLimit;
+                    break;
+                case 'line-of-credit':
+                    locAmount = netPrincipalLimit;
+                    break;
+                case 'tenure':
+                    monthlyPayment = this.calculateTenurePayment(netPrincipalLimit, data.interestRate);
+                    break;
+                case 'term':
+                    monthlyPayment = this.calculateTermPayment(netPrincipalLimit, data.interestRate, data.termMonths);
+                    break;
+                case 'modified-tenure':
+                    locAmount = netPrincipalLimit * 0.5;
+                    monthlyPayment = this.calculateTenurePayment(netPrincipalLimit * 0.5, data.interestRate);
+                    break;
+                case 'modified-term':
+                    locAmount = netPrincipalLimit * 0.5;
+                    monthlyPayment = this.calculateTermPayment(netPrincipalLimit * 0.5, data.interestRate, data.termMonths);
+                    break;
+            }
         }
 
         // Update form readonly fields
@@ -917,7 +948,21 @@ const ScenarioManager = {
                 plf: panel.querySelector('.plf')?.value || '52.4',
                 paymentType: panel.querySelector(`input[name="payment-type-${id}"]:checked`)?.value || 'lump-sum',
                 termMonths: panel.querySelector('.term-months')?.value || '120',
-                thirdPartyCosts: panel.querySelector('.third-party-costs')?.value || '3500'
+                thirdPartyCosts: panel.querySelector('.third-party-costs')?.value || '3500',
+                // Set-asides
+                lesaAmount: panel.querySelector('.lesa-amount')?.value || '0',
+                serviceFeeSetaside: panel.querySelector('.service-fee-setaside')?.value || '0',
+                repairsSetaside: panel.querySelector('.repairs-setaside')?.value || '0',
+                counselingFee: panel.querySelector('.counseling-fee')?.value || '125',
+                // Annual property charges
+                annualTaxes: panel.querySelector('.annual-taxes')?.value || '0',
+                annualInsurance: panel.querySelector('.annual-insurance')?.value || '0',
+                annualHoa: panel.querySelector('.annual-hoa')?.value || '0',
+                annualFlood: panel.querySelector('.annual-flood')?.value || '0',
+                // Desired draw amounts
+                desiredCashDraw: panel.querySelector('.desired-cash-draw')?.value || '0',
+                desiredLocAmount: panel.querySelector('.desired-loc-amount')?.value || '0',
+                useMaxAvailable: panel.querySelector('.use-max-available')?.checked ?? true
             };
         });
         return scenarios;
@@ -945,6 +990,24 @@ const ScenarioManager = {
             if (s.plf) panel.querySelector('.plf').value = s.plf;
             if (s.termMonths) panel.querySelector('.term-months').value = s.termMonths;
             if (s.thirdPartyCosts) panel.querySelector('.third-party-costs').value = s.thirdPartyCosts;
+
+            // Set-asides
+            if (s.lesaAmount) panel.querySelector('.lesa-amount').value = s.lesaAmount;
+            if (s.serviceFeeSetaside) panel.querySelector('.service-fee-setaside').value = s.serviceFeeSetaside;
+            if (s.repairsSetaside) panel.querySelector('.repairs-setaside').value = s.repairsSetaside;
+            if (s.counselingFee) panel.querySelector('.counseling-fee').value = s.counselingFee;
+
+            // Annual property charges
+            if (s.annualTaxes) panel.querySelector('.annual-taxes').value = s.annualTaxes;
+            if (s.annualInsurance) panel.querySelector('.annual-insurance').value = s.annualInsurance;
+            if (s.annualHoa) panel.querySelector('.annual-hoa').value = s.annualHoa;
+            if (s.annualFlood) panel.querySelector('.annual-flood').value = s.annualFlood;
+
+            // Desired draw amounts
+            if (s.desiredCashDraw) panel.querySelector('.desired-cash-draw').value = s.desiredCashDraw;
+            if (s.desiredLocAmount) panel.querySelector('.desired-loc-amount').value = s.desiredLocAmount;
+            const useMaxCheckbox = panel.querySelector('.use-max-available');
+            if (useMaxCheckbox && s.useMaxAvailable !== undefined) useMaxCheckbox.checked = s.useMaxAvailable;
 
             // Set HECM type
             panel.querySelectorAll('.hecm-type-tab').forEach(tab => {
@@ -1125,6 +1188,30 @@ document.addEventListener('DOMContentLoaded', () => {
             const showTerm = ['term', 'modified-term'].includes(radio.value);
             termGroup.style.display = showTerm ? 'block' : 'none';
         });
+    });
+
+    // "Use maximum available" checkbox toggle
+    document.querySelectorAll('.use-max-available').forEach(checkbox => {
+        const panel = checkbox.closest('.loan-panel');
+        const cashDrawInput = panel?.querySelector('.desired-cash-draw');
+        const locAmountInput = panel?.querySelector('.desired-loc-amount');
+
+        const updateInputState = () => {
+            const disabled = checkbox.checked;
+            if (cashDrawInput) {
+                cashDrawInput.disabled = disabled;
+                cashDrawInput.style.opacity = disabled ? '0.5' : '1';
+            }
+            if (locAmountInput) {
+                locAmountInput.disabled = disabled;
+                locAmountInput.style.opacity = disabled ? '0.5' : '1';
+            }
+        };
+
+        // Set initial state
+        updateInputState();
+
+        checkbox.addEventListener('change', updateInputState);
     });
 
     // Sticky tabs
