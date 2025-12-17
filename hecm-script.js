@@ -1611,6 +1611,7 @@ const PLFLookup = {
         const rateInput = document.getElementById('plf-rate-input');
         const plfValue = document.getElementById('plfValue');
         const plfExplanation = document.getElementById('plfExplanation');
+        const resultSection = document.getElementById('plfResult');
 
         if (!lookupBtn) return;
 
@@ -1620,23 +1621,42 @@ const PLFLookup = {
 
             if (age < 62) {
                 plfValue.textContent = 'N/A';
-                plfExplanation.textContent = 'Borrower must be at least 62 years old for a HECM.';
+                plfExplanation.innerHTML = '<p>Borrower must be at least 62 years old for a HECM.</p>';
                 return;
             }
 
             const plf = this.lookup(age, rate);
-            plfValue.textContent = (plf * 100).toFixed(1) + '%';
+            const plfPercent = (plf * 100).toFixed(1);
+            plfValue.textContent = plfPercent + '%';
 
             // Calculate example
             const exampleHomeValue = 400000;
-            const principalLimit = exampleHomeValue * plf;
+            const principalLimit = Math.round(exampleHomeValue * plf);
 
+            // Update explanation
             plfExplanation.innerHTML = `
-                At age ${age} with a ${rate.toFixed(2)}% expected rate, you can access approximately
-                <strong>${(plf * 100).toFixed(1)}%</strong> of your home's value (or FHA limit).<br><br>
-                <em>Example: On a $${exampleHomeValue.toLocaleString()} home, this would be approximately
-                $${Math.round(principalLimit).toLocaleString()} in gross principal limit.</em>
+                <p>At age <strong>${age}</strong> with a <strong>${rate.toFixed(2)}%</strong> expected rate, you can access approximately <strong>${plfPercent}%</strong> of your home's value.</p>
             `;
+
+            // Update example calculation
+            const exampleEl = resultSection.querySelector('.plf-result-example');
+            if (exampleEl) {
+                exampleEl.innerHTML = `
+                    <div class="plf-example-header">Example Calculation</div>
+                    <div class="plf-example-row">
+                        <span>Home Value:</span>
+                        <span>$${exampleHomeValue.toLocaleString()}</span>
+                    </div>
+                    <div class="plf-example-row">
+                        <span>PLF:</span>
+                        <span>${plfPercent}%</span>
+                    </div>
+                    <div class="plf-example-row result">
+                        <span>Gross Principal Limit:</span>
+                        <span>$${principalLimit.toLocaleString()}</span>
+                    </div>
+                `;
+            }
         };
 
         lookupBtn.addEventListener('click', performLookup);
