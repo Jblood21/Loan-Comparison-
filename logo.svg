@@ -1,0 +1,11 @@
+<svg width="200" height="60" viewBox="0 0 200 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M40 10 L15 30 H25 V50 H55 V30 H65 L40 10 Z" stroke="#0f4c81" stroke-width="3" stroke-linejoin="round" fill="none"/>
+
+  <path d="M30 28 C30 28, 30 42, 40 42 C50 42, 50 28, 50 28" stroke="#2a9d8f" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="50" cy="24" r="2" fill="#2a9d8f"/>
+  <circle cx="30" cy="24" r="2" fill="#0f4c81"/>
+
+  <path d="M38 25 H42 M40 23 V27" stroke="#2a9d8f" stroke-width="2" stroke-linecap="round"/>
+
+  <text x="75" y="42" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#0f4c81">Loan<tspan fill="#2a9d8f">Dr.</tspan></text>
+</svg>
