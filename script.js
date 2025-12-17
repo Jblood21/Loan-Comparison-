@@ -2039,6 +2039,17 @@ class LoanManager {
         document.getElementById('exportDataBtn')?.addEventListener('click', () => this.exportToFile());
         document.getElementById('importDataInput')?.addEventListener('change', (e) => this.importFromFile(e));
 
+        // Comparison type toggle (same property vs different properties)
+        this.comparisonType = 'same'; // Default to same property
+        document.querySelectorAll('.comparison-type-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.comparison-type-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                this.comparisonType = btn.dataset.type;
+                this.updateComparisonTypeBanner();
+            });
+        });
+
         // Auto-save current session periodically and on page unload
         this.loadAutoSavedSession();
         setInterval(() => this.autoSave(), 30000); // Auto-save every 30 seconds
@@ -2190,9 +2201,29 @@ class LoanManager {
         this.updateCharts();
         this.updateNetCostComparison();
         this.generateRecommendation();
+        this.updateComparisonTypeBanner();
 
         // Highlight best values in the comparison table
         BestValueHighlighter.highlightTable(this.loans);
+    }
+
+    updateComparisonTypeBanner() {
+        const banner = document.getElementById('comparisonTypeBanner');
+        if (!banner) return;
+
+        if (this.comparisonType === 'different') {
+            banner.classList.add('different-properties');
+            banner.innerHTML = `
+                <span class="banner-icon">🏠🏠</span>
+                <span class="banner-text">Comparing <strong>different properties</strong> - each scenario has its own property details</span>
+            `;
+        } else {
+            banner.classList.remove('different-properties');
+            banner.innerHTML = `
+                <span class="banner-icon">🏠</span>
+                <span class="banner-text">Comparing different loan options for the <strong>same property</strong></span>
+            `;
+        }
     }
 
     updateComparisonTable() {

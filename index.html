@@ -261,6 +261,53 @@
                     </div>
                 </div>
 
+                <!-- Help & Support Section -->
+                <div class="settings-section help-section">
+                    <h3>Help & Support</h3>
+                    <p class="settings-note">Get help using Loandr or contact us with questions</p>
+
+                    <div class="help-content">
+                        <div class="help-faq">
+                            <h4>Frequently Asked Questions</h4>
+                            <div class="faq-item">
+                                <strong>How do I compare loans?</strong>
+                                <p>Click the "+" button to add up to 6 loan scenarios. Enter different loan details for each, then click "Calculate" to see side-by-side comparisons.</p>
+                            </div>
+                            <div class="faq-item">
+                                <strong>What is APR?</strong>
+                                <p>Annual Percentage Rate (APR) is the true yearly cost of borrowing, including interest and fees. Use APR to compare loans from different lenders.</p>
+                            </div>
+                            <div class="faq-item">
+                                <strong>What are discount points?</strong>
+                                <p>Points are prepaid interest that lower your rate. 1 point = 1% of the loan amount. Generally worth it if you keep the loan 5+ years.</p>
+                            </div>
+                            <div class="faq-item">
+                                <strong>How do I save my work?</strong>
+                                <p>Click "Save" to store scenarios to your account. Use "Export" to download a file you can share or import later.</p>
+                            </div>
+                            <div class="faq-item">
+                                <strong>Keyboard shortcuts</strong>
+                                <p>Press <kbd>?</kbd> anywhere to see all keyboard shortcuts. Use <kbd>Ctrl+Enter</kbd> to calculate, <kbd>Ctrl+S</kbd> to save.</p>
+                            </div>
+                        </div>
+
+                        <div class="help-contact">
+                            <h4>Contact Us</h4>
+                            <p>Have questions or feedback? We'd love to hear from you!</p>
+                            <div class="contact-info">
+                                <a href="mailto:support@loandr.com" class="contact-link">
+                                    <span class="contact-icon">✉️</span>
+                                    <span>support@loandr.com</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="help-version">
+                            <small>Loandr v1.0 | Made for Loan Officers</small>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Admin Section -->
                 <div class="settings-section admin-section">
                     <h3>Administrator</h3>
@@ -1086,7 +1133,26 @@
 
         <!-- Comparison Summary (shown when multiple loans) -->
         <div class="comparison-summary hidden" id="comparisonSummary">
-            <h2>Side-by-Side Comparison</h2>
+            <div class="comparison-header">
+                <h2>Side-by-Side Comparison</h2>
+                <div class="comparison-type-toggle">
+                    <span class="toggle-label">Comparing:</span>
+                    <div class="comparison-type-buttons">
+                        <button class="comparison-type-btn active" data-type="same" title="Same property, different loan options">
+                            <span class="type-icon">🏠</span>
+                            <span class="type-text">Same Property</span>
+                        </button>
+                        <button class="comparison-type-btn" data-type="different" title="Different properties">
+                            <span class="type-icon">🏠🏠</span>
+                            <span class="type-text">Different Properties</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="comparison-type-banner" id="comparisonTypeBanner">
+                <span class="banner-icon">🏠</span>
+                <span class="banner-text">Comparing different loan options for the <strong>same property</strong></span>
+            </div>
 
             <!-- Comparison Charts -->
             <div class="charts-container">
