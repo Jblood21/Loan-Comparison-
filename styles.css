@@ -3155,3 +3155,121 @@ input[type="range"]::-moz-range-thumb {
 .loan-tabs-container .comparison-type-buttons {
     display: inline-flex;
 }
+
+/* ============================================
+   ARM (ADJUSTABLE RATE MORTGAGE) STYLES
+   ============================================ */
+.arm-fields {
+    background: linear-gradient(135deg, rgba(30, 58, 95, 0.03) 0%, rgba(46, 125, 50, 0.03) 100%);
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(30, 58, 95, 0.1);
+    margin-top: 15px;
+}
+
+.arm-info-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 15px;
+    background: rgba(30, 58, 95, 0.08);
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 0.85rem;
+    color: var(--text-dark);
+    line-height: 1.5;
+}
+
+.arm-info-banner .info-icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.arm-caps-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-top: 10px;
+}
+
+@media (max-width: 768px) {
+    .arm-caps-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.arm-projection {
+    margin-top: 20px;
+    padding: 15px;
+    background: var(--white);
+    border-radius: 10px;
+    border: 1px solid var(--light-gray);
+}
+
+.arm-projection h4 {
+    color: var(--navy-blue);
+    margin-bottom: 12px;
+    font-size: 0.95rem;
+}
+
+.projection-values {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+@media (max-width: 600px) {
+    .projection-values {
+        grid-template-columns: 1fr;
+    }
+}
+
+.projection-item {
+    text-align: center;
+    padding: 12px;
+    background: var(--off-white);
+    border-radius: 8px;
+}
+
+.projection-label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.projection-value {
+    display: block;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--navy-blue);
+}
+
+.projection-value.worst-case {
+    color: #d32f2f;
+}
+
+/* ARM tab styling */
+.type-tab[data-loan="arm"] {
+    position: relative;
+}
+
+.type-tab[data-loan="arm"]::after {
+    content: 'ADJ';
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: var(--green-primary);
+    color: white;
+    font-size: 0.55rem;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-weight: 600;
+}
+
+.type-tab[data-loan="arm"].active::after {
+    background: white;
+    color: var(--navy-blue);
+}

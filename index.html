@@ -413,6 +413,7 @@
                         <button class="type-tab" data-loan="fha">FHA</button>
                         <button class="type-tab" data-loan="va">VA</button>
                         <button class="type-tab" data-loan="usda">USDA</button>
+                        <button class="type-tab" data-loan="arm">ARM</button>
                     </div>
 
                     <!-- Loan Program Type -->
@@ -701,6 +702,135 @@
                                     <div class="input-wrapper percent-wrapper">
                                         <input type="number" name="usdaAnnualRate" value="0.35" step="0.01">
                                         <span class="percent">%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ARM Specific -->
+                            <div class="arm-fields hidden">
+                                <h3>ARM Details</h3>
+                                <div class="arm-info-banner">
+                                    <span class="info-icon">ℹ️</span>
+                                    <span>Adjustable Rate Mortgages have a fixed initial rate that adjusts periodically after the initial period.</span>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="tooltip-trigger">
+                                        ARM Type
+                                        <span class="tooltip-icon" tabindex="0">?</span>
+                                        <span class="tooltip-content">The first number is years at initial rate, the second is how often it adjusts after. Example: 5/1 = 5 years fixed, then adjusts yearly.</span>
+                                    </label>
+                                    <select name="armType">
+                                        <option value="5/1">5/1 ARM (5 years fixed, adjusts yearly)</option>
+                                        <option value="7/1">7/1 ARM (7 years fixed, adjusts yearly)</option>
+                                        <option value="10/1">10/1 ARM (10 years fixed, adjusts yearly)</option>
+                                        <option value="3/1">3/1 ARM (3 years fixed, adjusts yearly)</option>
+                                        <option value="5/6">5/6 ARM (5 years fixed, adjusts every 6 months)</option>
+                                        <option value="7/6">7/6 ARM (7 years fixed, adjusts every 6 months)</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="tooltip-trigger">
+                                        Initial Rate (Teaser Rate)
+                                        <span class="tooltip-icon" tabindex="0">?</span>
+                                        <span class="tooltip-content">The interest rate during the initial fixed period. Usually lower than fixed-rate mortgages.</span>
+                                    </label>
+                                    <div class="input-wrapper percent-wrapper">
+                                        <input type="number" name="armInitialRate" value="5.5" step="0.125">
+                                        <span class="percent">%</span>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="tooltip-trigger">
+                                        Index
+                                        <span class="tooltip-icon" tabindex="0">?</span>
+                                        <span class="tooltip-content">The benchmark rate your ARM is tied to. SOFR is most common for new ARMs.</span>
+                                    </label>
+                                    <select name="armIndex">
+                                        <option value="sofr">SOFR (Secured Overnight Financing Rate)</option>
+                                        <option value="treasury">1-Year Treasury</option>
+                                        <option value="prime">Prime Rate</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="tooltip-trigger">
+                                        Current Index Rate
+                                        <span class="tooltip-icon" tabindex="0">?</span>
+                                        <span class="tooltip-content">The current value of the index. Used to project future rate adjustments.</span>
+                                    </label>
+                                    <div class="input-wrapper percent-wrapper">
+                                        <input type="number" name="armIndexRate" value="5.0" step="0.01">
+                                        <span class="percent">%</span>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="tooltip-trigger">
+                                        Margin
+                                        <span class="tooltip-icon" tabindex="0">?</span>
+                                        <span class="tooltip-content">Added to the index to determine your rate after adjustments. Typically 2-3%. Your adjusted rate = Index + Margin.</span>
+                                    </label>
+                                    <div class="input-wrapper percent-wrapper">
+                                        <input type="number" name="armMargin" value="2.75" step="0.125">
+                                        <span class="percent">%</span>
+                                    </div>
+                                </div>
+
+                                <h4 class="subsection-title">Rate Caps</h4>
+                                <div class="arm-caps-grid">
+                                    <div class="form-group">
+                                        <label class="tooltip-trigger">
+                                            Initial Cap
+                                            <span class="tooltip-icon" tabindex="0">?</span>
+                                            <span class="tooltip-content">Maximum rate increase at first adjustment after the initial period.</span>
+                                        </label>
+                                        <div class="input-wrapper percent-wrapper">
+                                            <input type="number" name="armInitialCap" value="2" step="0.5">
+                                            <span class="percent">%</span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="tooltip-trigger">
+                                            Periodic Cap
+                                            <span class="tooltip-icon" tabindex="0">?</span>
+                                            <span class="tooltip-content">Maximum rate change at each subsequent adjustment.</span>
+                                        </label>
+                                        <div class="input-wrapper percent-wrapper">
+                                            <input type="number" name="armPeriodicCap" value="2" step="0.5">
+                                            <span class="percent">%</span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="tooltip-trigger">
+                                            Lifetime Cap
+                                            <span class="tooltip-icon" tabindex="0">?</span>
+                                            <span class="tooltip-content">Maximum total rate increase over the life of the loan from the initial rate.</span>
+                                        </label>
+                                        <div class="input-wrapper percent-wrapper">
+                                            <input type="number" name="armLifetimeCap" value="5" step="0.5">
+                                            <span class="percent">%</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="arm-projection">
+                                    <h4>Rate Projection</h4>
+                                    <div class="projection-values">
+                                        <div class="projection-item">
+                                            <span class="projection-label">Initial Rate</span>
+                                            <span class="projection-value" data-field="armInitialDisplay">5.500%</span>
+                                        </div>
+                                        <div class="projection-item">
+                                            <span class="projection-label">Worst Case (Max)</span>
+                                            <span class="projection-value worst-case" data-field="armWorstCase">10.500%</span>
+                                        </div>
+                                        <div class="projection-item">
+                                            <span class="projection-label">Fully Indexed Rate</span>
+                                            <span class="projection-value" data-field="armFullyIndexed">7.750%</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

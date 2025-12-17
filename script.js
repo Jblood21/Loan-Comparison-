@@ -1416,6 +1416,7 @@ class LoanCalculator {
         this.panel.querySelector('.va-fields').classList.add('hidden');
         this.panel.querySelector('.usda-fields').classList.add('hidden');
         this.panel.querySelector('.conventional-fields').classList.add('hidden');
+        this.panel.querySelector('.arm-fields')?.classList.add('hidden');
 
         // Show relevant fields based on loan type
         switch (this.loanType) {
@@ -1430,6 +1431,11 @@ class LoanCalculator {
                 break;
             case 'conventional':
                 this.panel.querySelector('.conventional-fields').classList.remove('hidden');
+                break;
+            case 'arm':
+                this.panel.querySelector('.arm-fields')?.classList.remove('hidden');
+                this.panel.querySelector('.conventional-fields').classList.remove('hidden'); // ARM can have PMI too
+                this.updateArmProjection();
                 break;
         }
 
@@ -1477,6 +1483,15 @@ class LoanCalculator {
             // USDA
             usdaUpfrontRate: parseFloat(data.usdaUpfrontRate) || 1.0,
             usdaAnnualRate: parseFloat(data.usdaAnnualRate) || 0.35,
+            // ARM
+            armType: data.armType || '5/1',
+            armInitialRate: parseFloat(data.armInitialRate) || 5.5,
+            armIndex: data.armIndex || 'sofr',
+            armIndexRate: parseFloat(data.armIndexRate) || 5.0,
+            armMargin: parseFloat(data.armMargin) || 2.75,
+            armInitialCap: parseFloat(data.armInitialCap) || 2,
+            armPeriodicCap: parseFloat(data.armPeriodicCap) || 2,
+            armLifetimeCap: parseFloat(data.armLifetimeCap) || 5,
             // Conventional PMI
             pmiRateOverride: parseFloat(data.pmiRateOverride) || 0,
             // Refinance
@@ -1537,6 +1552,86 @@ class LoanCalculator {
 
         return principal * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) /
             (Math.pow(1 + monthlyRate, numPayments) - 1);
+    }
+
+    // ARM-specific calculations
+    updateArmProjection() {
+        const data = this.getFormData();
+
+        // Parse ARM type (e.g., "5/1" means 5 years fixed, adjusts every 1 year)
+        const [fixedYears, adjustmentPeriod] = data.armType.split('/').map(Number);
+
+        // Calculate fully indexed rate (Index + Margin)
+        const fullyIndexedRate = data.armIndexRate + data.armMargin;
+
+        // Calculate worst case rate (Initial Rate + Lifetime Cap)
+        const worstCaseRate = data.armInitialRate + data.armLifetimeCap;
+
+        // Update display fields
+        const initialDisplay = this.panel.querySelector('[data-field="armInitialDisplay"]');
+        const worstCaseDisplay = this.panel.querySelector('[data-field="armWorstCase"]');
+        const fullyIndexedDisplay = this.panel.querySelector('[data-field="armFullyIndexed"]');
+
+        if (initialDisplay) initialDisplay.textContent = data.armInitialRate.toFixed(3) + '%';
+        if (worstCaseDisplay) worstCaseDisplay.textContent = worstCaseRate.toFixed(3) + '%';
+        if (fullyIndexedDisplay) fullyIndexedDisplay.textContent = fullyIndexedRate.toFixed(3) + '%';
+
+        // Store ARM data for use in results
+        this.armData = {
+            fixedYears,
+            adjustmentPeriod,
+            initialRate: data.armInitialRate,
+            fullyIndexedRate,
+            worstCaseRate,
+            indexRate: data.armIndexRate,
+            margin: data.armMargin,
+            initialCap: data.armInitialCap,
+            periodicCap: data.armPeriodicCap,
+            lifetimeCap: data.armLifetimeCap
+        };
+    }
+
+    // Calculate ARM total interest over loan life (more complex due to rate changes)
+    calculateArmTotalInterest(data) {
+        const armInfo = this.armData || {};
+        const loanAmount = data.loanAmount;
+        const termYears = data.loanTerm;
+        const fixedYears = armInfo.fixedYears || 5;
+        const initialRate = armInfo.initialRate || data.armInitialRate || data.interestRate;
+        const fullyIndexedRate = armInfo.fullyIndexedRate || (data.armIndexRate + data.armMargin);
+
+        let totalInterest = 0;
+        let remainingBalance = loanAmount;
+
+        // Fixed period interest
+        const fixedMonthlyRate = initialRate / 100 / 12;
+        const totalMonths = termYears * 12;
+        const fixedMonths = Math.min(fixedYears * 12, totalMonths);
+        const monthlyPaymentFixed = this.calculateMonthlyPayment(loanAmount, initialRate, termYears);
+
+        for (let i = 0; i < fixedMonths; i++) {
+            const interestPayment = remainingBalance * fixedMonthlyRate;
+            const principalPayment = monthlyPaymentFixed - interestPayment;
+            totalInterest += interestPayment;
+            remainingBalance -= principalPayment;
+        }
+
+        // Adjustable period - use fully indexed rate as estimate
+        if (remainingBalance > 0 && fixedMonths < totalMonths) {
+            const remainingYears = (totalMonths - fixedMonths) / 12;
+            const adjustableMonthlyRate = fullyIndexedRate / 100 / 12;
+            const adjustableMonths = totalMonths - fixedMonths;
+            const monthlyPaymentAdj = this.calculateMonthlyPayment(remainingBalance, fullyIndexedRate, remainingYears);
+
+            for (let i = 0; i < adjustableMonths; i++) {
+                const interestPayment = remainingBalance * adjustableMonthlyRate;
+                const principalPayment = monthlyPaymentAdj - interestPayment;
+                totalInterest += interestPayment;
+                remainingBalance = Math.max(0, remainingBalance - principalPayment);
+            }
+        }
+
+        return totalInterest;
     }
 
     calculateFHAFees(data) {
@@ -1703,6 +1798,29 @@ class LoanCalculator {
                     pmiRateGroup.classList.add('hidden');
                 }
                 break;
+
+            case 'arm':
+                // ARM uses initial rate for P&I calculation (already calculated above with interestRate)
+                // But we override the interest rate with the ARM initial rate
+                const armPmi = this.calculatePMI(data);
+                monthlyMI = armPmi.monthlyPMI;
+
+                // Update PMI display for ARM (they can have PMI too)
+                this.panel.querySelector('[data-field="pmiRequired"]').textContent =
+                    armPmi.required ? `Yes (${armPmi.pmiRate.toFixed(2)}% annually)` : 'No (LTV ≤ 80%)';
+
+                const armPmiRateGroup = this.panel.querySelector('.pmi-rate');
+                if (armPmi.required) {
+                    armPmiRateGroup.classList.remove('hidden');
+                    this.panel.querySelector('[data-field="monthlyPMI"]').textContent =
+                        this.formatCurrency(armPmi.monthlyPMI);
+                } else {
+                    armPmiRateGroup.classList.add('hidden');
+                }
+
+                // Update ARM projection display
+                this.updateArmProjection();
+                break;
         }
 
         // Calculate discount points cost
@@ -1789,10 +1907,16 @@ class LoanCalculator {
 
         // Total interest over life of loan
         const totalPayments = monthlyPI * data.loanTerm * 12;
-        const totalInterest = totalPayments - data.loanAmount;
+        let totalInterest;
+        if (this.loanType === 'arm') {
+            // ARM uses special calculation accounting for rate changes
+            totalInterest = this.calculateArmTotalInterest(data);
+        } else {
+            totalInterest = totalPayments - data.loanAmount;
+        }
 
-        // Total cost over loan life
-        const totalLoanCost = totalPayments + totalFees + (monthlyMI * data.loanTerm * 12) +
+        // Total cost over loan life (using totalInterest + principal for more accurate ARM calculation)
+        const totalLoanCost = data.loanAmount + totalInterest + totalFees + (monthlyMI * data.loanTerm * 12) +
                              (monthlyTaxes * data.loanTerm * 12) + (monthlyInsurance * data.loanTerm * 12) +
                              (data.monthlyHOA * data.loanTerm * 12);
 
@@ -1834,7 +1958,21 @@ class LoanCalculator {
             interestRate: data.interestRate,
             loanTerm: data.loanTerm,
             fees: { ...fees, ...closingCosts, ...prepaids },
-            customFees: this.customFees.filter(f => f.name && f.amount > 0)
+            customFees: this.customFees.filter(f => f.name && f.amount > 0),
+            // ARM-specific data
+            armData: this.loanType === 'arm' ? {
+                type: data.armType,
+                initialRate: data.armInitialRate,
+                fullyIndexedRate: this.armData?.fullyIndexedRate || (data.armIndexRate + data.armMargin),
+                worstCaseRate: this.armData?.worstCaseRate || (data.armInitialRate + data.armLifetimeCap),
+                margin: data.armMargin,
+                index: data.armIndex,
+                caps: {
+                    initial: data.armInitialCap,
+                    periodic: data.armPeriodicCap,
+                    lifetime: data.armLifetimeCap
+                }
+            } : null
         };
 
         // Update UI
