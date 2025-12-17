@@ -3406,3 +3406,295 @@ input[type="range"]::-moz-range-thumb {
     transform: translateX(3px);
     color: var(--navy-blue);
 }
+
+/* ============================================
+   ENHANCED MOBILE RESPONSIVENESS
+   ============================================ */
+
+/* Mobile-first improvements */
+@media (max-width: 768px) {
+    .container {
+        padding: 12px;
+    }
+
+    /* Header mobile */
+    .header-content {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 12px;
+    }
+
+    .header-text {
+        text-align: center;
+    }
+
+    .logo-img-header {
+        height: 100px;
+    }
+
+    .header-actions {
+        width: 100%;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .settings-btn,
+    .logout-btn {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+    }
+
+    .settings-text,
+    .logout-text {
+        display: none;
+    }
+
+    /* Sticky tabs mobile */
+    .loan-tabs-container {
+        padding: 8px;
+        margin-left: -12px;
+        margin-right: -12px;
+        gap: 6px;
+    }
+
+    .loan-tabs {
+        width: 100%;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        padding-bottom: 4px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .loan-tab {
+        flex-shrink: 0;
+        padding: 8px 14px;
+        font-size: 0.85rem;
+    }
+
+    .add-loan-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .scenario-actions {
+        display: none;
+    }
+
+    /* Loan panel mobile */
+    .loan-panel {
+        padding: 14px;
+        border-radius: 8px;
+    }
+
+    /* Form sections mobile */
+    .form-section {
+        padding: 12px;
+    }
+
+    .form-section h3 {
+        font-size: 0.95rem;
+        margin-bottom: 12px;
+    }
+
+    .form-group {
+        margin-bottom: 12px;
+    }
+
+    .form-group label {
+        font-size: 0.8rem;
+    }
+
+    input[type="number"],
+    input[type="text"],
+    select {
+        padding: 10px;
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+
+    /* Toggles mobile */
+    .top-toggles {
+        gap: 10px;
+    }
+
+    .transaction-toggle {
+        width: 100%;
+    }
+
+    .toggle-btn {
+        flex: 1;
+        padding: 10px 12px;
+        font-size: 0.85rem;
+    }
+
+    .borrower-toggle {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Loan type tabs mobile */
+    .loan-type-tabs {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        padding-bottom: 8px;
+        -webkit-overflow-scrolling: touch;
+        gap: 6px;
+    }
+
+    .type-tab {
+        flex-shrink: 0;
+        padding: 8px 14px;
+        font-size: 0.8rem;
+    }
+
+    /* Calculate button mobile */
+    .calculate-btn {
+        padding: 14px;
+        font-size: 1rem;
+        position: sticky;
+        bottom: 12px;
+        z-index: 50;
+    }
+
+    /* Results mobile */
+    .results-section {
+        margin-top: 20px;
+        padding-top: 16px;
+    }
+
+    .results-section h2 {
+        font-size: 1.1rem;
+    }
+
+    .results-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .result-card {
+        padding: 12px;
+    }
+
+    .result-card h4 {
+        font-size: 0.75rem;
+    }
+
+    .result-value {
+        font-size: 1.1rem;
+    }
+
+    /* Fee breakdown mobile */
+    .fee-breakdown {
+        padding: 12px;
+    }
+
+    .fee-breakdown h3 {
+        font-size: 0.95rem;
+    }
+
+    /* Document actions mobile */
+    .document-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .generate-doc-btn,
+    .print-btn {
+        width: 100%;
+        padding: 12px;
+        font-size: 0.9rem;
+    }
+
+    /* Comparison type toggle mobile */
+    .comparison-type-toggle {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .comparison-type-btn {
+        flex: 1;
+        min-width: 120px;
+        padding: 8px 10px;
+        font-size: 0.8rem;
+    }
+}
+
+/* Small phones */
+@media (max-width: 480px) {
+    .container {
+        padding: 10px;
+    }
+
+    .logo-img-header {
+        height: 80px;
+    }
+
+    .loan-panel {
+        padding: 12px;
+    }
+
+    .results-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .result-card {
+        padding: 14px;
+    }
+
+    .result-value {
+        font-size: 1.2rem;
+    }
+
+    .loan-tab {
+        padding: 8px 12px;
+        font-size: 0.8rem;
+    }
+
+    .type-tab {
+        padding: 8px 12px;
+        font-size: 0.75rem;
+    }
+
+    /* Charts stack on mobile */
+    .charts-container {
+        grid-template-columns: 1fr;
+        padding: 15px;
+    }
+
+    .chart-wrapper {
+        padding: 12px;
+    }
+
+    /* Comparison table scroll */
+    .comparison-table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .comparison-table {
+        min-width: 500px;
+        font-size: 0.8rem;
+    }
+}
+
+/* Touch-friendly improvements */
+@media (hover: none) and (pointer: coarse) {
+    .loan-tab,
+    .type-tab,
+    .toggle-btn,
+    .borrower-btn,
+    .settings-btn,
+    .logout-btn,
+    .calculate-btn,
+    .scenario-action-btn {
+        min-height: 44px;
+    }
+
+    input[type="number"],
+    input[type="text"],
+    select {
+        min-height: 44px;
+    }
+}
