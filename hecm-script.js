@@ -1,0 +1,349 @@
+// HECM Reverse Mortgage Calculator
+const HECMCalculator = {
+    // Format currency
+    formatCurrency(amount) {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        }).format(amount);
+    },
+
+    // Get form data for a scenario
+    getFormData(scenarioId) {
+        const panel = document.querySelector(`.loan-panel[data-panel="${scenarioId}"]`);
+        if (!panel) return null;
+
+        const hecmType = panel.querySelector('.hecm-type-tab.active')?.dataset.type || 'fixed';
+        const paymentType = panel.querySelector(`input[name="payment-type-${scenarioId}"]:checked`)?.value || 'lump-sum';
+
+        return {
+            scenarioName: panel.querySelector('.scenario-name')?.value || `Scenario ${scenarioId}`,
+            hecmType: hecmType,
+            borrowerAge: parseFloat(panel.querySelector('.borrower-age')?.value) || 70,
+            spouseAge: parseFloat(panel.querySelector('.spouse-age')?.value) || 0,
+            homeValue: parseFloat(panel.querySelector('.home-value')?.value) || 0,
+            propertyType: panel.querySelector('.property-type')?.value || 'single-family',
+            existingMortgage: parseFloat(panel.querySelector('.existing-mortgage')?.value) || 0,
+            interestRate: parseFloat(panel.querySelector('.interest-rate')?.value) || 6.5,
+            initialRate: parseFloat(panel.querySelector('.initial-rate')?.value) || 5.5,
+            margin: parseFloat(panel.querySelector('.margin')?.value) || 2.0,
+            lenderCredit: parseFloat(panel.querySelector('.lender-credit')?.value) || 0,
+            fhaLimit: parseFloat(panel.querySelector('.fha-limit')?.value) || 1149825,
+            plf: parseFloat(panel.querySelector('.plf')?.value) || 52.4,
+            paymentType: paymentType,
+            termMonths: parseFloat(panel.querySelector('.term-months')?.value) || 120,
+            thirdPartyCosts: parseFloat(panel.querySelector('.third-party-costs')?.value) || 3500
+        };
+    },
+
+    // Calculate origination fee (FHA rules)
+    calculateOriginationFee(homeValue, fhaLimit) {
+        const maxClaimAmount = Math.min(homeValue, fhaLimit);
+
+        // $2,500 minimum or 2% of first $200,000 + 1% of remainder, max $6,000
+        let fee = 0;
+        if (maxClaimAmount <= 200000) {
+            fee = Math.max(2500, maxClaimAmount * 0.02);
+        } else {
+            fee = 4000 + (maxClaimAmount - 200000) * 0.01;
+        }
+
+        return Math.min(fee, 6000);
+    },
+
+    // Calculate Initial MIP (2% of max claim amount)
+    calculateInitialMIP(homeValue, fhaLimit) {
+        const maxClaimAmount = Math.min(homeValue, fhaLimit);
+        return maxClaimAmount * 0.02;
+    },
+
+    // Calculate line of credit growth
+    calculateLOCGrowth(initialAmount, rate, years) {
+        // LOC grows at interest rate + 0.5% MIP
+        const growthRate = (rate + 0.5) / 100;
+        return initialAmount * Math.pow(1 + growthRate, years);
+    },
+
+    // Calculate loan balance projection
+    calculateBalanceProjection(initialBalance, rate, years) {
+        // Balance grows at interest rate + 0.5% annual MIP
+        const growthRate = (rate + 0.5) / 100;
+        return initialBalance * Math.pow(1 + growthRate, years);
+    },
+
+    // Calculate tenure payment (lifetime)
+    calculateTenurePayment(netPrincipalLimit, expectedRate) {
+        // Simplified tenure calculation based on expected rate
+        // Uses actuarial assumptions - this is a simplified version
+        const monthlyRate = expectedRate / 100 / 12;
+        const assumedMonths = 240; // ~20 years average
+
+        if (monthlyRate === 0) return netPrincipalLimit / assumedMonths;
+
+        const factor = (monthlyRate * Math.pow(1 + monthlyRate, assumedMonths)) /
+                       (Math.pow(1 + monthlyRate, assumedMonths) - 1);
+
+        return netPrincipalLimit * factor * 0.5; // Conservative factor
+    },
+
+    // Calculate term payment
+    calculateTermPayment(netPrincipalLimit, expectedRate, termMonths) {
+        const monthlyRate = expectedRate / 100 / 12;
+
+        if (monthlyRate === 0) return netPrincipalLimit / termMonths;
+
+        const factor = (monthlyRate * Math.pow(1 + monthlyRate, termMonths)) /
+                       (Math.pow(1 + monthlyRate, termMonths) - 1);
+
+        return netPrincipalLimit * factor;
+    },
+
+    // Main calculation function
+    calculate(scenarioId) {
+        const data = this.getFormData(scenarioId);
+        if (!data) return;
+
+        // Validate age
+        if (data.borrowerAge < 62) {
+            alert('Borrower must be at least 62 years old for a HECM.');
+            return;
+        }
+
+        // Calculate Max Claim Amount
+        const maxClaimAmount = Math.min(data.homeValue, data.fhaLimit);
+
+        // Calculate Principal Limit
+        const principalLimit = maxClaimAmount * (data.plf / 100);
+
+        // Calculate costs
+        const initialMIP = this.calculateInitialMIP(data.homeValue, data.fhaLimit);
+        const originationFee = this.calculateOriginationFee(data.homeValue, data.fhaLimit) - data.lenderCredit;
+        const totalClosingCosts = initialMIP + Math.max(0, originationFee) + data.thirdPartyCosts;
+
+        // Calculate Net Principal Limit
+        const netPrincipalLimit = principalLimit - totalClosingCosts - data.existingMortgage;
+
+        // Calculate based on payment type
+        let cashToBorrower = 0;
+        let locAmount = 0;
+        let monthlyPayment = 0;
+
+        const effectiveRate = data.hecmType === 'adjustable' ? data.initialRate : data.interestRate;
+
+        switch (data.paymentType) {
+            case 'lump-sum':
+                cashToBorrower = netPrincipalLimit;
+                break;
+            case 'line-of-credit':
+                locAmount = netPrincipalLimit;
+                break;
+            case 'tenure':
+                monthlyPayment = this.calculateTenurePayment(netPrincipalLimit, data.interestRate);
+                break;
+            case 'term':
+                monthlyPayment = this.calculateTermPayment(netPrincipalLimit, data.interestRate, data.termMonths);
+                break;
+            case 'modified-tenure':
+                locAmount = netPrincipalLimit * 0.5;
+                monthlyPayment = this.calculateTenurePayment(netPrincipalLimit * 0.5, data.interestRate);
+                break;
+            case 'modified-term':
+                locAmount = netPrincipalLimit * 0.5;
+                monthlyPayment = this.calculateTermPayment(netPrincipalLimit * 0.5, data.interestRate, data.termMonths);
+                break;
+        }
+
+        // Update form readonly fields
+        const panel = document.querySelector(`.loan-panel[data-panel="${scenarioId}"]`);
+        panel.querySelector('.initial-mip').value = Math.round(initialMIP);
+        panel.querySelector('.origination-fee').value = Math.round(Math.max(0, originationFee));
+        panel.querySelector('.total-closing-costs').value = Math.round(totalClosingCosts);
+
+        // Display results
+        document.getElementById(`max-claim-${scenarioId}`).textContent = this.formatCurrency(maxClaimAmount);
+        document.getElementById(`principal-limit-${scenarioId}`).textContent = this.formatCurrency(principalLimit);
+        document.getElementById(`net-principal-${scenarioId}`).textContent = this.formatCurrency(Math.max(0, netPrincipalLimit));
+        document.getElementById(`cash-to-borrower-${scenarioId}`).textContent = this.formatCurrency(Math.max(0, cashToBorrower));
+        document.getElementById(`loc-amount-${scenarioId}`).textContent = this.formatCurrency(Math.max(0, locAmount));
+        document.getElementById(`monthly-payment-${scenarioId}`).textContent = this.formatCurrency(monthlyPayment);
+
+        // LOC Growth projections
+        if (locAmount > 0) {
+            document.getElementById(`loc-year5-${scenarioId}`).textContent = this.formatCurrency(this.calculateLOCGrowth(locAmount, effectiveRate, 5));
+            document.getElementById(`loc-year10-${scenarioId}`).textContent = this.formatCurrency(this.calculateLOCGrowth(locAmount, effectiveRate, 10));
+            document.getElementById(`loc-year15-${scenarioId}`).textContent = this.formatCurrency(this.calculateLOCGrowth(locAmount, effectiveRate, 15));
+            document.getElementById(`loc-year20-${scenarioId}`).textContent = this.formatCurrency(this.calculateLOCGrowth(locAmount, effectiveRate, 20));
+        }
+
+        // Balance projections (starting from total closing costs + existing mortgage payoff)
+        const initialBalance = totalClosingCosts + data.existingMortgage;
+        document.getElementById(`balance-year5-${scenarioId}`).textContent = this.formatCurrency(this.calculateBalanceProjection(initialBalance, effectiveRate, 5));
+        document.getElementById(`balance-year10-${scenarioId}`).textContent = this.formatCurrency(this.calculateBalanceProjection(initialBalance, effectiveRate, 10));
+        document.getElementById(`balance-year15-${scenarioId}`).textContent = this.formatCurrency(this.calculateBalanceProjection(initialBalance, effectiveRate, 15));
+        document.getElementById(`balance-year20-${scenarioId}`).textContent = this.formatCurrency(this.calculateBalanceProjection(initialBalance, effectiveRate, 20));
+
+        // Cost breakdown
+        document.getElementById(`cost-mip-${scenarioId}`).textContent = this.formatCurrency(initialMIP);
+        document.getElementById(`cost-origination-${scenarioId}`).textContent = this.formatCurrency(Math.max(0, originationFee));
+        document.getElementById(`cost-third-party-${scenarioId}`).textContent = this.formatCurrency(data.thirdPartyCosts);
+        document.getElementById(`cost-payoff-${scenarioId}`).textContent = this.formatCurrency(data.existingMortgage);
+        document.getElementById(`cost-total-${scenarioId}`).textContent = this.formatCurrency(totalClosingCosts + data.existingMortgage);
+
+        // Show results
+        document.getElementById(`results-${scenarioId}`).style.display = 'block';
+
+        // Store results for comparison
+        this.results = this.results || {};
+        this.results[scenarioId] = {
+            name: data.scenarioName,
+            maxClaimAmount,
+            principalLimit,
+            netPrincipalLimit: Math.max(0, netPrincipalLimit),
+            cashToBorrower: Math.max(0, cashToBorrower),
+            locAmount: Math.max(0, locAmount),
+            monthlyPayment,
+            totalClosingCosts,
+            existingMortgage: data.existingMortgage,
+            interestRate: data.interestRate,
+            paymentType: data.paymentType
+        };
+
+        // Update comparison if both scenarios calculated
+        this.updateComparison();
+    },
+
+    updateComparison() {
+        if (!this.results || !this.results[1] || !this.results[2]) return;
+
+        const r1 = this.results[1];
+        const r2 = this.results[2];
+
+        document.getElementById('compare-name-1').textContent = r1.name;
+        document.getElementById('compare-name-2').textContent = r2.name;
+
+        const metrics = [
+            { label: 'Max Claim Amount', key: 'maxClaimAmount' },
+            { label: 'Principal Limit', key: 'principalLimit' },
+            { label: 'Net Principal Limit', key: 'netPrincipalLimit' },
+            { label: 'Cash to Borrower', key: 'cashToBorrower' },
+            { label: 'Line of Credit', key: 'locAmount' },
+            { label: 'Monthly Payment', key: 'monthlyPayment' },
+            { label: 'Total Closing Costs', key: 'totalClosingCosts' },
+            { label: 'Interest Rate', key: 'interestRate', isPercent: true }
+        ];
+
+        const tbody = document.getElementById('hecmComparisonBody');
+        tbody.innerHTML = metrics.map(m => {
+            const v1 = r1[m.key];
+            const v2 = r2[m.key];
+            const diff = v2 - v1;
+            const diffClass = diff > 0 ? 'positive' : diff < 0 ? 'negative' : '';
+
+            if (m.isPercent) {
+                return `<tr>
+                    <td>${m.label}</td>
+                    <td>${v1.toFixed(3)}%</td>
+                    <td>${v2.toFixed(3)}%</td>
+                    <td class="${diffClass}">${diff > 0 ? '+' : ''}${diff.toFixed(3)}%</td>
+                </tr>`;
+            }
+
+            return `<tr>
+                <td>${m.label}</td>
+                <td>${this.formatCurrency(v1)}</td>
+                <td>${this.formatCurrency(v2)}</td>
+                <td class="${diffClass}">${diff > 0 ? '+' : ''}${this.formatCurrency(diff)}</td>
+            </tr>`;
+        }).join('');
+
+        document.getElementById('hecmComparison').style.display = 'block';
+    }
+};
+
+// Tab Management
+document.addEventListener('DOMContentLoaded', () => {
+    // Scenario tabs
+    const tabs = document.querySelectorAll('.loan-tab');
+    const panels = document.querySelectorAll('.loan-panel');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', (e) => {
+            if (e.target.classList.contains('remove-loan')) return;
+
+            const loanId = tab.dataset.loan;
+
+            tabs.forEach(t => t.classList.remove('active'));
+            panels.forEach(p => p.classList.remove('active'));
+
+            tab.classList.add('active');
+            document.querySelector(`.loan-panel[data-panel="${loanId}"]`)?.classList.add('active');
+        });
+    });
+
+    // HECM type tabs (Fixed/Adjustable)
+    document.querySelectorAll('.hecm-type-tabs').forEach(container => {
+        container.querySelectorAll('.hecm-type-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                container.querySelectorAll('.hecm-type-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                const panel = container.closest('.loan-panel');
+                const isAdjustable = tab.dataset.type === 'adjustable';
+
+                panel.querySelectorAll('.adjustable-only').forEach(el => {
+                    el.style.display = isAdjustable ? 'block' : 'none';
+                });
+
+                // Fixed rate only allows lump sum
+                if (tab.dataset.type === 'fixed') {
+                    const lumpSumRadio = panel.querySelector('input[value="lump-sum"]');
+                    if (lumpSumRadio) lumpSumRadio.checked = true;
+                }
+            });
+        });
+    });
+
+    // Payment type change - show/hide term input
+    document.querySelectorAll('input[name^="payment-type-"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+            const panel = radio.closest('.loan-panel');
+            const termGroup = panel.querySelector('.term-period-group');
+            const showTerm = ['term', 'modified-term'].includes(radio.value);
+            termGroup.style.display = showTerm ? 'block' : 'none';
+        });
+    });
+
+    // Dark mode
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+    }
+
+    // Load user info
+    const userInfo = JSON.parse(localStorage.getItem('loandrUserInfo') || '{}');
+    if (userInfo.name) {
+        document.getElementById('userName').textContent = userInfo.name;
+    }
+    if (userInfo.company) {
+        document.getElementById('userCompany').textContent = userInfo.company;
+    }
+
+    // Sticky tabs
+    const tabsContainer = document.querySelector('.loan-tabs-container');
+    if (tabsContainer) {
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                tabsContainer.classList.toggle('sticky-active', entry.intersectionRatio < 1);
+            },
+            { threshold: [1], rootMargin: '-1px 0px 0px 0px' }
+        );
+        observer.observe(tabsContainer);
+    }
+
+    // Print button
+    document.getElementById('printHecmBtn')?.addEventListener('click', () => {
+        window.print();
+    });
+});

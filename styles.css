@@ -3408,6 +3408,467 @@ input[type="range"]::-moz-range-thumb {
 }
 
 /* ============================================
+   HECM REVERSE MORTGAGE STYLES
+   ============================================ */
+
+.hecm-info-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, rgba(37, 161, 142, 0.1), rgba(0, 78, 100, 0.1));
+    border: 1px solid rgba(37, 161, 142, 0.3);
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.hecm-info-banner svg {
+    stroke: var(--green-primary);
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.hecm-info-banner strong {
+    color: var(--navy-blue);
+    display: block;
+    margin-bottom: 4px;
+    font-size: 1rem;
+}
+
+.hecm-info-banner p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.hecm-type-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.hecm-type-tab {
+    padding: 10px 24px;
+    border: 2px solid var(--light-gray);
+    background: var(--white);
+    color: var(--text-muted);
+    cursor: pointer;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.hecm-type-tab:hover {
+    border-color: var(--navy-blue);
+    color: var(--navy-blue);
+}
+
+.hecm-type-tab.active {
+    background: var(--navy-blue);
+    border-color: var(--navy-blue);
+    color: var(--white);
+}
+
+.hecm-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.hecm-form-grid .form-section.full-width {
+    grid-column: 1 / -1;
+}
+
+.payment-options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.payment-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px;
+    background: var(--white);
+    border: 1px solid var(--light-gray);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.payment-option:hover {
+    border-color: var(--navy-blue);
+}
+
+.payment-option input[type="radio"] {
+    margin-top: 3px;
+    accent-color: var(--navy-blue);
+}
+
+.payment-option input[type="radio"]:checked + .option-content strong {
+    color: var(--navy-blue);
+}
+
+.payment-option:has(input:checked) {
+    border-color: var(--navy-blue);
+    background: rgba(30, 58, 95, 0.05);
+}
+
+.option-content {
+    flex: 1;
+}
+
+.option-content strong {
+    display: block;
+    color: var(--text-dark);
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+}
+
+.option-content small {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.term-period-group {
+    margin-top: 15px;
+    padding: 15px;
+    background: var(--off-white);
+    border-radius: 8px;
+}
+
+.term-period-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--dark-gray);
+    font-size: 0.9rem;
+}
+
+.term-period-group input {
+    width: 150px;
+    padding: 10px;
+}
+
+.hecm-costs-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.hecm-results-grid {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.loc-growth-section,
+.balance-projection-section {
+    margin-top: 25px;
+    padding: 20px;
+    background: var(--off-white);
+    border-radius: 10px;
+    border: 1px solid var(--light-gray);
+}
+
+.loc-growth-section h3,
+.balance-projection-section h3 {
+    color: var(--navy-blue);
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+}
+
+.section-note {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-bottom: 15px;
+}
+
+.loc-growth-grid,
+.balance-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+}
+
+.growth-item,
+.balance-item {
+    text-align: center;
+    padding: 15px;
+    background: var(--white);
+    border-radius: 8px;
+    border: 1px solid var(--light-gray);
+}
+
+.growth-year,
+.balance-year {
+    display: block;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+}
+
+.growth-value,
+.balance-value {
+    display: block;
+    color: var(--navy-blue);
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.balance-value {
+    color: var(--text-dark);
+}
+
+.hecm-cost-breakdown {
+    margin-top: 25px;
+    padding: 20px;
+    background: var(--off-white);
+    border-radius: 10px;
+    border: 1px solid var(--light-gray);
+}
+
+.hecm-cost-breakdown h3 {
+    color: var(--navy-blue);
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+}
+
+.cost-items {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.cost-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--light-gray);
+}
+
+.cost-item:last-child {
+    border-bottom: none;
+}
+
+.cost-item span:first-child {
+    color: var(--text-muted);
+}
+
+.cost-item span:last-child {
+    color: var(--text-dark);
+    font-weight: 500;
+}
+
+.cost-item.total {
+    padding-top: 15px;
+    border-top: 2px solid var(--navy-light);
+    margin-top: 5px;
+}
+
+.cost-item.total span:first-child {
+    color: var(--navy-blue);
+    font-weight: 600;
+}
+
+.cost-item.total span:last-child {
+    color: var(--navy-blue);
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.hecm-comparison-section {
+    margin-top: 30px;
+    padding: 25px;
+    background: var(--white);
+    border-radius: 12px;
+    border: 1px solid var(--light-gray);
+}
+
+.hecm-comparison-section h2 {
+    color: var(--navy-blue);
+    margin-bottom: 20px;
+    font-size: 1.3rem;
+}
+
+.hecm-comparison-table td.positive {
+    color: var(--green-primary);
+}
+
+.hecm-comparison-table td.negative {
+    color: #d32f2f;
+}
+
+/* HECM Mobile Responsive */
+@media (max-width: 768px) {
+    .hecm-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .payment-options {
+        grid-template-columns: 1fr;
+    }
+
+    .hecm-costs-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hecm-results-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .loc-growth-grid,
+    .balance-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .hecm-type-tabs {
+        width: 100%;
+    }
+
+    .hecm-type-tab {
+        flex: 1;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .hecm-results-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .loc-growth-grid,
+    .balance-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hecm-info-banner {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+
+/* ============================================
+   PAGE SWITCHER TAB
+   ============================================ */
+.page-switcher {
+    position: fixed;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.page-tab {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    background: var(--white);
+    border: 1px solid var(--light-gray);
+    border-right: none;
+    border-radius: 10px 0 0 10px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: -2px 2px 10px rgba(0, 0, 0, 0.08);
+    white-space: nowrap;
+}
+
+.page-tab svg {
+    stroke: currentColor;
+    flex-shrink: 0;
+}
+
+.page-tab:hover {
+    background: var(--off-white);
+    color: var(--navy-blue);
+    padding-right: 24px;
+}
+
+.page-tab.active {
+    background: var(--navy-blue);
+    color: var(--white);
+    border-color: var(--navy-blue);
+    box-shadow: -4px 2px 15px rgba(30, 58, 95, 0.25);
+}
+
+.page-tab.active svg {
+    stroke: var(--white);
+}
+
+[data-theme="dark"] .page-tab {
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .page-tab:hover {
+    background: var(--bg-tertiary);
+}
+
+[data-theme="dark"] .page-tab.active {
+    background: var(--navy-blue);
+    border-color: var(--navy-blue);
+}
+
+/* Page switcher mobile */
+@media (max-width: 900px) {
+    .page-switcher {
+        position: fixed;
+        top: auto;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        transform: none;
+        flex-direction: row;
+        gap: 0;
+        border-radius: 0;
+    }
+
+    .page-tab {
+        flex: 1;
+        justify-content: center;
+        border-radius: 0;
+        border: none;
+        border-top: 1px solid var(--light-gray);
+        padding: 12px 10px;
+        font-size: 0.8rem;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    .page-tab:hover {
+        padding-right: 10px;
+    }
+
+    .page-tab span {
+        display: none;
+    }
+
+    .page-tab::after {
+        content: attr(data-page);
+        text-transform: capitalize;
+    }
+
+    .page-tab[data-page="forward"]::after {
+        content: "Forward";
+    }
+
+    .page-tab[data-page="hecm"]::after {
+        content: "HECM";
+    }
+
+    /* Add padding to body for bottom nav */
+    body {
+        padding-bottom: 60px;
+    }
+}
+
+/* ============================================
    ENHANCED MOBILE RESPONSIVENESS
    ============================================ */
 
