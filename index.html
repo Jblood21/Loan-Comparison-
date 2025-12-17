@@ -319,19 +319,6 @@
         <div class="comparison-container">
             <!-- Loan comparison tabs -->
             <div class="loan-tabs-container">
-                <div class="comparison-type-toggle" id="comparisonTypeToggle">
-                    <span class="toggle-label">Comparing:</span>
-                    <div class="comparison-type-buttons">
-                        <button class="comparison-type-btn active" data-type="same" title="Same property, different loan options">
-                            <span class="type-icon">🏠</span>
-                            <span class="type-text">Same Property</span>
-                        </button>
-                        <button class="comparison-type-btn" data-type="different" title="Different properties">
-                            <span class="type-icon">🏠🏠</span>
-                            <span class="type-text">Different Properties</span>
-                        </button>
-                    </div>
-                </div>
                 <div class="loan-tabs" id="loanTabs">
                     <button class="loan-tab active" data-index="0">Scenario 1</button>
                 </div>
@@ -428,6 +415,21 @@
                             <div class="form-group">
                                 <label>Scenario Name (Optional)</label>
                                 <input type="text" name="scenarioName" placeholder="e.g., Low Down Payment Option">
+                            </div>
+
+                            <!-- Comparison Type Toggle -->
+                            <div class="comparison-type-toggle" id="comparisonTypeToggle">
+                                <label class="toggle-label">Comparison Type:</label>
+                                <div class="comparison-type-buttons">
+                                    <button type="button" class="comparison-type-btn active" data-type="same" title="Same property, different loan options">
+                                        <span class="type-icon">🏠</span>
+                                        <span class="type-text">Same Property</span>
+                                    </button>
+                                    <button type="button" class="comparison-type-btn" data-type="different" title="Different properties">
+                                        <span class="type-icon">🏠🏠</span>
+                                        <span class="type-text">Different Properties</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
