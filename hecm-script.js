@@ -65,7 +65,17 @@ const HECMCalculator = {
             plf: parseFloat(panel.querySelector('.plf')?.value) || 52.4,
             paymentType: paymentType,
             termMonths: parseFloat(panel.querySelector('.term-months')?.value) || 120,
-            thirdPartyCosts: parseFloat(panel.querySelector('.third-party-costs')?.value) || 3500
+            thirdPartyCosts: parseFloat(panel.querySelector('.third-party-costs')?.value) || 3500,
+            // Set-asides
+            lesaAmount: parseFloat(panel.querySelector('.lesa-amount')?.value) || 0,
+            serviceFeeSetaside: parseFloat(panel.querySelector('.service-fee-setaside')?.value) || 0,
+            repairsSetaside: parseFloat(panel.querySelector('.repairs-setaside')?.value) || 0,
+            counselingFee: parseFloat(panel.querySelector('.counseling-fee')?.value) || 125,
+            // Annual property charges
+            annualTaxes: parseFloat(panel.querySelector('.annual-taxes')?.value) || 0,
+            annualInsurance: parseFloat(panel.querySelector('.annual-insurance')?.value) || 0,
+            annualHoa: parseFloat(panel.querySelector('.annual-hoa')?.value) || 0,
+            annualFlood: parseFloat(panel.querySelector('.annual-flood')?.value) || 0
         };
     },
 
@@ -169,10 +179,18 @@ const HECMCalculator = {
         // Calculate costs (proprietary has no MIP)
         const initialMIP = isProprietary ? 0 : this.calculateInitialMIP(data.homeValue, data.fhaLimit);
         const originationFee = this.calculateOriginationFee(data.homeValue, isProprietary ? data.homeValue : data.fhaLimit) - data.lenderCredit;
-        const totalClosingCosts = initialMIP + Math.max(0, originationFee) + data.thirdPartyCosts;
 
-        // Calculate Net Principal Limit
-        const netPrincipalLimit = principalLimit - totalClosingCosts - data.existingMortgage;
+        // Calculate set-asides total
+        const totalSetAsides = data.lesaAmount + data.serviceFeeSetaside + data.repairsSetaside;
+
+        // Total closing costs including counseling fee
+        const totalClosingCosts = initialMIP + Math.max(0, originationFee) + data.thirdPartyCosts + data.counselingFee;
+
+        // Calculate annual property charges
+        const totalAnnualCharges = data.annualTaxes + data.annualInsurance + data.annualHoa + data.annualFlood;
+
+        // Calculate Net Principal Limit (deduct set-asides)
+        const netPrincipalLimit = principalLimit - totalClosingCosts - data.existingMortgage - totalSetAsides;
 
         // Calculate based on payment type
         let cashToBorrower = 0;
@@ -209,6 +227,7 @@ const HECMCalculator = {
         panel.querySelector('.initial-mip').value = Math.round(initialMIP);
         panel.querySelector('.origination-fee').value = Math.round(Math.max(0, originationFee));
         panel.querySelector('.total-closing-costs').value = Math.round(totalClosingCosts);
+        panel.querySelector('.total-annual-charges').value = Math.round(totalAnnualCharges);
 
         // Display results
         document.getElementById(`max-claim-${scenarioId}`).textContent = this.formatCurrency(maxClaimAmount);
@@ -236,12 +255,50 @@ const HECMCalculator = {
         document.getElementById(`balance-year15-${scenarioId}`).textContent = this.formatCurrency(this.calculateBalanceProjectionWithMip(initialBalance, effectiveRate, annualMipRate, 15));
         document.getElementById(`balance-year20-${scenarioId}`).textContent = this.formatCurrency(this.calculateBalanceProjectionWithMip(initialBalance, effectiveRate, annualMipRate, 20));
 
+        // Equity projections (home appreciation at 3% minus loan balance)
+        const homeAppreciation = 0.03;
+        const balance5 = this.calculateBalanceProjectionWithMip(initialBalance, effectiveRate, annualMipRate, 5);
+        const balance10 = this.calculateBalanceProjectionWithMip(initialBalance, effectiveRate, annualMipRate, 10);
+        const balance15 = this.calculateBalanceProjectionWithMip(initialBalance, effectiveRate, annualMipRate, 15);
+        const balance20 = this.calculateBalanceProjectionWithMip(initialBalance, effectiveRate, annualMipRate, 20);
+
+        const homeValue5 = data.homeValue * Math.pow(1 + homeAppreciation, 5);
+        const homeValue10 = data.homeValue * Math.pow(1 + homeAppreciation, 10);
+        const homeValue15 = data.homeValue * Math.pow(1 + homeAppreciation, 15);
+        const homeValue20 = data.homeValue * Math.pow(1 + homeAppreciation, 20);
+
+        document.getElementById(`equity-year5-${scenarioId}`).textContent = this.formatCurrency(Math.max(0, homeValue5 - balance5));
+        document.getElementById(`equity-year10-${scenarioId}`).textContent = this.formatCurrency(Math.max(0, homeValue10 - balance10));
+        document.getElementById(`equity-year15-${scenarioId}`).textContent = this.formatCurrency(Math.max(0, homeValue15 - balance15));
+        document.getElementById(`equity-year20-${scenarioId}`).textContent = this.formatCurrency(Math.max(0, homeValue20 - balance20));
+
+        // Interest & MIP cost projections
+        const interest5 = balance5 - initialBalance;
+        const interest10 = balance10 - initialBalance;
+        const interest15 = balance15 - initialBalance;
+        const interest20 = balance20 - initialBalance;
+
+        document.getElementById(`interest-year5-${scenarioId}`).textContent = this.formatCurrency(interest5);
+        document.getElementById(`interest-year10-${scenarioId}`).textContent = this.formatCurrency(interest10);
+        document.getElementById(`interest-year15-${scenarioId}`).textContent = this.formatCurrency(interest15);
+        document.getElementById(`interest-year20-${scenarioId}`).textContent = this.formatCurrency(interest20);
+
         // Cost breakdown
         document.getElementById(`cost-mip-${scenarioId}`).textContent = this.formatCurrency(initialMIP);
         document.getElementById(`cost-origination-${scenarioId}`).textContent = this.formatCurrency(Math.max(0, originationFee));
         document.getElementById(`cost-third-party-${scenarioId}`).textContent = this.formatCurrency(data.thirdPartyCosts);
+        document.getElementById(`cost-counseling-${scenarioId}`).textContent = this.formatCurrency(data.counselingFee);
         document.getElementById(`cost-payoff-${scenarioId}`).textContent = this.formatCurrency(data.existingMortgage);
-        document.getElementById(`cost-total-${scenarioId}`).textContent = this.formatCurrency(totalClosingCosts + data.existingMortgage);
+        document.getElementById(`cost-setasides-${scenarioId}`).textContent = this.formatCurrency(totalSetAsides);
+        document.getElementById(`cost-total-${scenarioId}`).textContent = this.formatCurrency(totalClosingCosts + data.existingMortgage + totalSetAsides);
+
+        // Annual obligations
+        const annualMipAmount = isProprietary ? 0 : (initialBalance * annualMipRate / 100);
+        document.getElementById(`annual-taxes-${scenarioId}`).textContent = this.formatCurrency(data.annualTaxes);
+        document.getElementById(`annual-insurance-${scenarioId}`).textContent = this.formatCurrency(data.annualInsurance);
+        document.getElementById(`annual-hoa-${scenarioId}`).textContent = this.formatCurrency(data.annualHoa);
+        document.getElementById(`annual-mip-${scenarioId}`).textContent = this.formatCurrency(annualMipAmount);
+        document.getElementById(`annual-total-${scenarioId}`).textContent = this.formatCurrency(totalAnnualCharges + annualMipAmount);
 
         // Show results
         document.getElementById(`results-${scenarioId}`).style.display = 'block';
@@ -285,7 +342,7 @@ const HECMCalculator = {
             { label: 'Net Principal Limit', key: 'netPrincipalLimit' },
             { label: 'Cash to Borrower', key: 'cashToBorrower' },
             { label: 'Line of Credit', key: 'locAmount' },
-            { label: 'Monthly Payment', key: 'monthlyPayment' },
+            { label: 'Monthly Distribution', key: 'monthlyPayment' },
             { label: 'Upfront MIP', key: 'initialMIP' },
             { label: 'Total Closing Costs', key: 'totalClosingCosts' },
             { label: 'Interest Rate', key: 'interestRate', isPercent: true }
@@ -629,7 +686,7 @@ const DocumentGenerator = {
                                 <th style="padding: 10px; text-align: right; border: 1px solid #e5e7eb;">Net Principal</th>
                                 <th style="padding: 10px; text-align: right; border: 1px solid #e5e7eb;">Cash at Close</th>
                                 <th style="padding: 10px; text-align: right; border: 1px solid #e5e7eb;">Line of Credit</th>
-                                <th style="padding: 10px; text-align: right; border: 1px solid #e5e7eb;">Monthly Payment</th>
+                                <th style="padding: 10px; text-align: right; border: 1px solid #e5e7eb;">Monthly Distribution</th>
                                 <th style="padding: 10px; text-align: right; border: 1px solid #e5e7eb;">Closing Costs</th>
                             </tr>
                         </thead>

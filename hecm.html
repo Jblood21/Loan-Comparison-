@@ -14,6 +14,12 @@
 
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Apply dark mode immediately to prevent flash -->
+    <script>
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+    </script>
 </head>
 <body>
     <!-- Page Switcher Tab -->
@@ -507,6 +513,83 @@
                         </div>
                     </div>
 
+                    <!-- Set-Asides & Additional Costs -->
+                    <div class="form-section">
+                        <h3>Set-Asides & Additional</h3>
+                        <div class="form-group">
+                            <label>Life Expectancy Set-Aside (LESA)</label>
+                            <div class="input-wrapper">
+                                <span class="currency-symbol">$</span>
+                                <input type="number" class="lesa-amount" value="0" placeholder="0">
+                            </div>
+                            <span class="helper-text">Required for property charges if applicable</span>
+                        </div>
+                        <div class="form-group">
+                            <label>Service Fee Set-Aside</label>
+                            <div class="input-wrapper">
+                                <span class="currency-symbol">$</span>
+                                <input type="number" class="service-fee-setaside" value="0" placeholder="0">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Repairs Set-Aside</label>
+                            <div class="input-wrapper">
+                                <span class="currency-symbol">$</span>
+                                <input type="number" class="repairs-setaside" value="0" placeholder="0">
+                            </div>
+                            <span class="helper-text">For required property repairs</span>
+                        </div>
+                        <div class="form-group">
+                            <label>HECM Counseling Fee</label>
+                            <div class="input-wrapper">
+                                <span class="currency-symbol">$</span>
+                                <input type="number" class="counseling-fee" value="125" placeholder="125">
+                            </div>
+                            <span class="helper-text">HUD-approved counselor fee</span>
+                        </div>
+                    </div>
+
+                    <!-- Annual Property Charges -->
+                    <div class="form-section">
+                        <h3>Annual Property Charges</h3>
+                        <div class="form-group">
+                            <label>Property Taxes (Annual)</label>
+                            <div class="input-wrapper">
+                                <span class="currency-symbol">$</span>
+                                <input type="number" class="annual-taxes" value="3600" placeholder="3,600">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Homeowners Insurance (Annual)</label>
+                            <div class="input-wrapper">
+                                <span class="currency-symbol">$</span>
+                                <input type="number" class="annual-insurance" value="1500" placeholder="1,500">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>HOA Dues (Annual)</label>
+                            <div class="input-wrapper">
+                                <span class="currency-symbol">$</span>
+                                <input type="number" class="annual-hoa" value="0" placeholder="0">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Flood Insurance (Annual)</label>
+                            <div class="input-wrapper">
+                                <span class="currency-symbol">$</span>
+                                <input type="number" class="annual-flood" value="0" placeholder="0">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Total Annual Charges</label>
+                            <div class="input-wrapper">
+                                <span class="currency-symbol">$</span>
+                                <input type="number" class="total-annual-charges" readonly>
+                            </div>
+                            <span class="helper-text">Borrower remains responsible for these</span>
+                        </div>
+                    </div>
+
                     <!-- Closing Costs -->
                     <div class="form-section full-width">
                         <h3>Estimated Closing Costs</h3>
@@ -580,7 +663,7 @@
                             <small>Initial available credit</small>
                         </div>
                         <div class="result-card">
-                            <h4>Monthly Payment</h4>
+                            <h4>Monthly Distribution</h4>
                             <div class="result-value" id="monthly-payment-1">$0</div>
                             <small>Tenure/Term payment amount</small>
                         </div>
@@ -634,6 +717,54 @@
                         </div>
                     </div>
 
+                    <!-- Remaining Equity Projection -->
+                    <div class="equity-projection-section">
+                        <h3>Estimated Remaining Equity</h3>
+                        <p class="section-note">Home value appreciation at 3% annually minus loan balance</p>
+                        <div class="equity-grid">
+                            <div class="equity-item">
+                                <span class="equity-year">Year 5</span>
+                                <span class="equity-value" id="equity-year5-1">$0</span>
+                            </div>
+                            <div class="equity-item">
+                                <span class="equity-year">Year 10</span>
+                                <span class="equity-value" id="equity-year10-1">$0</span>
+                            </div>
+                            <div class="equity-item">
+                                <span class="equity-year">Year 15</span>
+                                <span class="equity-value" id="equity-year15-1">$0</span>
+                            </div>
+                            <div class="equity-item">
+                                <span class="equity-year">Year 20</span>
+                                <span class="equity-value" id="equity-year20-1">$0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Interest & MIP Cost Summary -->
+                    <div class="interest-summary-section">
+                        <h3>Total Interest & MIP Costs</h3>
+                        <p class="section-note">Cumulative interest and MIP charges over time</p>
+                        <div class="interest-grid">
+                            <div class="interest-item">
+                                <span class="interest-year">Year 5</span>
+                                <span class="interest-value" id="interest-year5-1">$0</span>
+                            </div>
+                            <div class="interest-item">
+                                <span class="interest-year">Year 10</span>
+                                <span class="interest-value" id="interest-year10-1">$0</span>
+                            </div>
+                            <div class="interest-item">
+                                <span class="interest-year">Year 15</span>
+                                <span class="interest-value" id="interest-year15-1">$0</span>
+                            </div>
+                            <div class="interest-item">
+                                <span class="interest-year">Year 20</span>
+                                <span class="interest-value" id="interest-year20-1">$0</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Cost Breakdown -->
                     <div class="hecm-cost-breakdown">
                         <h3>Upfront Costs Breakdown</h3>
@@ -651,14 +782,50 @@
                                 <span id="cost-third-party-1">$0</span>
                             </div>
                             <div class="cost-item">
+                                <span>Counseling Fee</span>
+                                <span id="cost-counseling-1">$0</span>
+                            </div>
+                            <div class="cost-item">
                                 <span>Existing Mortgage Payoff</span>
                                 <span id="cost-payoff-1">$0</span>
+                            </div>
+                            <div class="cost-item">
+                                <span>Set-Asides (LESA, Repairs, etc.)</span>
+                                <span id="cost-setasides-1">$0</span>
                             </div>
                             <div class="cost-item total">
                                 <span>Total Deductions</span>
                                 <span id="cost-total-1">$0</span>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Annual Ongoing Costs Summary -->
+                    <div class="annual-costs-summary">
+                        <h3>Annual Ongoing Obligations</h3>
+                        <div class="cost-items">
+                            <div class="cost-item">
+                                <span>Property Taxes</span>
+                                <span id="annual-taxes-1">$0</span>
+                            </div>
+                            <div class="cost-item">
+                                <span>Homeowners Insurance</span>
+                                <span id="annual-insurance-1">$0</span>
+                            </div>
+                            <div class="cost-item">
+                                <span>HOA Dues</span>
+                                <span id="annual-hoa-1">$0</span>
+                            </div>
+                            <div class="cost-item">
+                                <span>Annual MIP (0.5%)</span>
+                                <span id="annual-mip-1">$0</span>
+                            </div>
+                            <div class="cost-item total">
+                                <span>Total Annual Obligations</span>
+                                <span id="annual-total-1">$0</span>
+                            </div>
+                        </div>
+                        <p class="cost-note">Note: Annual MIP accrues to loan balance, not paid out of pocket</p>
                     </div>
                 </div>
             </div>
@@ -841,6 +1008,83 @@
                         </div>
                     </div>
 
+                    <!-- Set-Asides & Additional Costs -->
+                    <div class="form-section">
+                        <h3>Set-Asides & Additional</h3>
+                        <div class="form-group">
+                            <label>Life Expectancy Set-Aside (LESA)</label>
+                            <div class="input-wrapper">
+                                <span class="currency-symbol">$</span>
+                                <input type="number" class="lesa-amount" value="0" placeholder="0">
+                            </div>
+                            <span class="helper-text">Required for property charges if applicable</span>
+                        </div>
+                        <div class="form-group">
+                            <label>Service Fee Set-Aside</label>
+                            <div class="input-wrapper">
+                                <span class="currency-symbol">$</span>
+                                <input type="number" class="service-fee-setaside" value="0" placeholder="0">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Repairs Set-Aside</label>
+                            <div class="input-wrapper">
+                                <span class="currency-symbol">$</span>
+                                <input type="number" class="repairs-setaside" value="0" placeholder="0">
+                            </div>
+                            <span class="helper-text">For required property repairs</span>
+                        </div>
+                        <div class="form-group">
+                            <label>HECM Counseling Fee</label>
+                            <div class="input-wrapper">
+                                <span class="currency-symbol">$</span>
+                                <input type="number" class="counseling-fee" value="125" placeholder="125">
+                            </div>
+                            <span class="helper-text">HUD-approved counselor fee</span>
+                        </div>
+                    </div>
+
+                    <!-- Annual Property Charges -->
+                    <div class="form-section">
+                        <h3>Annual Property Charges</h3>
+                        <div class="form-group">
+                            <label>Property Taxes (Annual)</label>
+                            <div class="input-wrapper">
+                                <span class="currency-symbol">$</span>
+                                <input type="number" class="annual-taxes" value="3600" placeholder="3,600">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Homeowners Insurance (Annual)</label>
+                            <div class="input-wrapper">
+                                <span class="currency-symbol">$</span>
+                                <input type="number" class="annual-insurance" value="1500" placeholder="1,500">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>HOA Dues (Annual)</label>
+                            <div class="input-wrapper">
+                                <span class="currency-symbol">$</span>
+                                <input type="number" class="annual-hoa" value="0" placeholder="0">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Flood Insurance (Annual)</label>
+                            <div class="input-wrapper">
+                                <span class="currency-symbol">$</span>
+                                <input type="number" class="annual-flood" value="0" placeholder="0">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Total Annual Charges</label>
+                            <div class="input-wrapper">
+                                <span class="currency-symbol">$</span>
+                                <input type="number" class="total-annual-charges" readonly>
+                            </div>
+                            <span class="helper-text">Borrower remains responsible for these</span>
+                        </div>
+                    </div>
+
                     <!-- Closing Costs -->
                     <div class="form-section full-width">
                         <h3>Estimated Closing Costs</h3>
@@ -911,7 +1155,7 @@
                             <small>Initial available credit</small>
                         </div>
                         <div class="result-card">
-                            <h4>Monthly Payment</h4>
+                            <h4>Monthly Distribution</h4>
                             <div class="result-value" id="monthly-payment-2">$0</div>
                             <small>Tenure/Term payment amount</small>
                         </div>
@@ -963,6 +1207,54 @@
                         </div>
                     </div>
 
+                    <!-- Remaining Equity Projection -->
+                    <div class="equity-projection-section">
+                        <h3>Estimated Remaining Equity</h3>
+                        <p class="section-note">Home value appreciation at 3% annually minus loan balance</p>
+                        <div class="equity-grid">
+                            <div class="equity-item">
+                                <span class="equity-year">Year 5</span>
+                                <span class="equity-value" id="equity-year5-2">$0</span>
+                            </div>
+                            <div class="equity-item">
+                                <span class="equity-year">Year 10</span>
+                                <span class="equity-value" id="equity-year10-2">$0</span>
+                            </div>
+                            <div class="equity-item">
+                                <span class="equity-year">Year 15</span>
+                                <span class="equity-value" id="equity-year15-2">$0</span>
+                            </div>
+                            <div class="equity-item">
+                                <span class="equity-year">Year 20</span>
+                                <span class="equity-value" id="equity-year20-2">$0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Interest & MIP Cost Summary -->
+                    <div class="interest-summary-section">
+                        <h3>Total Interest & MIP Costs</h3>
+                        <p class="section-note">Cumulative interest and MIP charges over time</p>
+                        <div class="interest-grid">
+                            <div class="interest-item">
+                                <span class="interest-year">Year 5</span>
+                                <span class="interest-value" id="interest-year5-2">$0</span>
+                            </div>
+                            <div class="interest-item">
+                                <span class="interest-year">Year 10</span>
+                                <span class="interest-value" id="interest-year10-2">$0</span>
+                            </div>
+                            <div class="interest-item">
+                                <span class="interest-year">Year 15</span>
+                                <span class="interest-value" id="interest-year15-2">$0</span>
+                            </div>
+                            <div class="interest-item">
+                                <span class="interest-year">Year 20</span>
+                                <span class="interest-value" id="interest-year20-2">$0</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="hecm-cost-breakdown">
                         <h3>Upfront Costs Breakdown</h3>
                         <div class="cost-items">
@@ -979,14 +1271,50 @@
                                 <span id="cost-third-party-2">$0</span>
                             </div>
                             <div class="cost-item">
+                                <span>Counseling Fee</span>
+                                <span id="cost-counseling-2">$0</span>
+                            </div>
+                            <div class="cost-item">
                                 <span>Existing Mortgage Payoff</span>
                                 <span id="cost-payoff-2">$0</span>
+                            </div>
+                            <div class="cost-item">
+                                <span>Set-Asides (LESA, Repairs, etc.)</span>
+                                <span id="cost-setasides-2">$0</span>
                             </div>
                             <div class="cost-item total">
                                 <span>Total Deductions</span>
                                 <span id="cost-total-2">$0</span>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Annual Ongoing Costs Summary -->
+                    <div class="annual-costs-summary">
+                        <h3>Annual Ongoing Obligations</h3>
+                        <div class="cost-items">
+                            <div class="cost-item">
+                                <span>Property Taxes</span>
+                                <span id="annual-taxes-2">$0</span>
+                            </div>
+                            <div class="cost-item">
+                                <span>Homeowners Insurance</span>
+                                <span id="annual-insurance-2">$0</span>
+                            </div>
+                            <div class="cost-item">
+                                <span>HOA Dues</span>
+                                <span id="annual-hoa-2">$0</span>
+                            </div>
+                            <div class="cost-item">
+                                <span>Annual MIP (0.5%)</span>
+                                <span id="annual-mip-2">$0</span>
+                            </div>
+                            <div class="cost-item total">
+                                <span>Total Annual Obligations</span>
+                                <span id="annual-total-2">$0</span>
+                            </div>
+                        </div>
+                        <p class="cost-note">Note: Annual MIP accrues to loan balance, not paid out of pocket</p>
                     </div>
                 </div>
             </div>
