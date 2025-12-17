@@ -414,6 +414,453 @@ const HECMCalculator = {
         }).join('');
 
         document.getElementById('hecmComparison').style.display = 'block';
+
+        // Update charts and projections
+        HECMChartManager.updateCharts();
+        HECMChartManager.updateProjections(10); // Default 10 years
+    }
+};
+
+// Chart Manager for HECM
+const HECMChartManager = {
+    charts: {},
+    selectedYears: 10,
+
+    init() {
+        // Time period buttons
+        document.querySelectorAll('.hecm-time-section .time-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.hecm-time-section .time-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                this.selectedYears = parseInt(btn.dataset.years);
+                this.updateProjections(this.selectedYears);
+                document.querySelector('.hecm-projections-summary .time-label').textContent = `(at ${this.selectedYears} years)`;
+            });
+        });
+    },
+
+    updateCharts() {
+        if (!HECMCalculator.results || !HECMCalculator.results[1] || !HECMCalculator.results[2]) return;
+
+        const r1 = HECMCalculator.results[1];
+        const r2 = HECMCalculator.results[2];
+        const d1 = HECMCalculator.getFormData(1);
+        const d2 = HECMCalculator.getFormData(2);
+
+        // Destroy existing charts
+        Object.values(this.charts).forEach(chart => chart?.destroy());
+
+        // Chart colors
+        const colors = {
+            scenario1: 'rgba(37, 99, 235, 0.8)',
+            scenario1Light: 'rgba(37, 99, 235, 0.2)',
+            scenario2: 'rgba(16, 185, 129, 0.8)',
+            scenario2Light: 'rgba(16, 185, 129, 0.2)',
+            homeValue: 'rgba(139, 92, 246, 0.8)',
+            homeValueLight: 'rgba(139, 92, 246, 0.2)'
+        };
+
+        // 1. Benefit Comparison Chart (Cash/LOC)
+        const benefitCtx = document.getElementById('hecmBenefitChart')?.getContext('2d');
+        if (benefitCtx) {
+            this.charts.benefit = new Chart(benefitCtx, {
+                type: 'bar',
+                data: {
+                    labels: [r1.name || 'Scenario 1', r2.name || 'Scenario 2'],
+                    datasets: [
+                        {
+                            label: 'Cash to Borrower',
+                            data: [r1.cashToBorrower, r2.cashToBorrower],
+                            backgroundColor: colors.scenario1,
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Line of Credit',
+                            data: [r1.locAmount, r2.locAmount],
+                            backgroundColor: colors.scenario2,
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => `${ctx.dataset.label}: ${HECMCalculator.formatCurrency(ctx.raw)}`
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: (value) => HECMCalculator.formatCurrency(value)
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 2. Costs Comparison Chart
+        const costsCtx = document.getElementById('hecmCostsChart')?.getContext('2d');
+        if (costsCtx) {
+            this.charts.costs = new Chart(costsCtx, {
+                type: 'bar',
+                data: {
+                    labels: [r1.name || 'Scenario 1', r2.name || 'Scenario 2'],
+                    datasets: [
+                        {
+                            label: 'Initial MIP',
+                            data: [r1.initialMIP, r2.initialMIP],
+                            backgroundColor: 'rgba(239, 68, 68, 0.7)',
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Closing Costs',
+                            data: [r1.totalClosingCosts - r1.initialMIP, r2.totalClosingCosts - r2.initialMIP],
+                            backgroundColor: 'rgba(251, 146, 60, 0.7)',
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Mortgage Payoff',
+                            data: [r1.existingMortgage, r2.existingMortgage],
+                            backgroundColor: 'rgba(156, 163, 175, 0.7)',
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => `${ctx.dataset.label}: ${HECMCalculator.formatCurrency(ctx.raw)}`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { stacked: true },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true,
+                            ticks: {
+                                callback: (value) => HECMCalculator.formatCurrency(value)
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 3. Balance Projection Chart (Line)
+        const balanceCtx = document.getElementById('hecmBalanceChart')?.getContext('2d');
+        if (balanceCtx) {
+            const years = Array.from({length: 31}, (_, i) => i);
+            const initialBalance1 = r1.totalClosingCosts + r1.existingMortgage;
+            const initialBalance2 = r2.totalClosingCosts + r2.existingMortgage;
+
+            const balances1 = years.map(y => HECMCalculator.calculateBalanceProjectionWithMip(initialBalance1, r1.interestRate, 0.5, y));
+            const balances2 = years.map(y => HECMCalculator.calculateBalanceProjectionWithMip(initialBalance2, r2.interestRate, 0.5, y));
+
+            this.charts.balance = new Chart(balanceCtx, {
+                type: 'line',
+                data: {
+                    labels: years.map(y => `Year ${y}`),
+                    datasets: [
+                        {
+                            label: r1.name || 'Scenario 1',
+                            data: balances1,
+                            borderColor: colors.scenario1,
+                            backgroundColor: colors.scenario1Light,
+                            fill: true,
+                            tension: 0.3
+                        },
+                        {
+                            label: r2.name || 'Scenario 2',
+                            data: balances2,
+                            borderColor: colors.scenario2,
+                            backgroundColor: colors.scenario2Light,
+                            fill: true,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => `${ctx.dataset.label}: ${HECMCalculator.formatCurrency(ctx.raw)}`
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: (value) => HECMCalculator.formatCurrency(value)
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 4. Equity Projection Chart
+        const equityCtx = document.getElementById('hecmEquityChart')?.getContext('2d');
+        if (equityCtx) {
+            const years = Array.from({length: 31}, (_, i) => i);
+            const homeValue1 = d1?.homeValue || 450000;
+            const homeValue2 = d2?.homeValue || 450000;
+            const initialBalance1 = r1.totalClosingCosts + r1.existingMortgage;
+            const initialBalance2 = r2.totalClosingCosts + r2.existingMortgage;
+            const appreciation = 0.03;
+
+            const homeValues1 = years.map(y => homeValue1 * Math.pow(1 + appreciation, y));
+            const homeValues2 = years.map(y => homeValue2 * Math.pow(1 + appreciation, y));
+            const balances1 = years.map(y => HECMCalculator.calculateBalanceProjectionWithMip(initialBalance1, r1.interestRate, 0.5, y));
+            const balances2 = years.map(y => HECMCalculator.calculateBalanceProjectionWithMip(initialBalance2, r2.interestRate, 0.5, y));
+            const equities1 = years.map((y, i) => Math.max(0, homeValues1[i] - balances1[i]));
+            const equities2 = years.map((y, i) => Math.max(0, homeValues2[i] - balances2[i]));
+
+            this.charts.equity = new Chart(equityCtx, {
+                type: 'line',
+                data: {
+                    labels: years.map(y => `Year ${y}`),
+                    datasets: [
+                        {
+                            label: `${r1.name || 'Scenario 1'} Equity`,
+                            data: equities1,
+                            borderColor: colors.scenario1,
+                            backgroundColor: colors.scenario1Light,
+                            fill: true,
+                            tension: 0.3
+                        },
+                        {
+                            label: `${r2.name || 'Scenario 2'} Equity`,
+                            data: equities2,
+                            borderColor: colors.scenario2,
+                            backgroundColor: colors.scenario2Light,
+                            fill: true,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Home Value (3% appreciation)',
+                            data: homeValues1,
+                            borderColor: colors.homeValue,
+                            borderDash: [5, 5],
+                            fill: false,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => `${ctx.dataset.label}: ${HECMCalculator.formatCurrency(ctx.raw)}`
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: (value) => HECMCalculator.formatCurrency(value)
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 5. LOC Growth Chart
+        const locCtx = document.getElementById('hecmLOCGrowthChart')?.getContext('2d');
+        if (locCtx && (r1.locAmount > 0 || r2.locAmount > 0)) {
+            const years = Array.from({length: 31}, (_, i) => i);
+
+            const loc1 = years.map(y => r1.locAmount > 0 ? HECMCalculator.calculateLOCGrowthWithMip(r1.locAmount, r1.interestRate, 0.5, y) : 0);
+            const loc2 = years.map(y => r2.locAmount > 0 ? HECMCalculator.calculateLOCGrowthWithMip(r2.locAmount, r2.interestRate, 0.5, y) : 0);
+
+            this.charts.loc = new Chart(locCtx, {
+                type: 'line',
+                data: {
+                    labels: years.map(y => `Year ${y}`),
+                    datasets: [
+                        {
+                            label: `${r1.name || 'Scenario 1'} LOC`,
+                            data: loc1,
+                            borderColor: colors.scenario1,
+                            backgroundColor: colors.scenario1Light,
+                            fill: true,
+                            tension: 0.3
+                        },
+                        {
+                            label: `${r2.name || 'Scenario 2'} LOC`,
+                            data: loc2,
+                            borderColor: colors.scenario2,
+                            backgroundColor: colors.scenario2Light,
+                            fill: true,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => `${ctx.dataset.label}: ${HECMCalculator.formatCurrency(ctx.raw)}`
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: (value) => HECMCalculator.formatCurrency(value)
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    },
+
+    updateProjections(years) {
+        if (!HECMCalculator.results || !HECMCalculator.results[1] || !HECMCalculator.results[2]) return;
+
+        const r1 = HECMCalculator.results[1];
+        const r2 = HECMCalculator.results[2];
+        const d1 = HECMCalculator.getFormData(1);
+        const d2 = HECMCalculator.getFormData(2);
+
+        const homeValue1 = d1?.homeValue || 450000;
+        const homeValue2 = d2?.homeValue || 450000;
+        const initialBalance1 = r1.totalClosingCosts + r1.existingMortgage;
+        const initialBalance2 = r2.totalClosingCosts + r2.existingMortgage;
+        const appreciation = 0.03;
+
+        // Calculate projections
+        const projHomeValue1 = homeValue1 * Math.pow(1 + appreciation, years);
+        const projHomeValue2 = homeValue2 * Math.pow(1 + appreciation, years);
+        const projBalance1 = HECMCalculator.calculateBalanceProjectionWithMip(initialBalance1, r1.interestRate, 0.5, years);
+        const projBalance2 = HECMCalculator.calculateBalanceProjectionWithMip(initialBalance2, r2.interestRate, 0.5, years);
+        const projEquity1 = Math.max(0, projHomeValue1 - projBalance1);
+        const projEquity2 = Math.max(0, projHomeValue2 - projBalance2);
+        const projLOC1 = r1.locAmount > 0 ? HECMCalculator.calculateLOCGrowthWithMip(r1.locAmount, r1.interestRate, 0.5, years) : 0;
+        const projLOC2 = r2.locAmount > 0 ? HECMCalculator.calculateLOCGrowthWithMip(r2.locAmount, r2.interestRate, 0.5, years) : 0;
+        const projInterest1 = projBalance1 - initialBalance1;
+        const projInterest2 = projBalance2 - initialBalance2;
+
+        // Update labels
+        document.getElementById('proj-home-label-1').textContent = r1.name || 'Scenario 1';
+        document.getElementById('proj-home-label-2').textContent = r2.name || 'Scenario 2';
+        document.getElementById('proj-balance-label-1').textContent = r1.name || 'Scenario 1';
+        document.getElementById('proj-balance-label-2').textContent = r2.name || 'Scenario 2';
+        document.getElementById('proj-equity-label-1').textContent = r1.name || 'Scenario 1';
+        document.getElementById('proj-equity-label-2').textContent = r2.name || 'Scenario 2';
+        document.getElementById('proj-loc-label-1').textContent = r1.name || 'Scenario 1';
+        document.getElementById('proj-loc-label-2').textContent = r2.name || 'Scenario 2';
+        document.getElementById('proj-interest-label-1').textContent = r1.name || 'Scenario 1';
+        document.getElementById('proj-interest-label-2').textContent = r2.name || 'Scenario 2';
+
+        // Update values
+        document.getElementById('proj-home-1').textContent = HECMCalculator.formatCurrency(projHomeValue1);
+        document.getElementById('proj-home-2').textContent = HECMCalculator.formatCurrency(projHomeValue2);
+        document.getElementById('proj-balance-1').textContent = HECMCalculator.formatCurrency(projBalance1);
+        document.getElementById('proj-balance-2').textContent = HECMCalculator.formatCurrency(projBalance2);
+        document.getElementById('proj-equity-1').textContent = HECMCalculator.formatCurrency(projEquity1);
+        document.getElementById('proj-equity-2').textContent = HECMCalculator.formatCurrency(projEquity2);
+        document.getElementById('proj-loc-1').textContent = HECMCalculator.formatCurrency(projLOC1);
+        document.getElementById('proj-loc-2').textContent = HECMCalculator.formatCurrency(projLOC2);
+        document.getElementById('proj-interest-1').textContent = HECMCalculator.formatCurrency(projInterest1);
+        document.getElementById('proj-interest-2').textContent = HECMCalculator.formatCurrency(projInterest2);
+
+        // Equity difference
+        const equityDiff = Math.abs(projEquity1 - projEquity2);
+        const favorScenario = projEquity1 > projEquity2 ? (r1.name || 'Scenario 1') : (r2.name || 'Scenario 2');
+        document.getElementById('proj-equity-diff').textContent = HECMCalculator.formatCurrency(equityDiff);
+        document.getElementById('proj-equity-note').textContent = `in favor of ${favorScenario}`;
+
+        // Update recommendation
+        this.updateRecommendation(r1, r2, projEquity1, projEquity2, years);
+    },
+
+    updateRecommendation(r1, r2, equity1, equity2, years) {
+        const contentEl = document.getElementById('hecmRecommendationContent');
+        if (!contentEl) return;
+
+        const name1 = r1.name || 'Scenario 1';
+        const name2 = r2.name || 'Scenario 2';
+
+        let recommendations = [];
+
+        // Compare net principal limits
+        if (r1.netPrincipalLimit > r2.netPrincipalLimit) {
+            const diff = r1.netPrincipalLimit - r2.netPrincipalLimit;
+            recommendations.push(`<strong>${name1}</strong> provides ${HECMCalculator.formatCurrency(diff)} more in available proceeds.`);
+        } else if (r2.netPrincipalLimit > r1.netPrincipalLimit) {
+            const diff = r2.netPrincipalLimit - r1.netPrincipalLimit;
+            recommendations.push(`<strong>${name2}</strong> provides ${HECMCalculator.formatCurrency(diff)} more in available proceeds.`);
+        }
+
+        // Compare closing costs
+        if (r1.totalClosingCosts < r2.totalClosingCosts) {
+            const diff = r2.totalClosingCosts - r1.totalClosingCosts;
+            recommendations.push(`<strong>${name1}</strong> has ${HECMCalculator.formatCurrency(diff)} lower upfront costs.`);
+        } else if (r2.totalClosingCosts < r1.totalClosingCosts) {
+            const diff = r1.totalClosingCosts - r2.totalClosingCosts;
+            recommendations.push(`<strong>${name2}</strong> has ${HECMCalculator.formatCurrency(diff)} lower upfront costs.`);
+        }
+
+        // Compare equity at selected time period
+        if (equity1 > equity2) {
+            const diff = equity1 - equity2;
+            recommendations.push(`At ${years} years, <strong>${name1}</strong> preserves ${HECMCalculator.formatCurrency(diff)} more equity.`);
+        } else if (equity2 > equity1) {
+            const diff = equity2 - equity1;
+            recommendations.push(`At ${years} years, <strong>${name2}</strong> preserves ${HECMCalculator.formatCurrency(diff)} more equity.`);
+        }
+
+        // Compare interest rates
+        if (r1.interestRate < r2.interestRate) {
+            recommendations.push(`<strong>${name1}</strong> has a lower interest rate (${r1.interestRate.toFixed(3)}% vs ${r2.interestRate.toFixed(3)}%), resulting in slower balance growth.`);
+        } else if (r2.interestRate < r1.interestRate) {
+            recommendations.push(`<strong>${name2}</strong> has a lower interest rate (${r2.interestRate.toFixed(3)}% vs ${r1.interestRate.toFixed(3)}%), resulting in slower balance growth.`);
+        }
+
+        // LOC comparison
+        if (r1.locAmount > 0 && r2.locAmount > 0) {
+            if (r1.locAmount > r2.locAmount) {
+                recommendations.push(`<strong>${name1}</strong> starts with a larger line of credit that will grow over time.`);
+            } else if (r2.locAmount > r1.locAmount) {
+                recommendations.push(`<strong>${name2}</strong> starts with a larger line of credit that will grow over time.`);
+            }
+        }
+
+        contentEl.innerHTML = `
+            <ul class="recommendation-list">
+                ${recommendations.map(r => `<li>${r}</li>`).join('')}
+            </ul>
+            <p class="recommendation-note">
+                <strong>Note:</strong> This analysis assumes 3% annual home appreciation and current interest rates remaining constant.
+                Actual results may vary. Consult with a HUD-approved HECM counselor before making any decisions.
+            </p>
+        `;
     }
 };
 
@@ -1091,12 +1538,124 @@ const ScenarioManager = {
     }
 };
 
+// PLF Lookup Calculator
+const PLFLookup = {
+    // Approximate PLF values based on HUD tables (simplified interpolation)
+    // Format: age -> { rate: plf }
+    basePLFs: {
+        62: { 5.0: 0.524, 5.5: 0.490, 6.0: 0.458, 6.5: 0.428, 7.0: 0.400, 7.5: 0.374, 8.0: 0.350 },
+        65: { 5.0: 0.549, 5.5: 0.515, 6.0: 0.483, 6.5: 0.453, 7.0: 0.425, 7.5: 0.399, 8.0: 0.374 },
+        70: { 5.0: 0.589, 5.5: 0.555, 6.0: 0.523, 6.5: 0.493, 7.0: 0.465, 7.5: 0.438, 8.0: 0.413 },
+        75: { 5.0: 0.629, 5.5: 0.595, 6.0: 0.563, 6.5: 0.533, 7.0: 0.504, 7.5: 0.477, 8.0: 0.451 },
+        80: { 5.0: 0.670, 5.5: 0.637, 6.0: 0.605, 6.5: 0.574, 7.0: 0.545, 7.5: 0.518, 8.0: 0.491 },
+        85: { 5.0: 0.712, 5.5: 0.680, 6.0: 0.648, 6.5: 0.618, 7.0: 0.589, 7.5: 0.561, 8.0: 0.534 },
+        90: { 5.0: 0.750, 5.5: 0.721, 6.0: 0.692, 6.5: 0.663, 7.0: 0.635, 7.5: 0.608, 8.0: 0.581 },
+        95: { 5.0: 0.780, 5.5: 0.752, 6.0: 0.724, 6.5: 0.697, 7.0: 0.670, 7.5: 0.644, 8.0: 0.618 },
+        99: { 5.0: 0.800, 5.5: 0.774, 6.0: 0.748, 6.5: 0.722, 7.0: 0.696, 7.5: 0.671, 8.0: 0.646 }
+    },
+
+    lookup(age, rate) {
+        // Clamp age
+        const minAge = 62;
+        const maxAge = 99;
+        age = Math.max(minAge, Math.min(maxAge, Math.round(age)));
+
+        // Clamp rate
+        rate = Math.max(5.0, Math.min(8.0, rate));
+
+        // Find bounding ages
+        const ages = Object.keys(this.basePLFs).map(Number).sort((a, b) => a - b);
+        let lowerAge = ages[0], upperAge = ages[ages.length - 1];
+
+        for (let i = 0; i < ages.length - 1; i++) {
+            if (age >= ages[i] && age <= ages[i + 1]) {
+                lowerAge = ages[i];
+                upperAge = ages[i + 1];
+                break;
+            }
+        }
+
+        // Find bounding rates
+        const rates = [5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0];
+        let lowerRate = rates[0], upperRate = rates[rates.length - 1];
+
+        for (let i = 0; i < rates.length - 1; i++) {
+            if (rate >= rates[i] && rate <= rates[i + 1]) {
+                lowerRate = rates[i];
+                upperRate = rates[i + 1];
+                break;
+            }
+        }
+
+        // Bilinear interpolation
+        const plfLowerAgeLowerRate = this.basePLFs[lowerAge][lowerRate];
+        const plfLowerAgeUpperRate = this.basePLFs[lowerAge][upperRate];
+        const plfUpperAgeLowerRate = this.basePLFs[upperAge][lowerRate];
+        const plfUpperAgeUpperRate = this.basePLFs[upperAge][upperRate];
+
+        // Interpolate by rate for lower age
+        const rateFraction = (rate - lowerRate) / (upperRate - lowerRate || 1);
+        const plfAtLowerAge = plfLowerAgeLowerRate + (plfLowerAgeUpperRate - plfLowerAgeLowerRate) * rateFraction;
+        const plfAtUpperAge = plfUpperAgeLowerRate + (plfUpperAgeUpperRate - plfUpperAgeLowerRate) * rateFraction;
+
+        // Interpolate by age
+        const ageFraction = (age - lowerAge) / (upperAge - lowerAge || 1);
+        const plf = plfAtLowerAge + (plfAtUpperAge - plfAtLowerAge) * ageFraction;
+
+        return plf;
+    },
+
+    init() {
+        const lookupBtn = document.getElementById('lookupPLF');
+        const ageInput = document.getElementById('plf-age-input');
+        const rateInput = document.getElementById('plf-rate-input');
+        const plfValue = document.getElementById('plfValue');
+        const plfExplanation = document.getElementById('plfExplanation');
+
+        if (!lookupBtn) return;
+
+        const performLookup = () => {
+            const age = parseInt(ageInput.value) || 70;
+            const rate = parseFloat(rateInput.value) || 7.0;
+
+            if (age < 62) {
+                plfValue.textContent = 'N/A';
+                plfExplanation.textContent = 'Borrower must be at least 62 years old for a HECM.';
+                return;
+            }
+
+            const plf = this.lookup(age, rate);
+            plfValue.textContent = (plf * 100).toFixed(1) + '%';
+
+            // Calculate example
+            const exampleHomeValue = 400000;
+            const principalLimit = exampleHomeValue * plf;
+
+            plfExplanation.innerHTML = `
+                At age ${age} with a ${rate.toFixed(2)}% expected rate, you can access approximately
+                <strong>${(plf * 100).toFixed(1)}%</strong> of your home's value (or FHA limit).<br><br>
+                <em>Example: On a $${exampleHomeValue.toLocaleString()} home, this would be approximately
+                $${Math.round(principalLimit).toLocaleString()} in gross principal limit.</em>
+            `;
+        };
+
+        lookupBtn.addEventListener('click', performLookup);
+        ageInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') performLookup(); });
+        rateInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') performLookup(); });
+
+        // Initial lookup
+        performLookup();
+    }
+};
+
 // Tab Management
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize settings
     SettingsManager.init();
     DocumentGenerator.init();
     ScenarioManager.init();
+    HECMChartManager.init();
+    PLFLookup.init();
 
     // Scenario tabs
     const tabs = document.querySelectorAll('.loan-tab');
