@@ -126,6 +126,248 @@ Object.freeze(Security);
 Object.freeze(Security.rateLimiter);
 
 // ============================================
+// LOADING STATE MANAGER
+// ============================================
+const LoadingState = {
+    overlay: null,
+    text: null,
+
+    init() {
+        this.overlay = document.getElementById('loadingOverlay');
+        this.text = document.getElementById('loadingText');
+    },
+
+    show(message = 'Loading...') {
+        if (!this.overlay) this.init();
+        if (this.overlay) {
+            if (this.text) this.text.textContent = message;
+            this.overlay.classList.add('active');
+        }
+    },
+
+    hide() {
+        if (!this.overlay) this.init();
+        if (this.overlay) {
+            this.overlay.classList.remove('active');
+        }
+    },
+
+    // Add loading state to a button
+    setButtonLoading(button, loading = true) {
+        if (!button) return;
+        if (loading) {
+            button.classList.add('btn-loading');
+            button.disabled = true;
+            button.dataset.originalText = button.textContent;
+        } else {
+            button.classList.remove('btn-loading');
+            button.disabled = false;
+            if (button.dataset.originalText) {
+                button.textContent = button.dataset.originalText;
+            }
+        }
+    }
+};
+
+// ============================================
+// KEYBOARD SHORTCUTS
+// ============================================
+const KeyboardShortcuts = {
+    enabled: true,
+
+    init() {
+        document.addEventListener('keydown', (e) => this.handleKeydown(e));
+
+        // Close shortcuts modal on overlay click
+        document.getElementById('shortcutsOverlay')?.addEventListener('click', () => this.hideHelp());
+    },
+
+    handleKeydown(e) {
+        if (!this.enabled) return;
+
+        // Don't trigger shortcuts when typing in inputs
+        const isTyping = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName);
+
+        // ? key - show help (only when not typing)
+        if (e.key === '?' && !isTyping && !e.ctrlKey && !e.metaKey) {
+            e.preventDefault();
+            this.showHelp();
+            return;
+        }
+
+        // Escape - close modals
+        if (e.key === 'Escape') {
+            this.hideHelp();
+            // Also close settings panel if open
+            document.getElementById('settingsPanel')?.classList.add('hidden');
+            document.getElementById('settingsOverlay')?.classList.add('hidden');
+            return;
+        }
+
+        // Ctrl/Cmd shortcuts
+        const ctrlKey = e.ctrlKey || e.metaKey;
+        if (!ctrlKey) return;
+
+        switch (e.key.toLowerCase()) {
+            case 'enter':
+                // Calculate loans
+                e.preventDefault();
+                document.querySelector('.calculate-btn')?.click();
+                this.showHint('Calculating...');
+                break;
+
+            case 'n':
+                // Add new loan
+                if (!isTyping) {
+                    e.preventDefault();
+                    document.querySelector('.add-loan-btn')?.click();
+                    this.showHint('New loan added');
+                }
+                break;
+
+            case 's':
+                // Save scenario
+                e.preventDefault();
+                document.getElementById('saveScenarioBtn')?.click();
+                this.showHint('Saving scenario...');
+                break;
+
+            case ',':
+                // Open settings
+                e.preventDefault();
+                document.getElementById('settingsBtn')?.click();
+                this.showHint('Settings opened');
+                break;
+
+            case 'p':
+                // Generate document (print)
+                e.preventDefault();
+                document.getElementById('generateDocBtn')?.click();
+                this.showHint('Generating document...');
+                break;
+        }
+    },
+
+    showHelp() {
+        document.getElementById('shortcutsModal')?.classList.add('active');
+        document.getElementById('shortcutsOverlay')?.classList.add('active');
+    },
+
+    hideHelp() {
+        document.getElementById('shortcutsModal')?.classList.remove('active');
+        document.getElementById('shortcutsOverlay')?.classList.remove('active');
+    },
+
+    showHint(message) {
+        let hint = document.querySelector('.keyboard-hint');
+        if (!hint) {
+            hint = document.createElement('div');
+            hint.className = 'keyboard-hint';
+            document.body.appendChild(hint);
+        }
+        hint.textContent = message;
+        hint.classList.add('visible');
+
+        setTimeout(() => {
+            hint.classList.remove('visible');
+        }, 1500);
+    }
+};
+
+// ============================================
+// BEST VALUE HIGHLIGHTER
+// ============================================
+const BestValueHighlighter = {
+    // Metrics where lower is better
+    lowerIsBetter: ['totalMonthly', 'cashToClose', 'totalInterest', 'apr', 'monthlyPayment', 'totalClosing'],
+
+    // Highlight best values in comparison table
+    highlightTable(loans) {
+        if (!loans || loans.length < 2) return;
+
+        const table = document.querySelector('.comparison-table');
+        if (!table) return;
+
+        // Get all metric rows
+        const rows = table.querySelectorAll('tbody tr');
+
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            if (cells.length <= 1) return;
+
+            const metricName = cells[0]?.textContent?.trim();
+            const isLowerBetter = this.shouldLowerWin(metricName);
+
+            // Get values from cells (skip first cell which is label)
+            const values = [];
+            for (let i = 1; i < cells.length; i++) {
+                const text = cells[i].textContent.replace(/[$,%]/g, '').trim();
+                const val = parseFloat(text);
+                values.push({ index: i, value: isNaN(val) ? Infinity : val, cell: cells[i] });
+            }
+
+            // Find best value
+            let best = values[0];
+            values.forEach(v => {
+                if (isLowerBetter) {
+                    if (v.value < best.value) best = v;
+                } else {
+                    if (v.value > best.value) best = v;
+                }
+            });
+
+            // Clear previous highlights
+            values.forEach(v => {
+                v.cell.classList.remove('highlight-best', 'best-value');
+            });
+
+            // Highlight best if there's a meaningful difference
+            if (values.length > 1 && best.value !== Infinity && best.value !== 0) {
+                const hasDifference = values.some(v => v.value !== best.value);
+                if (hasDifference) {
+                    best.cell.classList.add('highlight-best');
+                }
+            }
+        });
+    },
+
+    shouldLowerWin(metricName) {
+        const lower = metricName?.toLowerCase() || '';
+        // Most financial metrics - lower is better
+        if (lower.includes('payment') || lower.includes('cost') || lower.includes('cash') ||
+            lower.includes('interest') || lower.includes('apr') || lower.includes('fee')) {
+            return true;
+        }
+        return true; // Default to lower is better
+    },
+
+    // Highlight best result cards
+    highlightResultCards(loans) {
+        if (!loans || loans.length < 2) return;
+
+        // Find lowest total monthly payment
+        let lowestMonthly = { index: -1, value: Infinity };
+        let lowestCash = { index: -1, value: Infinity };
+
+        loans.forEach((loan, i) => {
+            if (loan.results.totalMonthly < lowestMonthly.value) {
+                lowestMonthly = { index: i, value: loan.results.totalMonthly };
+            }
+            if (loan.results.cashToClose < lowestCash.value) {
+                lowestCash = { index: i, value: loan.results.cashToClose };
+            }
+        });
+
+        // Clear existing highlights on result cards
+        document.querySelectorAll('.result-card').forEach(card => {
+            card.classList.remove('best-value');
+        });
+
+        // Note: Result cards are per-loan panel, so this highlights within the comparison view
+    }
+};
+
+// ============================================
 // User Session Manager
 // ============================================
 const UserSession = {
@@ -1949,6 +2191,8 @@ class LoanManager {
         this.updateNetCostComparison();
         this.generateRecommendation();
 
+        // Highlight best values in the comparison table
+        BestValueHighlighter.highlightTable(this.loans);
     }
 
     updateComparisonTable() {
@@ -3889,6 +4133,12 @@ const DarkMode = {
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize dark mode first (before other components render)
     DarkMode.init();
+
+    // Initialize keyboard shortcuts
+    KeyboardShortcuts.init();
+
+    // Initialize loading state manager
+    LoadingState.init();
 
     window.settingsManager = new SettingsManager();
     window.loanManager = new LoanManager();

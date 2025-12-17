@@ -871,15 +871,8 @@
                     rateLimiter.reset('adminLogin');
                     showDashboard();
                 } else {
-                    // Fallback to local validation
-                    if (password === 'Ricky031100') {
-                        sessionStorage.setItem('adminToken', generateNonce());
-                        sessionStorage.setItem('adminTokenTime', Date.now().toString());
-                        rateLimiter.reset('adminLogin');
-                        showDashboard();
-                    } else {
-                        throw new Error('Invalid admin password');
-                    }
+                    // Server offline - admin access requires server connection
+                    throw new Error('Admin access requires server connection. Please try again later.');
                 }
             } catch (error) {
                 errorEl.textContent = error.message || 'Invalid admin password';

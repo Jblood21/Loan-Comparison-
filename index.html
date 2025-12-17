@@ -393,7 +393,11 @@
                             </div>
 
                             <div class="form-group">
-                                <label>Loan Amount</label>
+                                <label class="tooltip-trigger">
+                                    Loan Amount
+                                    <span class="tooltip-icon" tabindex="0">?</span>
+                                    <span class="tooltip-content">The total amount you're borrowing, typically Home Price minus Down Payment.</span>
+                                </label>
                                 <div class="input-wrapper">
                                     <span class="currency">$</span>
                                     <input type="number" name="loanAmount" placeholder="270,000" value="270000">
@@ -401,7 +405,11 @@
                             </div>
 
                             <div class="form-group down-payment-group">
-                                <label>Down Payment</label>
+                                <label class="tooltip-trigger">
+                                    Down Payment
+                                    <span class="tooltip-icon" tabindex="0">?</span>
+                                    <span class="tooltip-content">The upfront cash you pay toward the home. A larger down payment means a smaller loan and lower monthly payments. 20%+ avoids PMI on conventional loans.</span>
+                                </label>
                                 <div class="input-row">
                                     <div class="input-wrapper">
                                         <span class="currency">$</span>
@@ -415,7 +423,11 @@
                             </div>
 
                             <div class="form-group">
-                                <label>Interest Rate</label>
+                                <label class="tooltip-trigger">
+                                    Interest Rate
+                                    <span class="tooltip-icon" tabindex="0">?</span>
+                                    <span class="tooltip-content">The annual percentage charged by the lender for borrowing money. Even small rate differences can significantly impact your total cost over the loan term.</span>
+                                </label>
                                 <div class="input-wrapper percent-wrapper">
                                     <input type="number" name="interestRate" placeholder="6.5" value="6.5" step="0.125">
                                     <span class="percent">%</span>
@@ -423,7 +435,11 @@
                             </div>
 
                             <div class="form-group">
-                                <label>Loan Term</label>
+                                <label class="tooltip-trigger">
+                                    Loan Term
+                                    <span class="tooltip-icon" tabindex="0">?</span>
+                                    <span class="tooltip-content">The length of your mortgage. Shorter terms have higher monthly payments but less total interest paid. 30-year is most common.</span>
+                                </label>
                                 <select name="loanTerm">
                                     <option value="30">30 Years</option>
                                     <option value="20">20 Years</option>
@@ -484,7 +500,11 @@
                             </div>
 
                             <div class="form-group points-amount hidden">
-                                <label>Discount Points</label>
+                                <label class="tooltip-trigger">
+                                    Discount Points
+                                    <span class="tooltip-icon" tabindex="0">?</span>
+                                    <span class="tooltip-content">Prepaid interest to lower your rate. 1 point = 1% of loan amount. Generally worth it if you keep the loan 5+ years.</span>
+                                </label>
                                 <div class="input-wrapper">
                                     <input type="number" name="discountPoints" placeholder="1.0" value="0" step="0.125">
                                     <span class="percent">pts</span>
@@ -973,7 +993,11 @@
                                 <small>Down payment + closing costs</small>
                             </div>
                             <div class="result-card">
-                                <h4>APR</h4>
+                                <h4 class="tooltip-trigger">
+                                    APR
+                                    <span class="tooltip-icon" tabindex="0">?</span>
+                                    <span class="tooltip-content">Annual Percentage Rate - The true yearly cost including interest and fees. Use this to compare loans from different lenders.</span>
+                                </h4>
                                 <div class="result-value" data-result="apr">0%</div>
                             </div>
                             <div class="result-card">
@@ -1219,6 +1243,30 @@
                 <button class="btn-primary" id="printDocBtn">Print Document</button>
             </div>
         </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-spinner large"></div>
+            <p id="loadingText">Loading...</p>
+        </div>
+    </div>
+
+    <!-- Keyboard Shortcuts Modal -->
+    <div class="shortcuts-overlay" id="shortcutsOverlay"></div>
+    <div class="shortcuts-modal" id="shortcutsModal">
+        <h3>Keyboard Shortcuts</h3>
+        <ul class="shortcut-list">
+            <li><span>Calculate loans</span> <kbd>Ctrl + Enter</kbd></li>
+            <li><span>Add new loan</span> <kbd>Ctrl + N</kbd></li>
+            <li><span>Save scenario</span> <kbd>Ctrl + S</kbd></li>
+            <li><span>Open settings</span> <kbd>Ctrl + ,</kbd></li>
+            <li><span>Generate document</span> <kbd>Ctrl + P</kbd></li>
+            <li><span>Show shortcuts</span> <kbd>?</kbd></li>
+            <li><span>Close modal</span> <kbd>Esc</kbd></li>
+        </ul>
+        <button class="btn-secondary" onclick="KeyboardShortcuts.hideHelp()" style="margin-top: 15px; width: 100%;">Close</button>
     </div>
 
     <script src="api.js"></script>

@@ -1,16 +1,45 @@
 # Dependencies
 node_modules/
 
-# Environment files
+# Environment files - NEVER commit these
 .env
+.env.local
+.env.production
+.env.*.local
+server/.env
+*.env
 
 # Database
 server/database.json
+*.db
+*.sqlite
+
+# Secrets and keys
+*.pem
+*.key
+*.crt
+secrets/
+credentials/
 
 # OS files
 .DS_Store
 Thumbs.db
+nul
+desktop.ini
 
 # IDE
 .vscode/
 .idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+logs/
+
+# Build artifacts
+dist/
+build/
+*.min.js
+*.min.css
