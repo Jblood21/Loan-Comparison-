@@ -121,6 +121,19 @@ header {
     object-fit: cover;
 }
 
+.logo-img-header {
+    height: 50px;
+    width: auto;
+    object-fit: contain;
+    background: transparent;
+    mix-blend-mode: multiply;
+}
+
+[data-theme="dark"] .logo-img-header {
+    mix-blend-mode: normal;
+    filter: brightness(1.1);
+}
+
 .logo h1 {
     font-size: 2.2rem;
     font-weight: 700;
