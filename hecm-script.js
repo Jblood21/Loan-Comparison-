@@ -467,10 +467,427 @@ const SettingsManager = {
     }
 };
 
+// Document Generator
+const DocumentGenerator = {
+    init() {
+        document.getElementById('generateHecmDoc')?.addEventListener('click', () => this.openModal());
+        document.getElementById('closeModal')?.addEventListener('click', () => this.closeModal());
+        document.getElementById('copyDocBtn')?.addEventListener('click', () => this.copyToClipboard());
+        document.getElementById('downloadDocBtn')?.addEventListener('click', () => this.downloadHTML());
+        document.getElementById('printDocBtn')?.addEventListener('click', () => this.printDocument());
+
+        // Close on overlay click
+        document.getElementById('documentModal')?.addEventListener('click', (e) => {
+            if (e.target.id === 'documentModal') this.closeModal();
+        });
+
+        // Load saved LO info
+        const loInfo = JSON.parse(localStorage.getItem('loandrUserInfo') || '{}');
+        if (loInfo.name) document.getElementById('loanOfficerName').value = loInfo.name;
+        if (loInfo.company) document.getElementById('companyName').value = loInfo.company;
+        if (loInfo.phone || loInfo.email) {
+            document.getElementById('contactInfo').value = [loInfo.phone, loInfo.email].filter(Boolean).join(' | ');
+        }
+
+        // Update preview on input change
+        document.querySelectorAll('.document-options input, .document-options textarea').forEach(input => {
+            input.addEventListener('input', () => this.updatePreview());
+        });
+    },
+
+    openModal() {
+        if (!HECMCalculator.results || Object.keys(HECMCalculator.results).length === 0) {
+            alert('Please calculate at least one scenario before generating a document.');
+            return;
+        }
+        document.getElementById('documentModal')?.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        this.updatePreview();
+    },
+
+    closeModal() {
+        document.getElementById('documentModal')?.classList.add('hidden');
+        document.body.style.overflow = '';
+    },
+
+    updatePreview() {
+        const preview = document.getElementById('documentPreview');
+        if (!preview) return;
+
+        const borrowerName = document.getElementById('borrowerName')?.value || 'Valued Client';
+        const propertyAddress = document.getElementById('propertyAddress')?.value || 'Property Address';
+        const loanOfficer = document.getElementById('loanOfficerName')?.value || '';
+        const company = document.getElementById('companyName')?.value || '';
+        const contact = document.getElementById('contactInfo')?.value || '';
+        const notes = document.getElementById('additionalNotes')?.value || '';
+
+        const results = HECMCalculator.results || {};
+        const scenarios = Object.keys(results).map(key => results[key]);
+
+        const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+        let scenarioRows = '';
+        scenarios.forEach((s, i) => {
+            scenarioRows += `
+                <tr>
+                    <td><strong>${s.name || `Scenario ${i + 1}`}</strong></td>
+                    <td>${HECMCalculator.formatCurrency(s.maxClaimAmount)}</td>
+                    <td>${HECMCalculator.formatCurrency(s.principalLimit)}</td>
+                    <td>${HECMCalculator.formatCurrency(s.netPrincipalLimit)}</td>
+                    <td>${HECMCalculator.formatCurrency(s.cashToBorrower)}</td>
+                    <td>${HECMCalculator.formatCurrency(s.locAmount)}</td>
+                    <td>${HECMCalculator.formatCurrency(s.monthlyPayment)}</td>
+                    <td>${HECMCalculator.formatCurrency(s.totalClosingCosts)}</td>
+                </tr>
+            `;
+        });
+
+        preview.innerHTML = `
+            <div class="doc-preview-content" style="font-family: Arial, sans-serif; padding: 20px; background: white; border: 1px solid #ddd; border-radius: 8px;">
+                <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid #2563eb; padding-bottom: 15px;">
+                    <h1 style="color: #2563eb; margin: 0;">HECM Reverse Mortgage Comparison</h1>
+                    <p style="color: #666; margin: 5px 0;">Prepared for: <strong>${borrowerName}</strong></p>
+                    <p style="color: #666; margin: 5px 0;">Property: ${propertyAddress}</p>
+                    <p style="color: #666; margin: 5px 0;">Date: ${today}</p>
+                </div>
+
+                <h3 style="color: #1e40af; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px;">Comparison Summary</h3>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                        <thead>
+                            <tr style="background: #f3f4f6;">
+                                <th style="padding: 10px; text-align: left; border: 1px solid #e5e7eb;">Scenario</th>
+                                <th style="padding: 10px; text-align: right; border: 1px solid #e5e7eb;">Max Claim</th>
+                                <th style="padding: 10px; text-align: right; border: 1px solid #e5e7eb;">Principal Limit</th>
+                                <th style="padding: 10px; text-align: right; border: 1px solid #e5e7eb;">Net Principal</th>
+                                <th style="padding: 10px; text-align: right; border: 1px solid #e5e7eb;">Cash at Close</th>
+                                <th style="padding: 10px; text-align: right; border: 1px solid #e5e7eb;">Line of Credit</th>
+                                <th style="padding: 10px; text-align: right; border: 1px solid #e5e7eb;">Monthly Payment</th>
+                                <th style="padding: 10px; text-align: right; border: 1px solid #e5e7eb;">Closing Costs</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${scenarioRows}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="margin-top: 20px; padding: 15px; background: #f0f9ff; border-radius: 8px;">
+                    <h4 style="margin: 0 0 10px 0; color: #1e40af;">Important HECM Information</h4>
+                    <ul style="margin: 0; padding-left: 20px; color: #374151; font-size: 13px;">
+                        <li>HECM loans are available to homeowners 62 years and older</li>
+                        <li>The loan balance grows over time as interest accrues</li>
+                        <li>You retain ownership of your home and can live in it as long as you maintain it as your primary residence</li>
+                        <li>The loan becomes due when you sell, move out, or pass away</li>
+                        <li>You are still responsible for property taxes, insurance, and maintenance</li>
+                        <li>HECMs are FHA-insured, protecting both you and the lender</li>
+                    </ul>
+                </div>
+
+                ${notes ? `
+                <div style="margin-top: 20px; padding: 15px; background: #fef3c7; border-radius: 8px;">
+                    <h4 style="margin: 0 0 10px 0; color: #92400e;">Additional Notes</h4>
+                    <p style="margin: 0; color: #78350f; white-space: pre-wrap;">${notes}</p>
+                </div>
+                ` : ''}
+
+                <div style="margin-top: 30px; padding-top: 15px; border-top: 1px solid #e5e7eb; font-size: 13px; color: #6b7280;">
+                    ${loanOfficer ? `<p style="margin: 5px 0;"><strong>Prepared by:</strong> ${loanOfficer}</p>` : ''}
+                    ${company ? `<p style="margin: 5px 0;">${company}</p>` : ''}
+                    ${contact ? `<p style="margin: 5px 0;">${contact}</p>` : ''}
+                    <p style="margin: 15px 0 0 0; font-size: 11px; color: #9ca3af;">
+                        This comparison is for informational purposes only and does not constitute a loan offer or commitment.
+                        Actual loan terms may vary. Please consult with a HUD-approved HECM counselor before proceeding.
+                    </p>
+                </div>
+            </div>
+        `;
+    },
+
+    copyToClipboard() {
+        const preview = document.getElementById('documentPreview');
+        if (!preview) return;
+
+        const range = document.createRange();
+        range.selectNode(preview);
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+        document.execCommand('copy');
+        window.getSelection().removeAllRanges();
+
+        SettingsManager.showSaveConfirmation('Document copied to clipboard!');
+    },
+
+    downloadHTML() {
+        const preview = document.getElementById('documentPreview');
+        if (!preview) return;
+
+        const html = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>HECM Comparison - ${document.getElementById('borrowerName')?.value || 'Client'}</title>
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 20px; }
+                    @media print { body { margin: 0; } }
+                </style>
+            </head>
+            <body>
+                ${preview.innerHTML}
+            </body>
+            </html>
+        `;
+
+        const blob = new Blob([html], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `HECM-Comparison-${new Date().toISOString().split('T')[0]}.html`;
+        a.click();
+        URL.revokeObjectURL(url);
+    },
+
+    printDocument() {
+        const preview = document.getElementById('documentPreview');
+        if (!preview) return;
+
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>HECM Comparison</title>
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 20px; }
+                    table { page-break-inside: avoid; }
+                </style>
+            </head>
+            <body>
+                ${preview.innerHTML}
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+        printWindow.print();
+    }
+};
+
+// Scenario Manager (Save/Load/Export/Import)
+const ScenarioManager = {
+    init() {
+        document.getElementById('myScenariosBtn')?.addEventListener('click', () => this.openModal());
+        document.getElementById('closeSavedModal')?.addEventListener('click', () => this.closeModal());
+        document.getElementById('savedScenariosOverlay')?.addEventListener('click', () => this.closeModal());
+        document.getElementById('saveScenarioBtn')?.addEventListener('click', () => this.quickSave());
+        document.getElementById('saveNewScenarioBtn')?.addEventListener('click', () => this.saveNewScenario());
+        document.getElementById('exportDataBtn')?.addEventListener('click', () => this.exportData());
+        document.getElementById('importDataInput')?.addEventListener('change', (e) => this.importData(e));
+    },
+
+    openModal() {
+        document.getElementById('savedScenariosModal')?.classList.remove('hidden');
+        document.getElementById('savedScenariosOverlay')?.classList.remove('hidden');
+        this.loadSavedList();
+    },
+
+    closeModal() {
+        document.getElementById('savedScenariosModal')?.classList.add('hidden');
+        document.getElementById('savedScenariosOverlay')?.classList.add('hidden');
+    },
+
+    loadSavedList() {
+        const list = document.getElementById('savedScenariosList');
+        if (!list) return;
+
+        const saved = JSON.parse(localStorage.getItem('hecmSavedScenarios') || '[]');
+
+        if (saved.length === 0) {
+            list.innerHTML = '<p class="no-scenarios">No saved scenarios yet.</p>';
+            return;
+        }
+
+        list.innerHTML = saved.map((item, index) => `
+            <div class="saved-scenario-item">
+                <div class="scenario-info">
+                    <strong>${item.name}</strong>
+                    <small>${new Date(item.date).toLocaleDateString()}</small>
+                </div>
+                <div class="scenario-actions-btns">
+                    <button class="btn-load" onclick="ScenarioManager.loadScenario(${index})">Load</button>
+                    <button class="btn-delete" onclick="ScenarioManager.deleteScenario(${index})">Delete</button>
+                </div>
+            </div>
+        `).join('');
+    },
+
+    quickSave() {
+        const name = prompt('Enter a name for this scenario:');
+        if (!name) return;
+        this.saveScenario(name);
+    },
+
+    saveNewScenario() {
+        const nameInput = document.getElementById('saveScenarioName');
+        const name = nameInput?.value?.trim();
+        if (!name) {
+            alert('Please enter a name for the scenario.');
+            return;
+        }
+        this.saveScenario(name);
+        nameInput.value = '';
+    },
+
+    saveScenario(name) {
+        const data = this.collectFormData();
+        const saved = JSON.parse(localStorage.getItem('hecmSavedScenarios') || '[]');
+
+        saved.push({
+            name,
+            date: new Date().toISOString(),
+            data
+        });
+
+        localStorage.setItem('hecmSavedScenarios', JSON.stringify(saved));
+        this.loadSavedList();
+        SettingsManager.showSaveConfirmation('Scenario saved!');
+    },
+
+    loadScenario(index) {
+        const saved = JSON.parse(localStorage.getItem('hecmSavedScenarios') || '[]');
+        const scenario = saved[index];
+        if (!scenario) return;
+
+        this.applyFormData(scenario.data);
+        this.closeModal();
+        SettingsManager.showSaveConfirmation('Scenario loaded!');
+    },
+
+    deleteScenario(index) {
+        if (!confirm('Are you sure you want to delete this scenario?')) return;
+
+        const saved = JSON.parse(localStorage.getItem('hecmSavedScenarios') || '[]');
+        saved.splice(index, 1);
+        localStorage.setItem('hecmSavedScenarios', JSON.stringify(saved));
+        this.loadSavedList();
+    },
+
+    collectFormData() {
+        const scenarios = {};
+        document.querySelectorAll('.loan-panel').forEach(panel => {
+            const id = panel.dataset.panel;
+            scenarios[id] = {
+                scenarioName: panel.querySelector('.scenario-name')?.value || '',
+                hecmType: panel.querySelector('.hecm-type-tab.active')?.dataset.type || 'fixed',
+                borrowerAge: panel.querySelector('.borrower-age')?.value || '70',
+                spouseAge: panel.querySelector('.spouse-age')?.value || '',
+                homeValue: panel.querySelector('.home-value')?.value || '450000',
+                propertyType: panel.querySelector('.property-type')?.value || 'single-family',
+                existingMortgage: panel.querySelector('.existing-mortgage')?.value || '0',
+                interestRate: panel.querySelector('.interest-rate')?.value || '6.5',
+                initialRate: panel.querySelector('.initial-rate')?.value || '5.5',
+                margin: panel.querySelector('.margin')?.value || '2.0',
+                lenderCredit: panel.querySelector('.lender-credit')?.value || '0',
+                plf: panel.querySelector('.plf')?.value || '52.4',
+                paymentType: panel.querySelector(`input[name="payment-type-${id}"]:checked`)?.value || 'lump-sum',
+                termMonths: panel.querySelector('.term-months')?.value || '120',
+                thirdPartyCosts: panel.querySelector('.third-party-costs')?.value || '3500'
+            };
+        });
+        return scenarios;
+    },
+
+    applyFormData(data) {
+        Object.keys(data).forEach(id => {
+            const panel = document.querySelector(`.loan-panel[data-panel="${id}"]`);
+            if (!panel) return;
+
+            const s = data[id];
+
+            // Set values
+            if (s.scenarioName) panel.querySelector('.scenario-name').value = s.scenarioName;
+            if (s.borrowerAge) panel.querySelector('.borrower-age').value = s.borrowerAge;
+            if (s.spouseAge) panel.querySelector('.spouse-age').value = s.spouseAge;
+            if (s.homeValue) panel.querySelector('.home-value').value = s.homeValue;
+            if (s.propertyType) panel.querySelector('.property-type').value = s.propertyType;
+            if (s.existingMortgage) panel.querySelector('.existing-mortgage').value = s.existingMortgage;
+            if (s.interestRate) panel.querySelector('.interest-rate').value = s.interestRate;
+            if (s.initialRate) panel.querySelector('.initial-rate').value = s.initialRate;
+            if (s.margin) panel.querySelector('.margin').value = s.margin;
+            if (s.lenderCredit) panel.querySelector('.lender-credit').value = s.lenderCredit;
+            if (s.plf) panel.querySelector('.plf').value = s.plf;
+            if (s.termMonths) panel.querySelector('.term-months').value = s.termMonths;
+            if (s.thirdPartyCosts) panel.querySelector('.third-party-costs').value = s.thirdPartyCosts;
+
+            // Set HECM type
+            panel.querySelectorAll('.hecm-type-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.type === s.hecmType);
+            });
+            panel.querySelectorAll('.adjustable-only').forEach(el => {
+                el.style.display = s.hecmType === 'adjustable' ? 'block' : 'none';
+            });
+
+            // Set payment type
+            const paymentRadio = panel.querySelector(`input[name="payment-type-${id}"][value="${s.paymentType}"]`);
+            if (paymentRadio) paymentRadio.checked = true;
+
+            // Show/hide term input
+            const termGroup = panel.querySelector('.term-period-group');
+            if (termGroup) {
+                termGroup.style.display = ['term', 'modified-term'].includes(s.paymentType) ? 'block' : 'none';
+            }
+        });
+    },
+
+    exportData() {
+        const data = {
+            type: 'hecm-scenarios',
+            version: '1.0',
+            date: new Date().toISOString(),
+            scenarios: this.collectFormData(),
+            results: HECMCalculator.results || {}
+        };
+
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `HECM-Export-${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+
+        SettingsManager.showSaveConfirmation('Data exported!');
+    },
+
+    importData(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const data = JSON.parse(event.target.result);
+                if (data.type !== 'hecm-scenarios') {
+                    alert('Invalid file format. Please select a valid HECM export file.');
+                    return;
+                }
+                this.applyFormData(data.scenarios);
+                SettingsManager.showSaveConfirmation('Data imported!');
+            } catch (err) {
+                alert('Error reading file. Please make sure it\'s a valid JSON file.');
+            }
+        };
+        reader.readAsText(file);
+        e.target.value = ''; // Reset input
+    }
+};
+
 // Tab Management
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize settings
     SettingsManager.init();
+    DocumentGenerator.init();
+    ScenarioManager.init();
 
     // Scenario tabs
     const tabs = document.querySelectorAll('.loan-tab');
@@ -544,6 +961,14 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('logoutBtn')?.addEventListener('click', () => {
         if (confirm('Are you sure you want to sign out?')) {
             window.location.href = 'login.html';
+        }
+    });
+
+    // Escape key to close modals
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            DocumentGenerator.closeModal();
+            ScenarioManager.closeModal();
         }
     });
 });
