@@ -3140,3 +3140,18 @@ input[type="range"]::-moz-range-thumb {
     color: var(--text-muted);
     font-size: 0.8rem;
 }
+
+/* Comparison type toggle in tabs container */
+.loan-tabs-container .comparison-type-toggle {
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--light-gray);
+}
+
+.loan-tabs-container .comparison-type-toggle .toggle-label {
+    margin-right: 10px;
+}
+
+.loan-tabs-container .comparison-type-buttons {
+    display: inline-flex;
+}
