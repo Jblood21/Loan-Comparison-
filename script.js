@@ -4313,4 +4313,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.settingsManager = new SettingsManager();
     window.loanManager = new LoanManager();
+
+    // Sticky tabs scroll detection
+    const tabsContainer = document.querySelector('.loan-tabs-container');
+    if (tabsContainer) {
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                tabsContainer.classList.toggle('sticky-active', entry.intersectionRatio < 1);
+            },
+            { threshold: [1], rootMargin: '-1px 0px 0px 0px' }
+        );
+        observer.observe(tabsContainer);
+    }
 });
