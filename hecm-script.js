@@ -417,7 +417,7 @@ const HECMCalculator = {
 
         // Update charts and projections
         HECMChartManager.updateCharts();
-        HECMChartManager.updateProjections(10); // Default 10 years
+        HECMChartManager.updateAllTimeBasedDisplays();
     }
 };
 
@@ -432,11 +432,34 @@ const HECMChartManager = {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.hecm-time-section .time-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
+                document.getElementById('hecmCustomYears').value = '';
                 this.selectedYears = parseInt(btn.dataset.years);
-                this.updateProjections(this.selectedYears);
-                document.querySelector('.hecm-projections-summary .time-label').textContent = `(at ${this.selectedYears} years)`;
+                this.updateAllTimeBasedDisplays();
             });
         });
+
+        // Custom years input
+        document.getElementById('hecmCustomYears')?.addEventListener('input', (e) => {
+            const years = parseInt(e.target.value);
+            if (years > 0 && years <= 40) {
+                document.querySelectorAll('.hecm-time-section .time-btn').forEach(b => b.classList.remove('active'));
+                this.selectedYears = years;
+                this.updateAllTimeBasedDisplays();
+            }
+        });
+    },
+
+    updateAllTimeBasedDisplays() {
+        const timeLabel = `${this.selectedYears} year${this.selectedYears > 1 ? 's' : ''}`;
+
+        // Update all time labels
+        document.querySelectorAll('.hecm-time-section .time-label').forEach(el => {
+            el.textContent = `(at ${timeLabel})`;
+        });
+
+        this.updateProjections(this.selectedYears);
+        this.updateBenefitCards(this.selectedYears);
+        this.updateAdvisorRecommendation(this.selectedYears);
     },
 
     updateCharts() {
@@ -798,6 +821,207 @@ const HECMChartManager = {
 
         // Update recommendation
         this.updateRecommendation(r1, r2, projEquity1, projEquity2, years);
+    },
+
+    updateBenefitCards(years) {
+        if (!HECMCalculator.results || !HECMCalculator.results[1] || !HECMCalculator.results[2]) return;
+
+        const r1 = HECMCalculator.results[1];
+        const r2 = HECMCalculator.results[2];
+        const d1 = HECMCalculator.getFormData(1);
+        const d2 = HECMCalculator.getFormData(2);
+
+        const name1 = r1.name || 'Scenario 1';
+        const name2 = r2.name || 'Scenario 2';
+
+        const homeValue1 = d1?.homeValue || 450000;
+        const homeValue2 = d2?.homeValue || 450000;
+        const initialBalance1 = r1.totalClosingCosts + r1.existingMortgage;
+        const initialBalance2 = r2.totalClosingCosts + r2.existingMortgage;
+        const appreciation = 0.03;
+
+        // Calculate projected values
+        const projHomeValue1 = homeValue1 * Math.pow(1 + appreciation, years);
+        const projHomeValue2 = homeValue2 * Math.pow(1 + appreciation, years);
+        const projBalance1 = HECMCalculator.calculateBalanceProjectionWithMip(initialBalance1, r1.interestRate, 0.5, years);
+        const projBalance2 = HECMCalculator.calculateBalanceProjectionWithMip(initialBalance2, r2.interestRate, 0.5, years);
+        const projEquity1 = Math.max(0, projHomeValue1 - projBalance1);
+        const projEquity2 = Math.max(0, projHomeValue2 - projBalance2);
+        const projLOC1 = r1.locAmount > 0 ? HECMCalculator.calculateLOCGrowthWithMip(r1.locAmount, r1.interestRate, 0.5, years) : 0;
+        const projLOC2 = r2.locAmount > 0 ? HECMCalculator.calculateLOCGrowthWithMip(r2.locAmount, r2.interestRate, 0.5, years) : 0;
+        const projInterest1 = projBalance1 - initialBalance1;
+        const projInterest2 = projBalance2 - initialBalance2;
+
+        // Helper to generate benefit card content
+        const generateBenefitContent = (values, isCostCard = false) => {
+            const bestValue = isCostCard ? Math.min(...values.map(v => v.value)) : Math.max(...values.map(v => v.value));
+
+            let html = values.map(v => {
+                const isBest = v.value === bestValue;
+                return `
+                    <div class="benefit-scenario-row ${isBest ? 'best' : ''}">
+                        <span class="scenario-name">${v.name}${isBest ? '<span class="best-badge">Best</span>' : ''}</span>
+                        <span class="scenario-value">${HECMCalculator.formatCurrency(v.value)}</span>
+                    </div>
+                `;
+            }).join('');
+
+            // Add difference row
+            const diff = Math.abs(values[0].value - values[1].value);
+            if (diff > 0) {
+                const betterScenario = isCostCard
+                    ? (values[0].value < values[1].value ? values[0].name : values[1].name)
+                    : (values[0].value > values[1].value ? values[0].name : values[1].name);
+
+                html += `
+                    <div class="benefit-difference">
+                        <div class="benefit-diff-row">
+                            <span>Difference</span>
+                            <span class="diff-value ${isCostCard ? 'extra' : 'savings'}">${HECMCalculator.formatCurrency(diff)}</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            return html;
+        };
+
+        // Update each benefit card
+        document.getElementById('benefit-npl').innerHTML = generateBenefitContent([
+            { name: name1, value: r1.netPrincipalLimit },
+            { name: name2, value: r2.netPrincipalLimit }
+        ]);
+
+        document.getElementById('benefit-cash').innerHTML = generateBenefitContent([
+            { name: name1, value: r1.cashToBorrower },
+            { name: name2, value: r2.cashToBorrower }
+        ]);
+
+        document.getElementById('benefit-costs').innerHTML = generateBenefitContent([
+            { name: name1, value: r1.totalClosingCosts },
+            { name: name2, value: r2.totalClosingCosts }
+        ], true);
+
+        document.getElementById('benefit-equity').innerHTML = generateBenefitContent([
+            { name: name1, value: projEquity1 },
+            { name: name2, value: projEquity2 }
+        ]);
+
+        document.getElementById('benefit-loc').innerHTML = generateBenefitContent([
+            { name: name1, value: projLOC1 },
+            { name: name2, value: projLOC2 }
+        ]);
+
+        document.getElementById('benefit-interest').innerHTML = generateBenefitContent([
+            { name: name1, value: projInterest1 },
+            { name: name2, value: projInterest2 }
+        ], true);
+    },
+
+    updateAdvisorRecommendation(years) {
+        if (!HECMCalculator.results || !HECMCalculator.results[1] || !HECMCalculator.results[2]) return;
+
+        const r1 = HECMCalculator.results[1];
+        const r2 = HECMCalculator.results[2];
+        const d1 = HECMCalculator.getFormData(1);
+        const d2 = HECMCalculator.getFormData(2);
+
+        const name1 = r1.name || 'Scenario 1';
+        const name2 = r2.name || 'Scenario 2';
+
+        const homeValue1 = d1?.homeValue || 450000;
+        const homeValue2 = d2?.homeValue || 450000;
+        const initialBalance1 = r1.totalClosingCosts + r1.existingMortgage;
+        const initialBalance2 = r2.totalClosingCosts + r2.existingMortgage;
+        const appreciation = 0.03;
+
+        // Calculate scores for each scenario
+        let score1 = 0, score2 = 0;
+        const reasons1 = [], reasons2 = [];
+
+        // Net Principal Limit comparison
+        if (r1.netPrincipalLimit > r2.netPrincipalLimit) {
+            score1 += 2;
+            reasons1.push(`${HECMCalculator.formatCurrency(r1.netPrincipalLimit - r2.netPrincipalLimit)} more available proceeds`);
+        } else if (r2.netPrincipalLimit > r1.netPrincipalLimit) {
+            score2 += 2;
+            reasons2.push(`${HECMCalculator.formatCurrency(r2.netPrincipalLimit - r1.netPrincipalLimit)} more available proceeds`);
+        }
+
+        // Cash to borrower
+        if (r1.cashToBorrower > r2.cashToBorrower) {
+            score1 += 1;
+            reasons1.push(`${HECMCalculator.formatCurrency(r1.cashToBorrower - r2.cashToBorrower)} more cash at closing`);
+        } else if (r2.cashToBorrower > r1.cashToBorrower) {
+            score2 += 1;
+            reasons2.push(`${HECMCalculator.formatCurrency(r2.cashToBorrower - r1.cashToBorrower)} more cash at closing`);
+        }
+
+        // Lower closing costs
+        if (r1.totalClosingCosts < r2.totalClosingCosts) {
+            score1 += 1;
+            reasons1.push(`${HECMCalculator.formatCurrency(r2.totalClosingCosts - r1.totalClosingCosts)} lower upfront costs`);
+        } else if (r2.totalClosingCosts < r1.totalClosingCosts) {
+            score2 += 1;
+            reasons2.push(`${HECMCalculator.formatCurrency(r1.totalClosingCosts - r2.totalClosingCosts)} lower upfront costs`);
+        }
+
+        // Lower interest rate
+        if (r1.interestRate < r2.interestRate) {
+            score1 += 1;
+            reasons1.push(`Lower interest rate (${r1.interestRate.toFixed(2)}% vs ${r2.interestRate.toFixed(2)}%)`);
+        } else if (r2.interestRate < r1.interestRate) {
+            score2 += 1;
+            reasons2.push(`Lower interest rate (${r2.interestRate.toFixed(2)}% vs ${r1.interestRate.toFixed(2)}%)`);
+        }
+
+        // Equity preservation at selected year
+        const projBalance1 = HECMCalculator.calculateBalanceProjectionWithMip(initialBalance1, r1.interestRate, 0.5, years);
+        const projBalance2 = HECMCalculator.calculateBalanceProjectionWithMip(initialBalance2, r2.interestRate, 0.5, years);
+        const projEquity1 = Math.max(0, homeValue1 * Math.pow(1 + appreciation, years) - projBalance1);
+        const projEquity2 = Math.max(0, homeValue2 * Math.pow(1 + appreciation, years) - projBalance2);
+
+        if (projEquity1 > projEquity2) {
+            score1 += 2;
+            reasons1.push(`Preserves ${HECMCalculator.formatCurrency(projEquity1 - projEquity2)} more equity at ${years} years`);
+        } else if (projEquity2 > projEquity1) {
+            score2 += 2;
+            reasons2.push(`Preserves ${HECMCalculator.formatCurrency(projEquity2 - projEquity1)} more equity at ${years} years`);
+        }
+
+        // Determine winner
+        const winner = score1 >= score2 ? 1 : 2;
+        const winnerName = winner === 1 ? name1 : name2;
+        const winnerReasons = winner === 1 ? reasons1 : reasons2;
+        const winnerScore = winner === 1 ? score1 : score2;
+        const totalPoints = score1 + score2;
+
+        const contentEl = document.getElementById('hecmAdvisorContent');
+        if (!contentEl) return;
+
+        const checkIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`;
+
+        contentEl.innerHTML = `
+            <div class="advisor-recommendation">
+                <div class="advisor-winner">
+                    <div class="advisor-winner-label">Recommended</div>
+                    <div class="advisor-winner-name">${winnerName}</div>
+                    <div class="advisor-winner-badge">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        ${winnerScore}/${totalPoints} points
+                    </div>
+                </div>
+                <div class="advisor-reasons">
+                    <h4>Why ${winnerName} is recommended:</h4>
+                    <ul class="advisor-reasons-list">
+                        ${winnerReasons.map(r => `<li>${checkIcon} ${r}</li>`).join('')}
+                    </ul>
+                    <div class="advisor-caveat">
+                        <strong>Important:</strong> This recommendation is based on the numbers entered and assumes 3% annual home appreciation. Your personal financial situation, goals, and timeline should be the primary factors in your decision. Consult with a HUD-approved HECM counselor before proceeding.
+                    </div>
+                </div>
+            </div>
+        `;
     },
 
     updateRecommendation(r1, r2, equity1, equity2, years) {
