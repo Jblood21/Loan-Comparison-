@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help Center - Loandr</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Help Center Specific Styles */
+        .help-page {
+            min-height: 100vh;
+            background: var(--bg-primary);
+        }
+
+        .help-header {
+            background: var(--navy-blue);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .help-header .logo {
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .help-header .logo h1 {
+            color: white;
+        }
+
+        .help-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .help-header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .help-nav {
+            background: var(--white);
+            border-bottom: 1px solid var(--light-gray);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .help-nav a {
+            padding: 10px 20px;
+            background: var(--off-white);
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            color: var(--navy-blue);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .help-nav a:hover, .help-nav a.active {
+            background: var(--navy-blue);
+            color: white;
+            border-color: var(--navy-blue);
+        }
+
+        .help-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .help-section {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid var(--light-gray);
+        }
+
+        .help-section h2 {
+            color: var(--navy-blue);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--green-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .help-section h2 .section-icon {
+            font-size: 1.5rem;
+        }
+
+        .help-section h3 {
+            color: var(--navy-dark);
+            margin: 25px 0 15px 0;
+            font-size: 1.1rem;
+        }
+
+        .help-section p, .help-section li {
+            color: var(--text-dark);
+            line-height: 1.7;
+            margin-bottom: 12px;
+        }
+
+        .help-section ul, .help-section ol {
+            padding-left: 25px;
+            margin-bottom: 20px;
+        }
+
+        .help-section li {
+            margin-bottom: 8px;
+        }
+
+        .faq-item {
+            background: var(--off-white);
+            border-radius: 10px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            border: 1px solid var(--light-gray);
+        }
+
+        .faq-question {
+            padding: 18px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: var(--navy-blue);
+            transition: background 0.2s;
+        }
+
+        .faq-question:hover {
+            background: var(--light-gray);
+        }
+
+        .faq-question .toggle-icon {
+            font-size: 1.2rem;
+            transition: transform 0.3s;
+        }
+
+        .faq-item.open .faq-question .toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            padding: 0 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+        }
+
+        .faq-item.open .faq-answer {
+            padding: 0 20px 20px 20px;
+            max-height: 500px;
+        }
+
+        .faq-answer p {
+            margin: 0;
+            color: var(--text-muted);
+        }
+
+        .keyboard-shortcut {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: var(--off-white);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .keyboard-shortcut kbd {
+            background: var(--white);
+            border: 1px solid var(--light-gray);
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            color: var(--navy-blue);
+            box-shadow: 0 2px 0 var(--light-gray);
+        }
+
+        .loan-type-card {
+            display: grid;
+            grid-template-columns: 80px 1fr;
+            gap: 20px;
+            padding: 20px;
+            background: var(--off-white);
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 1px solid var(--light-gray);
+        }
+
+        .loan-type-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--navy-blue);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+        }
+
+        .loan-type-info h4 {
+            color: var(--navy-blue);
+            margin-bottom: 8px;
+        }
+
+        .loan-type-info p {
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        /* Contact Form */
+        .contact-form {
+            background: var(--off-white);
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid var(--light-gray);
+        }
+
+        .contact-form .form-group {
+            margin-bottom: 20px;
+        }
+
+        .contact-form label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--navy-blue);
+        }
+
+        .contact-form input,
+        .contact-form textarea,
+        .contact-form select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .contact-form input:focus,
+        .contact-form textarea:focus,
+        .contact-form select:focus {
+            outline: none;
+            border-color: var(--navy-blue);
+            box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.1);
+        }
+
+        .contact-form textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .submit-btn {
+            background: var(--navy-blue);
+            color: white;
+            padding: 14px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+        }
+
+        .submit-btn:hover {
+            background: var(--navy-dark);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .success-message {
+            background: rgba(46, 125, 50, 0.1);
+            border: 1px solid var(--green-primary);
+            color: var(--green-dark);
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--navy-blue);
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .glossary-term {
+            padding: 15px;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .glossary-term:last-child {
+            border-bottom: none;
+        }
+
+        .glossary-term strong {
+            color: var(--navy-blue);
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .glossary-term p {
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        .tip-box {
+            background: linear-gradient(135deg, rgba(46, 125, 50, 0.1) 0%, rgba(30, 58, 95, 0.1) 100%);
+            border-left: 4px solid var(--green-primary);
+            padding: 15px 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+        }
+
+        .tip-box strong {
+            color: var(--green-primary);
+        }
+
+        @media (max-width: 768px) {
+            .loan-type-card {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .loan-type-icon {
+                margin: 0 auto;
+            }
+
+            .help-header h2 {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+<body class="help-page">
+    <header class="help-header">
+        <div class="logo">
+            <span class="logo-icon">
+                <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 8 L10 32 L24 32" stroke="rgba(255,255,255,0.9)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                    <path d="M24 32 L28 28 L38 10" stroke="#81c784" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                </svg>
+            </span>
+            <h1>Loan<span class="logo-accent">dr</span></h1>
+        </div>
+        <h2>Help Center</h2>
+        <p>Everything you need to know about using Loandr</p>
+    </header>
+
+    <nav class="help-nav">
+        <a href="#getting-started" class="active">Getting Started</a>
+        <a href="#loan-types">Loan Types</a>
+        <a href="#faq">FAQ</a>
+        <a href="#glossary">Glossary</a>
+        <a href="#shortcuts">Shortcuts</a>
+        <a href="#contact">Contact Us</a>
+    </nav>
+
+    <main class="help-content">
+        <a href="index.html" class="back-link">← Back to Loandr</a>
+
+        <!-- Getting Started -->
+        <section id="getting-started" class="help-section">
+            <h2><span class="section-icon">🚀</span> Getting Started</h2>
+
+            <h3>Welcome to Loandr!</h3>
+            <p>Loandr is a powerful loan comparison tool designed for mortgage professionals. It helps you create side-by-side comparisons of different loan scenarios to find the best option for your clients.</p>
+
+            <h3>How to Compare Loans</h3>
+            <ol>
+                <li><strong>Select a Loan Type:</strong> Choose from Conventional, FHA, VA, USDA, or ARM loans using the tabs at the top of each scenario.</li>
+                <li><strong>Enter Loan Details:</strong> Fill in the purchase price, down payment, interest rate, and loan term.</li>
+                <li><strong>Add Closing Costs:</strong> Enter lender fees, third-party fees, title fees, and any credits.</li>
+                <li><strong>Click Calculate:</strong> View the monthly payment breakdown, cash to close, APR, and total cost over the loan life.</li>
+                <li><strong>Add More Scenarios:</strong> Click the "+" button to add up to 6 different loan scenarios for comparison.</li>
+            </ol>
+
+            <div class="tip-box">
+                <strong>💡 Pro Tip:</strong> Use the "Same Property" or "Different Properties" toggle at the top to indicate whether you're comparing different loan options for one property or loans for multiple properties.
+            </div>
+
+            <h3>Saving Your Work</h3>
+            <ul>
+                <li><strong>Save:</strong> Click "Save" to store your scenarios to your account for later access.</li>
+                <li><strong>Export:</strong> Download your scenarios as a file you can share or import on another device.</li>
+                <li><strong>Auto-Save:</strong> Your work is automatically saved every 30 seconds to prevent data loss.</li>
+            </ul>
+
+            <h3>Generating Documents</h3>
+            <p>Create professional comparison documents for your borrowers:</p>
+            <ol>
+                <li>Click "Generate Comparison Document for Borrower"</li>
+                <li>Enter the borrower's name and property address</li>
+                <li>Add your loan officer information</li>
+                <li>Print, download, or email the document directly</li>
+            </ol>
+        </section>
+
+        <!-- Loan Types -->
+        <section id="loan-types" class="help-section">
+            <h2><span class="section-icon">🏠</span> Understanding Loan Types</h2>
+
+            <div class="loan-type-card">
+                <div class="loan-type-icon">C</div>
+                <div class="loan-type-info">
+                    <h4>Conventional Loans</h4>
+                    <p>Not backed by the government. Typically requires higher credit scores (620+) and down payments (3-20%). PMI required if down payment is less than 20%. Best for borrowers with strong credit and stable income.</p>
+                </div>
+            </div>
+
+            <div class="loan-type-card">
+                <div class="loan-type-icon">F</div>
+                <div class="loan-type-info">
+                    <h4>FHA Loans</h4>
+                    <p>Insured by the Federal Housing Administration. Lower credit score requirements (580+ for 3.5% down). Requires upfront MIP (1.75%) and annual MIP. Great for first-time homebuyers or those with lower credit scores.</p>
+                </div>
+            </div>
+
+            <div class="loan-type-card">
+                <div class="loan-type-icon">V</div>
+                <div class="loan-type-info">
+                    <h4>VA Loans</h4>
+                    <p>Guaranteed by the Department of Veterans Affairs. Available to eligible veterans, active-duty service members, and surviving spouses. No down payment required, no PMI, and competitive rates. Requires VA funding fee (can be waived for disabled veterans).</p>
+                </div>
+            </div>
+
+            <div class="loan-type-card">
+                <div class="loan-type-icon">U</div>
+                <div class="loan-type-info">
+                    <h4>USDA Loans</h4>
+                    <p>Backed by the U.S. Department of Agriculture. For rural and suburban homebuyers with moderate income. No down payment required. Has upfront guarantee fee (1%) and annual fee (0.35%). Property must be in eligible rural area.</p>
+                </div>
+            </div>
+
+            <div class="loan-type-card">
+                <div class="loan-type-icon">A</div>
+                <div class="loan-type-info">
+                    <h4>ARM (Adjustable Rate Mortgage)</h4>
+                    <p>Features a fixed initial rate that adjusts periodically. Common types: 5/1, 7/1, 10/1 (fixed years/adjustment frequency). Lower initial rates than fixed mortgages. Best for borrowers who plan to sell or refinance before the adjustment period.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ -->
+        <section id="faq" class="help-section">
+            <h2><span class="section-icon">❓</span> Frequently Asked Questions</h2>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>What is APR and why is it different from the interest rate?</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>APR (Annual Percentage Rate) is the true yearly cost of borrowing, including interest AND fees like origination charges and points. The interest rate only reflects the cost of borrowing the principal. APR is always higher than the interest rate and is the best way to compare loans from different lenders.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>What are discount points?</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Discount points are prepaid interest you pay at closing to lower your interest rate. One point equals 1% of the loan amount. For example, on a $300,000 loan, 1 point = $3,000. Generally, buying points is worth it if you plan to keep the loan for more than 5-7 years.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>What is PMI and when is it required?</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>PMI (Private Mortgage Insurance) protects the lender if you default on the loan. It's required on conventional loans when your down payment is less than 20%. PMI can be removed once you reach 20% equity. FHA loans have MIP (Mortgage Insurance Premium) which works similarly but often lasts the life of the loan.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>How is cash to close calculated?</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Cash to close = Down Payment + Closing Costs + Prepaids - Credits. This is the total amount you need to bring to the closing table. Prepaids include items like property taxes, homeowner's insurance, and prepaid interest.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>What's the difference between Same Property and Different Properties comparison?</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>"Same Property" means you're comparing different loan options (like FHA vs Conventional) for the same house. "Different Properties" means you're comparing loans for different homes your client is considering. This helps contextualize the comparison for your borrowers.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>How do ARM loans work?</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>ARM loans have a fixed rate for an initial period (e.g., 5 years in a 5/1 ARM), then adjust periodically based on an index plus margin. Rate caps limit how much the rate can change at each adjustment (periodic cap) and over the life of the loan (lifetime cap). ARMs typically start with lower rates than fixed mortgages.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>Can I save and share my comparisons?</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Yes! Click "Save" to store scenarios to your account. Use "Export" to download a .json file you can share with colleagues or import on another device. You can also generate a professional PDF document to share with borrowers.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Glossary -->
+        <section id="glossary" class="help-section">
+            <h2><span class="section-icon">📖</span> Mortgage Glossary</h2>
+
+            <div class="glossary-term">
+                <strong>Amortization</strong>
+                <p>The process of paying off a loan through regular payments over time. Each payment includes both principal and interest.</p>
+            </div>
+
+            <div class="glossary-term">
+                <strong>Closing Costs</strong>
+                <p>Fees paid at closing including origination fees, appraisal, title insurance, attorney fees, and other charges. Typically 2-5% of the loan amount.</p>
+            </div>
+
+            <div class="glossary-term">
+                <strong>DTI (Debt-to-Income Ratio)</strong>
+                <p>Your monthly debt payments divided by your gross monthly income. Lenders typically want DTI below 43% for qualified mortgages.</p>
+            </div>
+
+            <div class="glossary-term">
+                <strong>Escrow</strong>
+                <p>An account held by the lender to pay property taxes and insurance on your behalf. A portion of each mortgage payment goes into escrow.</p>
+            </div>
+
+            <div class="glossary-term">
+                <strong>LTV (Loan-to-Value Ratio)</strong>
+                <p>The loan amount divided by the property value. An 80% LTV means you're borrowing 80% of the home's value (20% down payment).</p>
+            </div>
+
+            <div class="glossary-term">
+                <strong>PITI</strong>
+                <p>Principal, Interest, Taxes, and Insurance - the four components of a typical monthly mortgage payment.</p>
+            </div>
+
+            <div class="glossary-term">
+                <strong>Prepaids</strong>
+                <p>Items paid in advance at closing, including property taxes, homeowner's insurance, and per-diem interest.</p>
+            </div>
+
+            <div class="glossary-term">
+                <strong>Principal</strong>
+                <p>The original loan amount borrowed, excluding interest. Each payment reduces your principal balance.</p>
+            </div>
+
+            <div class="glossary-term">
+                <strong>TRID (TILA-RESPA Integrated Disclosure)</strong>
+                <p>Federal rules requiring standardized Loan Estimate and Closing Disclosure forms for most mortgages.</p>
+            </div>
+
+            <div class="glossary-term">
+                <strong>Underwriting</strong>
+                <p>The process lenders use to evaluate your creditworthiness and determine if you qualify for a loan.</p>
+            </div>
+        </section>
+
+        <!-- Keyboard Shortcuts -->
+        <section id="shortcuts" class="help-section">
+            <h2><span class="section-icon">⌨️</span> Keyboard Shortcuts</h2>
+            <p>Use these shortcuts to work faster in Loandr:</p>
+
+            <div class="keyboard-shortcut">
+                <span>Calculate all loans</span>
+                <kbd>Ctrl + Enter</kbd>
+            </div>
+            <div class="keyboard-shortcut">
+                <span>Add new loan scenario</span>
+                <kbd>Ctrl + N</kbd>
+            </div>
+            <div class="keyboard-shortcut">
+                <span>Save scenarios</span>
+                <kbd>Ctrl + S</kbd>
+            </div>
+            <div class="keyboard-shortcut">
+                <span>Open settings</span>
+                <kbd>Ctrl + ,</kbd>
+            </div>
+            <div class="keyboard-shortcut">
+                <span>Generate document</span>
+                <kbd>Ctrl + P</kbd>
+            </div>
+            <div class="keyboard-shortcut">
+                <span>Show keyboard shortcuts</span>
+                <kbd>?</kbd>
+            </div>
+            <div class="keyboard-shortcut">
+                <span>Close any modal</span>
+                <kbd>Esc</kbd>
+            </div>
+        </section>
+
+        <!-- Contact Us -->
+        <section id="contact" class="help-section">
+            <h2><span class="section-icon">📬</span> Contact Us</h2>
+            <p>Have a question, suggestion, or need help? Send us a message and our support team will get back to you.</p>
+
+            <div class="success-message" id="successMessage">
+                <strong>✓ Message Sent!</strong> Thank you for contacting us. We'll respond as soon as possible.
+            </div>
+
+            <form class="contact-form" id="contactForm">
+                <div class="form-group">
+                    <label for="contactName">Your Name *</label>
+                    <input type="text" id="contactName" name="name" required placeholder="John Smith">
+                </div>
+
+                <div class="form-group">
+                    <label for="contactEmail">Email Address *</label>
+                    <input type="email" id="contactEmail" name="email" required placeholder="john@example.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="contactCategory">Category</label>
+                    <select id="contactCategory" name="category">
+                        <option value="general">General Question</option>
+                        <option value="bug">Bug Report</option>
+                        <option value="feature">Feature Request</option>
+                        <option value="account">Account Issue</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="contactSubject">Subject *</label>
+                    <input type="text" id="contactSubject" name="subject" required placeholder="How can we help?">
+                </div>
+
+                <div class="form-group">
+                    <label for="contactMessage">Message *</label>
+                    <textarea id="contactMessage" name="message" required placeholder="Please describe your question or issue in detail..."></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">Send Message</button>
+            </form>
+        </section>
+    </main>
+
+    <script>
+        // FAQ Toggle
+        document.querySelectorAll('.faq-question').forEach(question => {
+            question.addEventListener('click', () => {
+                const item = question.parentElement;
+                item.classList.toggle('open');
+            });
+        });
+
+        // Smooth scroll for nav links
+        document.querySelectorAll('.help-nav a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('href').substring(1);
+                const target = document.getElementById(targetId);
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+
+                // Update active nav
+                document.querySelectorAll('.help-nav a').forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+            });
+        });
+
+        // Contact Form Submission
+        document.getElementById('contactForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+
+            const formData = {
+                name: document.getElementById('contactName').value,
+                email: document.getElementById('contactEmail').value,
+                category: document.getElementById('contactCategory').value,
+                subject: document.getElementById('contactSubject').value,
+                message: document.getElementById('contactMessage').value,
+                timestamp: new Date().toISOString(),
+                status: 'new'
+            };
+
+            try {
+                // Save to localStorage for admin to view
+                const messages = JSON.parse(localStorage.getItem('supportMessages') || '[]');
+                formData.id = Date.now();
+                messages.unshift(formData);
+                localStorage.setItem('supportMessages', JSON.stringify(messages));
+
+                // Show success message
+                document.getElementById('successMessage').classList.add('show');
+                document.getElementById('contactForm').reset();
+
+                // Reset button
+                btn.disabled = false;
+                btn.textContent = 'Send Message';
+
+                // Hide success after 5 seconds
+                setTimeout(() => {
+                    document.getElementById('successMessage').classList.remove('show');
+                }, 5000);
+
+            } catch (error) {
+                alert('Error sending message. Please try again.');
+                btn.disabled = false;
+                btn.textContent = 'Send Message';
+            }
+        });
+
+        // Dark mode support
+        if (localStorage.getItem('loanComparisonDarkMode') === 'true') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+    </script>
+</body>
+</html>

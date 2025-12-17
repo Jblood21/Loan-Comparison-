@@ -3273,3 +3273,64 @@ input[type="range"]::-moz-range-thumb {
     background: white;
     color: var(--navy-blue);
 }
+
+/* ============================================
+   HELP CENTER LINKS IN SETTINGS
+   ============================================ */
+.help-links {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.help-center-link {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 18px;
+    background: var(--off-white);
+    border: 1px solid var(--light-gray);
+    border-radius: 10px;
+    text-decoration: none;
+    color: var(--text-dark);
+    transition: all 0.2s ease;
+}
+
+.help-center-link:hover {
+    background: var(--white);
+    border-color: var(--navy-blue);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transform: translateX(3px);
+}
+
+.help-center-link .help-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.help-link-content {
+    flex: 1;
+}
+
+.help-link-content strong {
+    display: block;
+    color: var(--navy-blue);
+    margin-bottom: 3px;
+}
+
+.help-link-content span {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.help-center-link .arrow {
+    font-size: 1.2rem;
+    color: var(--navy-light);
+    transition: transform 0.2s;
+}
+
+.help-center-link:hover .arrow {
+    transform: translateX(3px);
+    color: var(--navy-blue);
+}
