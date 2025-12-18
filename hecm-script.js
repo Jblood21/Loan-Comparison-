@@ -260,6 +260,13 @@ const HECMCalculator = {
         panel.querySelector('.total-closing-costs').value = Math.round(totalClosingCosts);
         panel.querySelector('.total-annual-charges').value = Math.round(totalAnnualCharges);
 
+        // Update counseling fee display and cash at closing display in closing costs section
+        const counselingFeeDisplay = panel.querySelector('.counseling-fee-display');
+        if (counselingFeeDisplay) counselingFeeDisplay.value = Math.round(data.counselingFee);
+
+        const cashAtClosingDisplay = panel.querySelector('.cash-at-closing-display');
+        if (cashAtClosingDisplay) cashAtClosingDisplay.value = Math.round(Math.max(0, cashToBorrower));
+
         // Display results
         document.getElementById(`max-claim-${scenarioId}`).textContent = this.formatCurrency(maxClaimAmount);
         document.getElementById(`principal-limit-${scenarioId}`).textContent = this.formatCurrency(principalLimit);
@@ -2015,6 +2022,84 @@ document.addEventListener('DOMContentLoaded', () => {
         updateInputState();
 
         checkbox.addEventListener('change', updateInputState);
+    });
+
+    // Auto-calculate property taxes and insurance based on home value
+    // Property tax default: 0.55% of appraised value
+    // Insurance default: 0.265% of appraised value
+    document.querySelectorAll('.loan-panel').forEach(panel => {
+        const homeValueInput = panel.querySelector('.home-value');
+        const taxesInput = panel.querySelector('.annual-taxes');
+        const insuranceInput = panel.querySelector('.annual-insurance');
+        const borrowerAgeInput = panel.querySelector('.borrower-age');
+        const spouseAgeInput = panel.querySelector('.spouse-age');
+        const interestRateInput = panel.querySelector('.interest-rate');
+        const plfInput = panel.querySelector('.plf');
+
+        // Track if user has manually edited the fields
+        let taxesManuallyEdited = false;
+        let insuranceManuallyEdited = false;
+        let plfManuallyEdited = false;
+
+        // Function to update defaults based on home value
+        const updatePropertyDefaults = () => {
+            const homeValue = parseFloat(homeValueInput?.value) || 0;
+
+            if (homeValue > 0) {
+                // Property taxes: 0.55% of appraised value
+                if (!taxesManuallyEdited && taxesInput) {
+                    const defaultTax = Math.round(homeValue * 0.0055);
+                    taxesInput.value = defaultTax;
+                }
+
+                // Insurance: 0.265% of appraised value
+                if (!insuranceManuallyEdited && insuranceInput) {
+                    const defaultInsurance = Math.round(homeValue * 0.00265);
+                    insuranceInput.value = defaultInsurance;
+                }
+            }
+        };
+
+        // Function to update PLF based on age and rate
+        const updatePLF = () => {
+            if (plfManuallyEdited) return;
+
+            const borrowerAge = parseFloat(borrowerAgeInput?.value) || 70;
+            const spouseAge = parseFloat(spouseAgeInput?.value) || 0;
+            const rate = parseFloat(interestRateInput?.value) || 6.5;
+
+            // Use youngest borrower's age (if spouse is on loan)
+            const youngestAge = spouseAge > 0 ? Math.min(borrowerAge, spouseAge) : borrowerAge;
+
+            if (youngestAge >= 62 && plfInput) {
+                const plf = PLFLookup.lookup(youngestAge, rate);
+                plfInput.value = (plf * 100).toFixed(1);
+            }
+        };
+
+        // Home value change - update taxes, insurance
+        homeValueInput?.addEventListener('input', updatePropertyDefaults);
+
+        // Age and rate changes - update PLF
+        borrowerAgeInput?.addEventListener('input', updatePLF);
+        spouseAgeInput?.addEventListener('input', updatePLF);
+        interestRateInput?.addEventListener('input', updatePLF);
+
+        // Track manual edits
+        taxesInput?.addEventListener('input', () => { taxesManuallyEdited = true; });
+        insuranceInput?.addEventListener('input', () => { insuranceManuallyEdited = true; });
+        plfInput?.addEventListener('input', () => { plfManuallyEdited = true; });
+
+        // Reset manual edit flags when home value changes significantly
+        homeValueInput?.addEventListener('change', () => {
+            taxesManuallyEdited = false;
+            insuranceManuallyEdited = false;
+            updatePropertyDefaults();
+        });
+
+        // Initial calculation
+        updatePropertyDefaults();
+        updatePLF();
     });
 
     // Sticky tabs

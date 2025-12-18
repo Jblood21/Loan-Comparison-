@@ -453,10 +453,10 @@
                         <div class="form-group">
                             <label>Principal Limit Factor (PLF)</label>
                             <div class="input-wrapper percent-wrapper">
-                                <input type="number" class="plf" step="0.1" value="52.4" placeholder="Based on age/rate">
+                                <input type="number" class="plf" step="0.1" value="52.4" placeholder="Auto-calculated">
                                 <span class="percent-symbol">%</span>
                             </div>
-                            <span class="helper-text">Based on age and expected rate</span>
+                            <span class="helper-text">Auto-updates based on age and expected rate</span>
                         </div>
                     </div>
 
@@ -587,15 +587,17 @@
                             <label>Property Taxes (Annual)</label>
                             <div class="input-wrapper">
                                 <span class="currency-symbol">$</span>
-                                <input type="number" class="annual-taxes" value="3600" placeholder="3,600">
+                                <input type="number" class="annual-taxes" value="0" placeholder="Auto-calculated">
                             </div>
+                            <span class="helper-text">Default: 0.55% of appraised value</span>
                         </div>
                         <div class="form-group">
                             <label>Homeowners Insurance (Annual)</label>
                             <div class="input-wrapper">
                                 <span class="currency-symbol">$</span>
-                                <input type="number" class="annual-insurance" value="1500" placeholder="1,500">
+                                <input type="number" class="annual-insurance" value="0" placeholder="Auto-calculated">
                             </div>
+                            <span class="helper-text">Default: 0.265% of appraised value</span>
                         </div>
                         <div class="form-group">
                             <label>HOA Dues (Annual)</label>
@@ -648,11 +650,26 @@
                                 </div>
                             </div>
                             <div class="form-group">
+                                <label>HECM Counseling Fee</label>
+                                <div class="input-wrapper">
+                                    <span class="currency-symbol">$</span>
+                                    <input type="number" class="counseling-fee-display" readonly>
+                                </div>
+                            </div>
+                            <div class="form-group">
                                 <label>Total Closing Costs</label>
                                 <div class="input-wrapper">
                                     <span class="currency-symbol">$</span>
                                     <input type="number" class="total-closing-costs" readonly>
                                 </div>
+                            </div>
+                            <div class="form-group highlight-field">
+                                <label>Cash at Closing (to Borrower)</label>
+                                <div class="input-wrapper">
+                                    <span class="currency-symbol">$</span>
+                                    <input type="number" class="cash-at-closing-display" readonly>
+                                </div>
+                                <span class="helper-text">Net proceeds after all costs and payoffs</span>
                             </div>
                         </div>
                     </div>
@@ -1113,15 +1130,17 @@
                             <label>Property Taxes (Annual)</label>
                             <div class="input-wrapper">
                                 <span class="currency-symbol">$</span>
-                                <input type="number" class="annual-taxes" value="3600" placeholder="3,600">
+                                <input type="number" class="annual-taxes" value="0" placeholder="Auto-calculated">
                             </div>
+                            <span class="helper-text">Default: 0.55% of appraised value</span>
                         </div>
                         <div class="form-group">
                             <label>Homeowners Insurance (Annual)</label>
                             <div class="input-wrapper">
                                 <span class="currency-symbol">$</span>
-                                <input type="number" class="annual-insurance" value="1500" placeholder="1,500">
+                                <input type="number" class="annual-insurance" value="0" placeholder="Auto-calculated">
                             </div>
+                            <span class="helper-text">Default: 0.265% of appraised value</span>
                         </div>
                         <div class="form-group">
                             <label>HOA Dues (Annual)</label>
