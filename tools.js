@@ -2282,327 +2282,609 @@ function generateHTMLReport(reportData) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mortgage Analysis Report - ${currentDate}</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"><\/script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --navy: #0f172a;
+            --navy-light: #1e293b;
+            --accent: #3b82f6;
+            --accent-light: #60a5fa;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-400: #94a3b8;
+            --gray-500: #64748b;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
+            --gray-900: #0f172a;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             line-height: 1.6;
-            color: #1a1a1a;
+            color: var(--gray-800);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 30px;
+        }
+
+        .report-container {
             max-width: 900px;
             margin: 0 auto;
-            padding: 40px 30px;
-            background: #fff;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
         }
 
-        /* Header */
-        .report-header {
-            text-align: center;
-            margin-bottom: 40px;
-            padding-bottom: 30px;
-            border-bottom: 2px solid #1e3a5f;
-        }
-        .report-header h1 {
-            color: #1e3a5f;
-            font-size: 2.2rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-        .report-header .subtitle {
-            color: #666;
-            font-size: 1.1rem;
-        }
-        .report-header .date {
-            color: #888;
-            font-size: 0.9rem;
-            margin-top: 12px;
-        }
-
-        /* Loan Officer Info */
-        .lo-info {
+        /* Action Bar */
+        .action-bar {
             display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            background: linear-gradient(135deg, #1e3a5f 0%, #2c4f7c 100%);
-            padding: 25px 30px;
-            border-radius: 12px;
-            margin-bottom: 35px;
+            justify-content: flex-end;
+            gap: 12px;
+            padding: 20px 30px;
+            background: var(--gray-50);
+            border-bottom: 1px solid var(--gray-200);
+        }
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        .action-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+        .action-btn.primary {
+            background: linear-gradient(135deg, var(--accent) 0%, #2563eb 100%);
             color: white;
         }
-        .lo-info h3 {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            opacity: 0.8;
-            margin-bottom: 8px;
+        .action-btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
         }
-        .lo-info .lo-name {
-            font-size: 1.3rem;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-        .lo-info .lo-details {
-            font-size: 0.9rem;
-            opacity: 0.9;
-        }
-        .lo-info .lo-contact {
-            text-align: right;
-        }
-
-        /* Tool Section */
-        .tool-section {
-            margin-bottom: 45px;
-            page-break-inside: avoid;
-            background: #fafafa;
-            border-radius: 12px;
-            padding: 25px;
-            border: 1px solid #e5e7eb;
-        }
-        .tool-section h2 {
-            color: #1e3a5f;
-            font-size: 1.4rem;
-            font-weight: 600;
-            margin-bottom: 20px;
-            padding-bottom: 12px;
-            border-bottom: 2px solid #1e3a5f;
-        }
-
-        /* Inputs Section */
-        .inputs-section {
+        .action-btn.secondary {
             background: white;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
+            color: var(--gray-700);
+            border: 1px solid var(--gray-300);
         }
-        .inputs-section h4 {
+        .action-btn.secondary:hover {
+            background: var(--gray-50);
+            border-color: var(--gray-400);
+        }
+        .action-btn.success {
+            background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+            color: white;
+        }
+        .action-btn.success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        @media print {
+            .action-bar { display: none !important; }
+            body { background: white; padding: 0; }
+            .report-container { box-shadow: none; border-radius: 0; }
+        }
+
+        /* Hero Header */
+        .report-hero {
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 50%, #312e81 100%);
+            padding: 50px 40px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        .report-hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.3) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .report-hero::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+        .hero-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            padding: 6px 16px;
+            border-radius: 50px;
             font-size: 0.75rem;
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #666;
-            margin-bottom: 12px;
+            letter-spacing: 1.5px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
         }
-        .inputs-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 12px;
+        .report-hero h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
         }
-        .input-item {
+        .report-hero .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.8;
+            font-weight: 400;
+        }
+        .hero-date {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.15);
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        /* Loan Officer Card */
+        .lo-card {
+            margin: -30px 30px 30px;
+            background: white;
+            border-radius: 16px;
+            padding: 25px 30px;
             display: flex;
             justify-content: space-between;
-            padding: 8px 12px;
-            background: #f5f5f5;
-            border-radius: 6px;
+            align-items: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 10;
+            border: 1px solid var(--gray-100);
+        }
+        .lo-card .lo-avatar {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--accent) 0%, #2563eb 100%);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-right: 18px;
+        }
+        .lo-card .lo-info {
+            flex: 1;
+        }
+        .lo-card .lo-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+        .lo-card .lo-title {
+            font-size: 0.85rem;
+            color: var(--gray-500);
+        }
+        .lo-card .lo-contact {
+            text-align: right;
+        }
+        .lo-card .lo-contact-item {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
             font-size: 0.9rem;
+            color: var(--gray-600);
+            margin-bottom: 4px;
         }
-        .input-item .label { color: #666; }
-        .input-item .value { font-weight: 600; color: #1a1a1a; }
+        .lo-card .lo-contact-item svg {
+            width: 16px;
+            height: 16px;
+            color: var(--accent);
+        }
 
-        /* Results Section */
-        .results-section {
-            margin-bottom: 20px;
+        /* Main Content */
+        .report-content {
+            padding: 20px 30px 40px;
         }
-        .results-section h4 {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #666;
-            margin-bottom: 12px;
+
+        /* Section Styles */
+        .analysis-section {
+            margin-bottom: 35px;
+            background: var(--gray-50);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--gray-200);
         }
-        .results-grid {
+        .section-header {
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+            padding: 20px 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .section-icon {
+            width: 45px;
+            height: 45px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .section-icon svg {
+            width: 24px;
+            height: 24px;
+            color: white;
+        }
+        .section-header h2 {
+            color: white;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+        .section-body {
+            padding: 25px;
+        }
+
+        /* Input Summary */
+        .input-summary {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .input-chip {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            border: 1px solid var(--gray-200);
+        }
+        .input-chip .label {
+            color: var(--gray-500);
+        }
+        .input-chip .value {
+            font-weight: 700;
+            color: var(--gray-800);
+        }
+
+        /* Results Cards */
+        .results-showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 25px;
         }
         .result-card {
             background: white;
             padding: 20px;
-            border-radius: 10px;
-            border-left: 4px solid #1e3a5f;
+            border-radius: 14px;
+            border: 1px solid var(--gray-200);
+            position: relative;
+            overflow: hidden;
         }
-        .result-card .label {
-            font-size: 0.8rem;
-            color: #666;
-            margin-bottom: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
+        .result-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent), var(--success));
         }
-        .result-card .value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #1e3a5f;
+        .result-card.featured {
+            background: linear-gradient(135deg, var(--accent) 0%, #2563eb 100%);
+            border: none;
+            grid-column: span 2;
         }
-        .result-card.highlight {
-            background: linear-gradient(135deg, #1e3a5f 0%, #2c4f7c 100%);
-            border-left: none;
+        .result-card.featured::before {
+            display: none;
         }
-        .result-card.highlight .label { color: rgba(255,255,255,0.8); }
-        .result-card.highlight .value { color: white; }
-
-        /* Calculations Section */
-        .calculations-section {
-            background: white;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        .calculations-section h4 {
+        .result-card .result-label {
             font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            color: #666;
-            margin-bottom: 15px;
-        }
-        .calculation-item {
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            margin-bottom: 12px;
-            border-left: 3px solid #10b981;
-        }
-        .calculation-item:last-child { margin-bottom: 0; }
-        .calculation-item .calc-label {
+            color: var(--gray-500);
+            margin-bottom: 8px;
             font-weight: 600;
-            color: #1a1a1a;
+        }
+        .result-card.featured .result-label {
+            color: rgba(255,255,255,0.8);
+        }
+        .result-card .result-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--gray-900);
+            letter-spacing: -0.5px;
+        }
+        .result-card.featured .result-value {
+            color: white;
+            font-size: 2.2rem;
+        }
+
+        /* Math Breakdown */
+        .math-breakdown {
+            background: white;
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--gray-200);
+        }
+        .math-breakdown h4 {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--gray-500);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .math-breakdown h4 svg {
+            width: 18px;
+            height: 18px;
+            color: var(--success);
+        }
+        .math-step {
+            padding: 16px;
+            background: var(--gray-50);
+            border-radius: 10px;
+            margin-bottom: 12px;
+            border-left: 4px solid var(--success);
+        }
+        .math-step:last-child {
+            margin-bottom: 0;
+        }
+        .math-step .step-name {
+            font-weight: 700;
+            color: var(--gray-800);
             margin-bottom: 6px;
         }
-        .calculation-item .calc-formula {
+        .math-step .step-formula {
             font-size: 0.85rem;
-            color: #666;
+            color: var(--gray-500);
             font-style: italic;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
-        .calculation-item .calc-result {
-            font-family: 'Monaco', 'Menlo', monospace;
-            font-size: 0.9rem;
-            color: #1e3a5f;
+        .math-step .step-calculation {
+            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+            font-size: 0.95rem;
+            color: var(--accent);
             background: white;
-            padding: 10px 12px;
-            border-radius: 6px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--gray-200);
             overflow-x: auto;
         }
 
-        /* Chart Section */
-        .chart-section {
+        /* Chart Container */
+        .chart-wrapper {
             background: white;
-            border-radius: 8px;
+            border-radius: 14px;
             padding: 20px;
+            border: 1px solid var(--gray-200);
             margin-bottom: 20px;
         }
-        .chart-section h4 {
-            font-size: 0.75rem;
+        .chart-wrapper h4 {
+            font-size: 0.8rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            color: #666;
+            color: var(--gray-500);
             margin-bottom: 15px;
         }
         .chart-container {
+            height: 280px;
             position: relative;
-            height: 300px;
-            width: 100%;
         }
 
         /* Data Table */
+        .data-table-wrapper {
+            overflow-x: auto;
+        }
         .data-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 0.85rem;
-            margin-top: 15px;
         }
         .data-table th {
-            background: #1e3a5f;
+            background: var(--navy);
             color: white;
-            padding: 10px 12px;
+            padding: 14px 16px;
             text-align: left;
             font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .data-table th:first-child {
+            border-radius: 10px 0 0 0;
+        }
+        .data-table th:last-child {
+            border-radius: 0 10px 0 0;
         }
         .data-table td {
-            padding: 10px 12px;
-            border-bottom: 1px solid #e5e7eb;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--gray-200);
+            color: var(--gray-700);
+        }
+        .data-table tr:last-child td {
+            border-bottom: none;
         }
         .data-table tr:nth-child(even) {
-            background: #f8f9fa;
+            background: var(--gray-50);
         }
         .data-table tr:hover {
-            background: #f0f0f0;
+            background: #e0f2fe;
         }
 
         /* Footer */
         .report-footer {
-            margin-top: 50px;
-            padding-top: 25px;
-            border-top: 2px solid #e5e7eb;
-            text-align: center;
+            background: var(--gray-50);
+            padding: 30px;
+            border-top: 1px solid var(--gray-200);
         }
         .footer-brand {
-            color: #1e3a5f;
-            font-weight: 600;
-            font-size: 1rem;
-            margin-bottom: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .footer-brand .brand-name {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--navy);
+        }
+        .footer-brand .brand-tagline {
+            font-size: 0.85rem;
+            color: var(--gray-500);
         }
         .disclaimer {
-            background: #f8f9fa;
+            background: white;
             padding: 20px;
-            border-radius: 8px;
+            border-radius: 12px;
             font-size: 0.8rem;
-            color: #666;
-            text-align: left;
+            color: var(--gray-500);
+            line-height: 1.7;
+            border: 1px solid var(--gray-200);
         }
-        .disclaimer strong { color: #1a1a1a; }
-
-        /* Print Styles */
-        @media print {
-            body { padding: 20px; }
-            .tool-section { page-break-inside: avoid; }
-            .chart-section { page-break-inside: avoid; }
+        .disclaimer strong {
+            color: var(--gray-700);
         }
 
-        /* Not Calculated Warning */
+        /* Alert Box */
         .not-calculated {
-            background: #fef3c7;
-            padding: 20px;
-            border-radius: 8px;
-            color: #92400e;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            padding: 25px;
+            border-radius: 12px;
             text-align: center;
+            color: #92400e;
             border: 1px solid #fcd34d;
+        }
+        .not-calculated svg {
+            width: 40px;
+            height: 40px;
+            margin-bottom: 10px;
+            opacity: 0.7;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body { padding: 15px; }
+            .report-hero { padding: 35px 25px; }
+            .report-hero h1 { font-size: 1.8rem; }
+            .lo-card { flex-direction: column; text-align: center; margin: -20px 15px 20px; }
+            .lo-card .lo-contact { text-align: center; margin-top: 15px; }
+            .lo-card .lo-contact-item { justify-content: center; }
+            .report-content { padding: 15px; }
+            .result-card.featured { grid-column: span 1; }
+            .action-bar { flex-wrap: wrap; justify-content: center; }
         }
     </style>
 </head>
 <body>
-    <div class="report-header">
-        <h1>Mortgage Analysis Report</h1>
-        <p class="subtitle">Personalized Scenario Analysis</p>
-        <p class="date">Prepared on ${currentDate}</p>
-    </div>
+    <div class="report-container" id="reportContent">
+        <!-- Action Bar -->
+        <div class="action-bar">
+            <button class="action-btn secondary" onclick="window.print()">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                Print
+            </button>
+            <button class="action-btn primary" onclick="downloadPDF()">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                Download PDF
+            </button>
+            <button class="action-btn success" onclick="emailReport()">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                Email Report
+            </button>
+        </div>
 
-    ${loName || loCompany ? `
-    <div class="lo-info">
-        <div>
-            <h3>Prepared By</h3>
-            ${loName ? `<div class="lo-name">${loName}</div>` : ''}
-            ${loCompany ? `<div class="lo-details">${loCompany}</div>` : ''}
-            ${loNMLS ? `<div class="lo-details">NMLS# ${loNMLS}</div>` : ''}
+        <!-- Hero Header -->
+        <div class="report-hero">
+            <div class="hero-content">
+                <div class="hero-badge">Personalized Analysis</div>
+                <h1>Mortgage Analysis Report</h1>
+                <p class="subtitle">Detailed breakdown of your mortgage scenarios and financial projections</p>
+                <div class="hero-date">Prepared on ${currentDate}</div>
+            </div>
         </div>
-        <div class="lo-contact">
-            ${loPhone ? `<div class="lo-details">${loPhone}</div>` : ''}
-            ${loEmail ? `<div class="lo-details">${loEmail}</div>` : ''}
+
+        ${loName || loCompany ? `
+        <!-- Loan Officer Card -->
+        <div class="lo-card">
+            <div style="display: flex; align-items: center;">
+                <div class="lo-avatar">${loName ? loName.charAt(0).toUpperCase() : 'LO'}</div>
+                <div class="lo-info">
+                    <div class="lo-name">${loName || 'Your Loan Officer'}</div>
+                    <div class="lo-title">${loCompany || ''}${loNMLS ? ' • NMLS# ' + loNMLS : ''}</div>
+                </div>
+            </div>
+            <div class="lo-contact">
+                ${loPhone ? `<div class="lo-contact-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>${loPhone}</div>` : ''}
+                ${loEmail ? `<div class="lo-contact-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>${loEmail}</div>` : ''}
+            </div>
         </div>
-    </div>
-    ` : ''}
-`;
+        ` : ''}
+
+        <div class="report-content">`;
+
+    // Tool icons map
+    const toolIcons = {
+        'mortgage': '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>',
+        'payment': '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+        'refinance': '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>',
+        'affordability': '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>',
+        'amortization': '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>',
+        'default': '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>'
+    };
+
+    function getToolIcon(title) {
+        const lowerTitle = title.toLowerCase();
+        if (lowerTitle.includes('payment')) return toolIcons.payment;
+        if (lowerTitle.includes('refinance')) return toolIcons.refinance;
+        if (lowerTitle.includes('afford')) return toolIcons.affordability;
+        if (lowerTitle.includes('amortiz')) return toolIcons.amortization;
+        if (lowerTitle.includes('mortgage') || lowerTitle.includes('home')) return toolIcons.mortgage;
+        return toolIcons.default;
+    }
 
     reportData.forEach(tool => {
         reportHTML += `
-    <div class="tool-section">
-        <h2>${tool.title}</h2>
-`;
+            <div class="analysis-section">
+                <div class="section-header">
+                    <div class="section-icon">${getToolIcon(tool.title)}</div>
+                    <h2>${tool.title}</h2>
+                </div>
+                <div class="section-body">`;
+
         if (tool.results && Object.keys(tool.results).length > 0) {
             const data = tool.results;
 
-            // Inputs Section
+            // Input Summary
             if (data.inputs && Object.keys(data.inputs).length > 0) {
-                reportHTML += `
-        <div class="inputs-section">
-            <h4>Your Inputs</h4>
-            <div class="inputs-grid">`;
+                reportHTML += `<div class="input-summary">`;
                 for (const [key, value] of Object.entries(data.inputs)) {
                     if (value !== null && value !== undefined && value !== '') {
                         const label = formatResultLabel(key);
@@ -2617,67 +2899,62 @@ function generateHTMLReport(reportData) {
                             }
                         }
                         reportHTML += `
-                <div class="input-item">
-                    <span class="label">${label}</span>
-                    <span class="value">${displayValue}</span>
-                </div>`;
+                    <div class="input-chip">
+                        <span class="label">${label}</span>
+                        <span class="value">${displayValue}</span>
+                    </div>`;
                     }
                 }
-                reportHTML += `
-            </div>
-        </div>`;
+                reportHTML += `</div>`;
             }
 
-            // Results Section
+            // Results Showcase
             if (data.results && Object.keys(data.results).length > 0) {
-                reportHTML += `
-        <div class="results-section">
-            <h4>Results</h4>
-            <div class="results-grid">`;
+                reportHTML += `<div class="results-showcase">`;
                 let isFirst = true;
                 for (const [key, value] of Object.entries(data.results)) {
                     if (value !== null && value !== undefined && value !== '') {
                         const label = formatResultLabel(key);
                         reportHTML += `
-                <div class="result-card${isFirst ? ' highlight' : ''}">
-                    <div class="label">${label}</div>
-                    <div class="value">${value}</div>
-                </div>`;
+                    <div class="result-card${isFirst ? ' featured' : ''}">
+                        <div class="result-label">${label}</div>
+                        <div class="result-value">${value}</div>
+                    </div>`;
                         isFirst = false;
                     }
                 }
-                reportHTML += `
-            </div>
-        </div>`;
+                reportHTML += `</div>`;
             }
 
-            // Calculations Section
+            // Math Breakdown
             if (data.calculations && data.calculations.length > 0) {
                 reportHTML += `
-        <div class="calculations-section">
-            <h4>How We Calculated This</h4>`;
+                    <div class="math-breakdown">
+                        <h4>
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                            How We Calculated This
+                        </h4>`;
                 data.calculations.forEach(calc => {
                     reportHTML += `
-            <div class="calculation-item">
-                <div class="calc-label">${calc.label}</div>
-                <div class="calc-formula">Formula: ${calc.formula}</div>
-                <div class="calc-result">${calc.calculation}</div>
-            </div>`;
+                        <div class="math-step">
+                            <div class="step-name">${calc.label}</div>
+                            <div class="step-formula">${calc.formula}</div>
+                            <div class="step-calculation">${calc.calculation}</div>
+                        </div>`;
                 });
-                reportHTML += `
-        </div>`;
+                reportHTML += `</div>`;
             }
 
             // Chart Section
             if (data.chartData) {
                 const chartId = `chart_${chartCounter++}`;
                 reportHTML += `
-        <div class="chart-section">
-            <h4>Visual Breakdown</h4>
-            <div class="chart-container">
-                <canvas id="${chartId}"></canvas>
-            </div>
-        </div>`;
+                    <div class="chart-wrapper">
+                        <h4>Visual Breakdown</h4>
+                        <div class="chart-container">
+                            <canvas id="${chartId}"></canvas>
+                        </div>
+                    </div>`;
 
                 // Generate chart script
                 let chartScript = '';
@@ -2697,7 +2974,7 @@ function generateHTMLReport(reportData) {
                             responsive: true,
                             maintainAspectRatio: false,
                             plugins: {
-                                legend: { position: 'bottom' }
+                                legend: { position: 'bottom', labels: { font: { family: 'Inter' } } }
                             }
                         }
                     });`;
@@ -2718,13 +2995,15 @@ function generateHTMLReport(reportData) {
                             responsive: true,
                             maintainAspectRatio: false,
                             plugins: {
-                                legend: { position: 'top' }
+                                legend: { position: 'top', labels: { font: { family: 'Inter' } } }
                             },
                             scales: {
-                                x: { stacked: true },
+                                x: { stacked: true, grid: { display: false } },
                                 y: {
                                     stacked: true,
+                                    grid: { color: '#e2e8f0' },
                                     ticks: {
+                                        font: { family: 'Inter' },
                                         callback: function(value) {
                                             return '$' + value.toLocaleString();
                                         }
@@ -2745,18 +3024,22 @@ function generateHTMLReport(reportData) {
                                 borderColor: ds.color,
                                 backgroundColor: ds.color + '20',
                                 fill: true,
-                                tension: 0.4
+                                tension: 0.4,
+                                borderWidth: 3
                             })))}
                         },
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
                             plugins: {
-                                legend: { position: 'top' }
+                                legend: { position: 'top', labels: { font: { family: 'Inter' } } }
                             },
                             scales: {
+                                x: { grid: { display: false } },
                                 y: {
+                                    grid: { color: '#e2e8f0' },
                                     ticks: {
+                                        font: { family: 'Inter' },
                                         callback: function(value) {
                                             return '$' + value.toLocaleString();
                                         }
@@ -2771,64 +3054,113 @@ function generateHTMLReport(reportData) {
                 // Add data table for charts
                 if (data.chartData.type === 'line' || data.chartData.type === 'bar') {
                     reportHTML += `
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Period</th>`;
+                    <div class="data-table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Period</th>`;
                     data.chartData.datasets.forEach(ds => {
                         reportHTML += `<th>${ds.label}</th>`;
                     });
                     reportHTML += `
-                </tr>
-            </thead>
-            <tbody>`;
+                                </tr>
+                            </thead>
+                            <tbody>`;
                     const maxRows = Math.min(data.chartData.labels.length, 10);
                     for (let i = 0; i < maxRows; i++) {
                         reportHTML += `
-                <tr>
-                    <td>${data.chartData.labels[i]}</td>`;
+                                <tr>
+                                    <td>${data.chartData.labels[i]}</td>`;
                         data.chartData.datasets.forEach(ds => {
                             reportHTML += `<td>${formatCurrency(ds.values[i])}</td>`;
                         });
                         reportHTML += `
-                </tr>`;
+                                </tr>`;
                     }
                     if (data.chartData.labels.length > 10) {
                         reportHTML += `
-                <tr>
-                    <td colspan="${data.chartData.datasets.length + 1}" style="text-align: center; font-style: italic; color: #666;">
-                        ... and ${data.chartData.labels.length - 10} more periods
-                    </td>
-                </tr>`;
+                                <tr>
+                                    <td colspan="${data.chartData.datasets.length + 1}" style="text-align: center; font-style: italic; color: var(--gray-500);">
+                                        ... and ${data.chartData.labels.length - 10} more periods
+                                    </td>
+                                </tr>`;
                     }
                     reportHTML += `
-            </tbody>
-        </table>`;
+                            </tbody>
+                        </table>
+                    </div>`;
                 }
             }
 
         } else {
-            reportHTML += `<div class="not-calculated">This calculator has not been run yet. Please calculate results before generating the report.</div>`;
+            reportHTML += `
+                    <div class="not-calculated">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        <p>This calculator has not been run yet. Please calculate results before generating the report.</p>
+                    </div>`;
         }
+
         reportHTML += `
-    </div>`;
+                </div>
+            </div>`;
     });
 
     reportHTML += `
-    <div class="report-footer">
-        <div class="footer-brand">Generated by LoanDr. Mortgage Tools</div>
-        <div class="disclaimer">
-            <strong>Disclaimer:</strong> This report is for informational and educational purposes only and does not constitute financial, legal, or tax advice.
-            All calculations are estimates based on the inputs provided and various assumptions. Actual rates, payments, terms, and outcomes may vary significantly.
-            This analysis does not account for all possible factors that could affect your specific situation. Please consult with a licensed mortgage professional,
-            financial advisor, and/or tax professional for personalized advice tailored to your specific circumstances before making any financial decisions.
+        </div>
+
+        <!-- Footer -->
+        <div class="report-footer">
+            <div class="footer-brand">
+                <div class="brand-name">LoanDr. Mortgage Tools</div>
+                <div class="brand-tagline">Professional Mortgage Analysis</div>
+            </div>
+            <div class="disclaimer">
+                <strong>Disclaimer:</strong> This report is for informational and educational purposes only and does not constitute financial, legal, or tax advice.
+                All calculations are estimates based on the inputs provided and various assumptions. Actual rates, payments, terms, and outcomes may vary significantly.
+                This analysis does not account for all possible factors that could affect your specific situation. Please consult with a licensed mortgage professional,
+                financial advisor, and/or tax professional for personalized advice tailored to your specific circumstances before making any financial decisions.
+            </div>
         </div>
     </div>
 
     <script>
+        // Initialize charts
         document.addEventListener('DOMContentLoaded', function() {
             ${chartScripts.join('\n')}
         });
+
+        // Download PDF function
+        function downloadPDF() {
+            const element = document.getElementById('reportContent');
+            const actionBar = document.querySelector('.action-bar');
+            actionBar.style.display = 'none';
+
+            const opt = {
+                margin: 0.5,
+                filename: 'Mortgage-Analysis-Report.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, logging: false },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+
+            html2pdf().set(opt).from(element).save().then(function() {
+                actionBar.style.display = 'flex';
+            });
+        }
+
+        // Email report function
+        function emailReport() {
+            const subject = encodeURIComponent('Your Mortgage Analysis Report');
+            const body = encodeURIComponent(
+                'Hello,\\n\\n' +
+                'Please find your personalized mortgage analysis report attached or accessible via the link below.\\n\\n' +
+                'This report was generated using LoanDr. Mortgage Tools and contains detailed calculations and projections for your mortgage scenarios.\\n\\n' +
+                'If you have any questions about this analysis, please don\\'t hesitate to reach out.\\n\\n' +
+                'Best regards'
+            );
+            window.location.href = 'mailto:?subject=' + subject + '&body=' + body;
+        }
     <\/script>
 </body>
 </html>`;
