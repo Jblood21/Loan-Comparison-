@@ -2004,66 +2004,261 @@ function generateClientReport() {
 }
 
 function extractToolResults(toolId, card) {
-    const results = {};
+    const data = {
+        inputs: {},
+        results: {},
+        calculations: [],
+        chartData: null
+    };
 
     switch (toolId) {
         case 'dti':
-            results.frontEndDTI = document.getElementById('dti-front-value')?.textContent;
-            results.backEndDTI = document.getElementById('dti-back-value')?.textContent;
+            // Get inputs
+            data.inputs = {
+                grossIncome: parseFloat(document.getElementById('dti-income')?.value) || 0,
+                coIncome: parseFloat(document.getElementById('dti-co-income')?.value) || 0,
+                mortgage: parseFloat(document.getElementById('dti-mortgage')?.value) || 0,
+                taxes: parseFloat(document.getElementById('dti-taxes')?.value) || 0,
+                insurance: parseFloat(document.getElementById('dti-insurance')?.value) || 0,
+                hoa: parseFloat(document.getElementById('dti-hoa')?.value) || 0,
+                pmi: parseFloat(document.getElementById('dti-pmi')?.value) || 0,
+                carPayment: parseFloat(document.getElementById('dti-car')?.value) || 0,
+                studentLoans: parseFloat(document.getElementById('dti-student')?.value) || 0,
+                creditCards: parseFloat(document.getElementById('dti-credit')?.value) || 0,
+                otherDebts: parseFloat(document.getElementById('dti-other')?.value) || 0
+            };
+
+            const totalIncome = data.inputs.grossIncome + data.inputs.coIncome;
+            const housingExpenses = data.inputs.mortgage + data.inputs.taxes + data.inputs.insurance + data.inputs.hoa + data.inputs.pmi;
+            const otherDebts = data.inputs.carPayment + data.inputs.studentLoans + data.inputs.creditCards + data.inputs.otherDebts;
+            const totalDebts = housingExpenses + otherDebts;
+
+            data.results = {
+                frontEndDTI: document.getElementById('dti-front-value')?.textContent,
+                backEndDTI: document.getElementById('dti-back-value')?.textContent,
+                totalIncome: formatCurrency(totalIncome),
+                housingExpenses: formatCurrency(housingExpenses),
+                otherDebts: formatCurrency(otherDebts),
+                totalDebts: formatCurrency(totalDebts)
+            };
+
+            data.calculations = [
+                { label: 'Front-End DTI', formula: `Housing Expenses ÷ Total Income`, calculation: `${formatCurrency(housingExpenses)} ÷ ${formatCurrency(totalIncome)} = ${((housingExpenses/totalIncome)*100).toFixed(1)}%` },
+                { label: 'Back-End DTI', formula: `Total Debts ÷ Total Income`, calculation: `${formatCurrency(totalDebts)} ÷ ${formatCurrency(totalIncome)} = ${((totalDebts/totalIncome)*100).toFixed(1)}%` }
+            ];
+
+            data.chartData = {
+                type: 'doughnut',
+                labels: ['Housing', 'Other Debts', 'Remaining Income'],
+                values: [housingExpenses, otherDebts, Math.max(0, totalIncome - totalDebts)],
+                colors: ['#1e3a5f', '#3b82f6', '#10b981']
+            };
             break;
-        case 'rent-buy':
-            results.buyingCost = document.getElementById('rb-buying-total')?.textContent;
-            results.rentingCost = document.getElementById('rb-renting-total')?.textContent;
-            results.savings = document.getElementById('rb-savings')?.textContent;
-            break;
+
         case 'amortization':
-            results.monthlyPayment = document.getElementById('amort-monthly-payment')?.textContent;
-            results.totalInterest = document.getElementById('amort-total-interest')?.textContent;
-            results.totalCost = document.getElementById('amort-total-cost')?.textContent;
+            const amortLoan = parseFloat(document.getElementById('amort-loan')?.value) || 0;
+            const amortRate = parseFloat(document.getElementById('amort-rate')?.value) || 0;
+            const amortTerm = parseInt(document.getElementById('amort-term')?.value) || 30;
+
+            data.inputs = {
+                loanAmount: amortLoan,
+                interestRate: amortRate,
+                loanTerm: amortTerm
+            };
+
+            const monthlyRate = amortRate / 100 / 12;
+            const numPayments = amortTerm * 12;
+            const monthlyPayment = amortLoan * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1);
+            const totalPaid = monthlyPayment * numPayments;
+            const totalInterest = totalPaid - amortLoan;
+
+            data.results = {
+                monthlyPayment: formatCurrency(monthlyPayment),
+                totalInterest: formatCurrency(totalInterest),
+                totalCost: formatCurrency(totalPaid)
+            };
+
+            data.calculations = [
+                { label: 'Monthly Payment', formula: `P × [r(1+r)^n] / [(1+r)^n - 1]`, calculation: `${formatCurrency(amortLoan)} × [${(monthlyRate).toFixed(6)}(1+${(monthlyRate).toFixed(6)})^${numPayments}] / [(1+${(monthlyRate).toFixed(6)})^${numPayments} - 1] = ${formatCurrency(monthlyPayment)}` },
+                { label: 'Total Interest', formula: `(Monthly Payment × Number of Payments) - Loan Amount`, calculation: `(${formatCurrency(monthlyPayment)} × ${numPayments}) - ${formatCurrency(amortLoan)} = ${formatCurrency(totalInterest)}` }
+            ];
+
+            // Generate amortization chart data (yearly breakdown)
+            let balance = amortLoan;
+            const yearlyPrincipal = [];
+            const yearlyInterest = [];
+            const yearLabels = [];
+
+            for (let year = 1; year <= Math.min(amortTerm, 30); year++) {
+                let yearPrincipal = 0;
+                let yearInterest = 0;
+                for (let month = 0; month < 12 && balance > 0; month++) {
+                    const interestPayment = balance * monthlyRate;
+                    const principalPayment = Math.min(monthlyPayment - interestPayment, balance);
+                    yearPrincipal += principalPayment;
+                    yearInterest += interestPayment;
+                    balance -= principalPayment;
+                }
+                yearLabels.push(`Year ${year}`);
+                yearlyPrincipal.push(Math.round(yearPrincipal));
+                yearlyInterest.push(Math.round(yearInterest));
+            }
+
+            data.chartData = {
+                type: 'bar',
+                labels: yearLabels,
+                datasets: [
+                    { label: 'Principal', values: yearlyPrincipal, color: '#1e3a5f' },
+                    { label: 'Interest', values: yearlyInterest, color: '#ef4444' }
+                ]
+            };
             break;
-        case 'arm-fixed':
-            results.fixedPayment = document.getElementById('arm-fixed-payment')?.textContent;
-            results.armInitialPayment = document.getElementById('arm-initial-payment')?.textContent;
-            break;
-        case 'pmi':
-            results.currentLTV = document.getElementById('pmi-current-ltv')?.textContent;
-            results.timeToRemove = document.getElementById('pmi-time-to-remove')?.textContent;
-            break;
-        case 'points':
-            results.breakeven = document.getElementById('points-breakeven')?.textContent;
-            results.pointsCost = document.getElementById('points-cost')?.textContent;
-            results.monthlySavings = document.getElementById('points-monthly-savings')?.textContent;
-            break;
-        case 'refi-breakeven':
-            results.breakeven = document.getElementById('refi-breakeven-months')?.textContent;
-            results.monthlySavings = document.getElementById('refi-monthly-savings')?.textContent;
-            results.lifetimeSavings = document.getElementById('refi-lifetime-savings')?.textContent;
-            break;
-        case 'buydown':
-            results.buydownCost = document.getElementById('buydown-total-cost')?.textContent;
-            break;
+
         case 'sell-rent':
-            results.sellProceeds = document.getElementById('sr-sell-proceeds')?.textContent;
-            results.rentWealth = document.getElementById('sr-rent-wealth')?.textContent;
-            results.capRate = document.getElementById('sr-cap-rate')?.textContent;
-            results.cashOnCash = document.getElementById('sr-cash-on-cash')?.textContent;
+            const srHomeValue = parseFloat(document.getElementById('sr-home-value')?.value) || 0;
+            const srMortgageBalance = parseFloat(document.getElementById('sr-mortgage-balance')?.value) || 0;
+            const srMortgageRate = parseFloat(document.getElementById('sr-mortgage-rate')?.value) || 0;
+            const srMonthlyRent = parseFloat(document.getElementById('sr-monthly-rent')?.value) || 0;
+            const srSellingCosts = parseFloat(document.getElementById('sr-selling-costs')?.value) || 8;
+            const srAppreciation = parseFloat(document.getElementById('sr-appreciation')?.value) || 3;
+            const srAltReturn = parseFloat(document.getElementById('sr-alt-return')?.value) || 7;
+            const srPeriod = parseInt(document.getElementById('sr-analysis-period')?.value) || 10;
+
+            data.inputs = {
+                homeValue: srHomeValue,
+                mortgageBalance: srMortgageBalance,
+                mortgageRate: srMortgageRate,
+                monthlyRent: srMonthlyRent,
+                sellingCosts: srSellingCosts,
+                appreciation: srAppreciation,
+                altReturn: srAltReturn,
+                analysisPeriod: srPeriod
+            };
+
+            const sellingCostsAmt = srHomeValue * (srSellingCosts / 100);
+            const netProceeds = srHomeValue - sellingCostsAmt - srMortgageBalance;
+            const investedValue = netProceeds * Math.pow(1 + srAltReturn / 100, srPeriod);
+            const futureHomeValue = srHomeValue * Math.pow(1 + srAppreciation / 100, srPeriod);
+
+            data.results = {
+                sellProceeds: document.getElementById('sr-sell-proceeds')?.textContent,
+                investedValue: formatCurrency(investedValue),
+                rentWealth: document.getElementById('sr-rent-wealth')?.textContent,
+                futureHomeValue: formatCurrency(futureHomeValue),
+                capRate: document.getElementById('sr-cap-rate')?.textContent,
+                cashOnCash: document.getElementById('sr-cash-on-cash')?.textContent
+            };
+
+            data.calculations = [
+                { label: 'Net Sale Proceeds', formula: `Home Value - Selling Costs - Mortgage`, calculation: `${formatCurrency(srHomeValue)} - ${formatCurrency(sellingCostsAmt)} - ${formatCurrency(srMortgageBalance)} = ${formatCurrency(netProceeds)}` },
+                { label: 'If Invested (Future Value)', formula: `Proceeds × (1 + Return Rate)^Years`, calculation: `${formatCurrency(netProceeds)} × (1 + ${srAltReturn}%)^${srPeriod} = ${formatCurrency(investedValue)}` },
+                { label: 'Future Home Value', formula: `Current Value × (1 + Appreciation)^Years`, calculation: `${formatCurrency(srHomeValue)} × (1 + ${srAppreciation}%)^${srPeriod} = ${formatCurrency(futureHomeValue)}` }
+            ];
+
+            // Chart data for comparison
+            const sellData = [];
+            const rentData = [];
+            const chartLabels = [];
+            for (let year = 0; year <= srPeriod; year++) {
+                chartLabels.push(`Year ${year}`);
+                sellData.push(Math.round(netProceeds * Math.pow(1 + srAltReturn / 100, year)));
+                rentData.push(Math.round(srHomeValue * Math.pow(1 + srAppreciation / 100, year) - srMortgageBalance * (1 - year/srPeriod * 0.3)));
+            }
+
+            data.chartData = {
+                type: 'line',
+                labels: chartLabels,
+                datasets: [
+                    { label: 'Sell & Invest', values: sellData, color: '#3b82f6' },
+                    { label: 'Keep & Rent (Equity)', values: rentData, color: '#10b981' }
+                ]
+            };
             break;
+
+        case 'rent-buy':
+            data.inputs = {
+                homePrice: parseFloat(document.getElementById('rb-home-price')?.value) || 0,
+                downPayment: parseFloat(document.getElementById('rb-down-payment')?.value) || 20,
+                interestRate: parseFloat(document.getElementById('rb-rate')?.value) || 0,
+                monthlyRent: parseFloat(document.getElementById('rb-rent')?.value) || 0,
+                years: parseInt(document.getElementById('rb-years')?.value) || 7
+            };
+
+            data.results = {
+                buyingCost: document.getElementById('rb-buying-total')?.textContent,
+                rentingCost: document.getElementById('rb-renting-total')?.textContent,
+                savings: document.getElementById('rb-savings')?.textContent,
+                recommendation: document.getElementById('rb-recommendation')?.textContent
+            };
+            break;
+
+        case 'refi-breakeven':
+            data.inputs = {
+                currentBalance: parseFloat(document.getElementById('refi-current-balance')?.value) || 0,
+                currentRate: parseFloat(document.getElementById('refi-current-rate')?.value) || 0,
+                newRate: parseFloat(document.getElementById('refi-new-rate')?.value) || 0,
+                closingCosts: parseFloat(document.getElementById('refi-closing-costs')?.value) || 0
+            };
+
+            data.results = {
+                breakeven: document.getElementById('refi-breakeven-months')?.textContent,
+                monthlySavings: document.getElementById('refi-monthly-savings')?.textContent,
+                lifetimeSavings: document.getElementById('refi-lifetime-savings')?.textContent
+            };
+
+            if (data.inputs.currentBalance > 0) {
+                const oldPayment = calculateMonthlyPayment(data.inputs.currentBalance, data.inputs.currentRate, 30);
+                const newPayment = calculateMonthlyPayment(data.inputs.currentBalance, data.inputs.newRate, 30);
+                const savings = oldPayment - newPayment;
+                const breakeven = data.inputs.closingCosts / savings;
+
+                data.calculations = [
+                    { label: 'Current Payment', formula: `Standard mortgage calculation at ${data.inputs.currentRate}%`, calculation: formatCurrency(oldPayment) + '/month' },
+                    { label: 'New Payment', formula: `Standard mortgage calculation at ${data.inputs.newRate}%`, calculation: formatCurrency(newPayment) + '/month' },
+                    { label: 'Monthly Savings', formula: `Current Payment - New Payment`, calculation: `${formatCurrency(oldPayment)} - ${formatCurrency(newPayment)} = ${formatCurrency(savings)}` },
+                    { label: 'Breakeven', formula: `Closing Costs ÷ Monthly Savings`, calculation: `${formatCurrency(data.inputs.closingCosts)} ÷ ${formatCurrency(savings)} = ${Math.ceil(breakeven)} months` }
+                ];
+            }
+            break;
+
+        case 'points':
+            data.inputs = {
+                loanAmount: parseFloat(document.getElementById('points-loan')?.value) || 0,
+                baseRate: parseFloat(document.getElementById('points-base-rate')?.value) || 0,
+                points: parseFloat(document.getElementById('points-amount')?.value) || 0,
+                rateReduction: parseFloat(document.getElementById('points-rate-reduction')?.value) || 0.25
+            };
+
+            data.results = {
+                pointsCost: document.getElementById('points-cost')?.textContent,
+                monthlySavings: document.getElementById('points-monthly-savings')?.textContent,
+                breakeven: document.getElementById('points-breakeven')?.textContent
+            };
+            break;
+
         default:
-            // Generic extraction
+            // Generic extraction for other tools
+            const allInputs = card.querySelectorAll('input, select');
+            allInputs.forEach(el => {
+                if (el.id) {
+                    data.inputs[el.id] = el.value;
+                }
+            });
+
             const allValues = card.querySelectorAll('.tool-results [id]');
             allValues.forEach(el => {
                 if (el.textContent) {
-                    results[el.id] = el.textContent;
+                    data.results[el.id] = el.textContent;
                 }
             });
     }
 
-    return results;
+    return data;
 }
 
 function generateHTMLReport(reportData) {
     // Get loan officer info from settings if available
-    const loName = localStorage.getItem('loName') || 'Loan Officer';
+    const loName = localStorage.getItem('loName') || '';
     const loCompany = localStorage.getItem('loCompany') || '';
     const loPhone = localStorage.getItem('loPhone') || '';
     const loEmail = localStorage.getItem('loEmail') || '';
@@ -2075,6 +2270,10 @@ function generateHTMLReport(reportData) {
         day: 'numeric'
     });
 
+    // Generate unique chart IDs
+    let chartCounter = 0;
+    const chartScripts = [];
+
     let reportHTML = `
 <!DOCTYPE html>
 <html lang="en">
@@ -2082,43 +2281,310 @@ function generateHTMLReport(reportData) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mortgage Analysis Report - ${currentDate}</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"><\/script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 40px 20px; }
-        .header { text-align: center; margin-bottom: 40px; padding-bottom: 30px; border-bottom: 3px solid #1e3a5f; }
-        .header h1 { color: #1e3a5f; font-size: 2rem; margin-bottom: 10px; }
-        .header .subtitle { color: #666; font-size: 1.1rem; }
-        .header .date { color: #888; font-size: 0.9rem; margin-top: 10px; }
-        .lo-info { background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 30px; }
-        .lo-info h3 { color: #1e3a5f; margin-bottom: 10px; }
-        .lo-info p { margin: 5px 0; font-size: 0.95rem; }
-        .tool-section { margin-bottom: 35px; page-break-inside: avoid; }
-        .tool-section h2 { color: #1e3a5f; font-size: 1.3rem; padding-bottom: 10px; border-bottom: 2px solid #e5e7eb; margin-bottom: 15px; }
-        .results-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
-        .result-item { background: #f8f9fa; padding: 15px; border-radius: 8px; }
-        .result-item .label { font-size: 0.85rem; color: #666; margin-bottom: 5px; }
-        .result-item .value { font-size: 1.2rem; font-weight: 600; color: #1e3a5f; }
-        .not-calculated { background: #fff3cd; padding: 15px; border-radius: 8px; color: #856404; font-style: italic; }
-        .footer { margin-top: 50px; padding-top: 30px; border-top: 2px solid #e5e7eb; text-align: center; color: #888; font-size: 0.85rem; }
-        .disclaimer { background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 20px; font-size: 0.8rem; color: #666; }
-        @media print { body { padding: 20px; } .tool-section { page-break-inside: avoid; } }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #1a1a1a;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 30px;
+            background: #fff;
+        }
+
+        /* Header */
+        .report-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid #1e3a5f;
+        }
+        .report-header h1 {
+            color: #1e3a5f;
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .report-header .subtitle {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        .report-header .date {
+            color: #888;
+            font-size: 0.9rem;
+            margin-top: 12px;
+        }
+
+        /* Loan Officer Info */
+        .lo-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            background: linear-gradient(135deg, #1e3a5f 0%, #2c4f7c 100%);
+            padding: 25px 30px;
+            border-radius: 12px;
+            margin-bottom: 35px;
+            color: white;
+        }
+        .lo-info h3 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.8;
+            margin-bottom: 8px;
+        }
+        .lo-info .lo-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .lo-info .lo-details {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        .lo-info .lo-contact {
+            text-align: right;
+        }
+
+        /* Tool Section */
+        .tool-section {
+            margin-bottom: 45px;
+            page-break-inside: avoid;
+            background: #fafafa;
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid #e5e7eb;
+        }
+        .tool-section h2 {
+            color: #1e3a5f;
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #1e3a5f;
+        }
+
+        /* Inputs Section */
+        .inputs-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .inputs-section h4 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+        .inputs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+        }
+        .input-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: #f5f5f5;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        .input-item .label { color: #666; }
+        .input-item .value { font-weight: 600; color: #1a1a1a; }
+
+        /* Results Section */
+        .results-section {
+            margin-bottom: 20px;
+        }
+        .results-section h4 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .result-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #1e3a5f;
+        }
+        .result-card .label {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .result-card .value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e3a5f;
+        }
+        .result-card.highlight {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2c4f7c 100%);
+            border-left: none;
+        }
+        .result-card.highlight .label { color: rgba(255,255,255,0.8); }
+        .result-card.highlight .value { color: white; }
+
+        /* Calculations Section */
+        .calculations-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .calculations-section h4 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+        .calculation-item {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border-left: 3px solid #10b981;
+        }
+        .calculation-item:last-child { margin-bottom: 0; }
+        .calculation-item .calc-label {
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 6px;
+        }
+        .calculation-item .calc-formula {
+            font-size: 0.85rem;
+            color: #666;
+            font-style: italic;
+            margin-bottom: 8px;
+        }
+        .calculation-item .calc-result {
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9rem;
+            color: #1e3a5f;
+            background: white;
+            padding: 10px 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+
+        /* Chart Section */
+        .chart-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .chart-section h4 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        /* Data Table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            margin-top: 15px;
+        }
+        .data-table th {
+            background: #1e3a5f;
+            color: white;
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        .data-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .data-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        .data-table tr:hover {
+            background: #f0f0f0;
+        }
+
+        /* Footer */
+        .report-footer {
+            margin-top: 50px;
+            padding-top: 25px;
+            border-top: 2px solid #e5e7eb;
+            text-align: center;
+        }
+        .footer-brand {
+            color: #1e3a5f;
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+        .disclaimer {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            color: #666;
+            text-align: left;
+        }
+        .disclaimer strong { color: #1a1a1a; }
+
+        /* Print Styles */
+        @media print {
+            body { padding: 20px; }
+            .tool-section { page-break-inside: avoid; }
+            .chart-section { page-break-inside: avoid; }
+        }
+
+        /* Not Calculated Warning */
+        .not-calculated {
+            background: #fef3c7;
+            padding: 20px;
+            border-radius: 8px;
+            color: #92400e;
+            text-align: center;
+            border: 1px solid #fcd34d;
+        }
     </style>
 </head>
 <body>
-    <div class="header">
+    <div class="report-header">
         <h1>Mortgage Analysis Report</h1>
-        <p class="subtitle">Customized Scenario Analysis</p>
+        <p class="subtitle">Personalized Scenario Analysis</p>
         <p class="date">Prepared on ${currentDate}</p>
     </div>
 
     ${loName || loCompany ? `
     <div class="lo-info">
-        <h3>Prepared By</h3>
-        ${loName ? `<p><strong>${loName}</strong></p>` : ''}
-        ${loCompany ? `<p>${loCompany}</p>` : ''}
-        ${loPhone ? `<p>Phone: ${loPhone}</p>` : ''}
-        ${loEmail ? `<p>Email: ${loEmail}</p>` : ''}
-        ${loNMLS ? `<p>NMLS# ${loNMLS}</p>` : ''}
+        <div>
+            <h3>Prepared By</h3>
+            ${loName ? `<div class="lo-name">${loName}</div>` : ''}
+            ${loCompany ? `<div class="lo-details">${loCompany}</div>` : ''}
+            ${loNMLS ? `<div class="lo-details">NMLS# ${loNMLS}</div>` : ''}
+        </div>
+        <div class="lo-contact">
+            ${loPhone ? `<div class="lo-details">${loPhone}</div>` : ''}
+            ${loEmail ? `<div class="lo-details">${loEmail}</div>` : ''}
+        </div>
     </div>
     ` : ''}
 `;
@@ -2128,34 +2594,242 @@ function generateHTMLReport(reportData) {
     <div class="tool-section">
         <h2>${tool.title}</h2>
 `;
-        if (tool.results) {
-            reportHTML += '<div class="results-grid">';
-            for (const [key, value] of Object.entries(tool.results)) {
-                if (value) {
-                    const label = formatResultLabel(key);
+        if (tool.results && Object.keys(tool.results).length > 0) {
+            const data = tool.results;
+
+            // Inputs Section
+            if (data.inputs && Object.keys(data.inputs).length > 0) {
+                reportHTML += `
+        <div class="inputs-section">
+            <h4>Your Inputs</h4>
+            <div class="inputs-grid">`;
+                for (const [key, value] of Object.entries(data.inputs)) {
+                    if (value !== null && value !== undefined && value !== '') {
+                        const label = formatResultLabel(key);
+                        let displayValue = value;
+                        if (typeof value === 'number') {
+                            if (key.toLowerCase().includes('rate') || key.toLowerCase().includes('percent') || key.toLowerCase().includes('appreciation') || key.toLowerCase().includes('return')) {
+                                displayValue = value + '%';
+                            } else if (key.toLowerCase().includes('year') || key.toLowerCase().includes('term') || key.toLowerCase().includes('period')) {
+                                displayValue = value + ' years';
+                            } else if (value > 100) {
+                                displayValue = formatCurrency(value);
+                            }
+                        }
+                        reportHTML += `
+                <div class="input-item">
+                    <span class="label">${label}</span>
+                    <span class="value">${displayValue}</span>
+                </div>`;
+                    }
+                }
+                reportHTML += `
+            </div>
+        </div>`;
+            }
+
+            // Results Section
+            if (data.results && Object.keys(data.results).length > 0) {
+                reportHTML += `
+        <div class="results-section">
+            <h4>Results</h4>
+            <div class="results-grid">`;
+                let isFirst = true;
+                for (const [key, value] of Object.entries(data.results)) {
+                    if (value !== null && value !== undefined && value !== '') {
+                        const label = formatResultLabel(key);
+                        reportHTML += `
+                <div class="result-card${isFirst ? ' highlight' : ''}">
+                    <div class="label">${label}</div>
+                    <div class="value">${value}</div>
+                </div>`;
+                        isFirst = false;
+                    }
+                }
+                reportHTML += `
+            </div>
+        </div>`;
+            }
+
+            // Calculations Section
+            if (data.calculations && data.calculations.length > 0) {
+                reportHTML += `
+        <div class="calculations-section">
+            <h4>How We Calculated This</h4>`;
+                data.calculations.forEach(calc => {
                     reportHTML += `
-            <div class="result-item">
-                <div class="label">${label}</div>
-                <div class="value">${value}</div>
+            <div class="calculation-item">
+                <div class="calc-label">${calc.label}</div>
+                <div class="calc-formula">Formula: ${calc.formula}</div>
+                <div class="calc-result">${calc.calculation}</div>
             </div>`;
+                });
+                reportHTML += `
+        </div>`;
+            }
+
+            // Chart Section
+            if (data.chartData) {
+                const chartId = `chart_${chartCounter++}`;
+                reportHTML += `
+        <div class="chart-section">
+            <h4>Visual Breakdown</h4>
+            <div class="chart-container">
+                <canvas id="${chartId}"></canvas>
+            </div>
+        </div>`;
+
+                // Generate chart script
+                let chartScript = '';
+                if (data.chartData.type === 'doughnut') {
+                    chartScript = `
+                    new Chart(document.getElementById('${chartId}'), {
+                        type: 'doughnut',
+                        data: {
+                            labels: ${JSON.stringify(data.chartData.labels)},
+                            datasets: [{
+                                data: ${JSON.stringify(data.chartData.values)},
+                                backgroundColor: ${JSON.stringify(data.chartData.colors)},
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { position: 'bottom' }
+                            }
+                        }
+                    });`;
+                } else if (data.chartData.type === 'bar') {
+                    chartScript = `
+                    new Chart(document.getElementById('${chartId}'), {
+                        type: 'bar',
+                        data: {
+                            labels: ${JSON.stringify(data.chartData.labels)},
+                            datasets: ${JSON.stringify(data.chartData.datasets.map(ds => ({
+                                label: ds.label,
+                                data: ds.values,
+                                backgroundColor: ds.color,
+                                stack: 'stack1'
+                            })))}
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { position: 'top' }
+                            },
+                            scales: {
+                                x: { stacked: true },
+                                y: {
+                                    stacked: true,
+                                    ticks: {
+                                        callback: function(value) {
+                                            return '$' + value.toLocaleString();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });`;
+                } else if (data.chartData.type === 'line') {
+                    chartScript = `
+                    new Chart(document.getElementById('${chartId}'), {
+                        type: 'line',
+                        data: {
+                            labels: ${JSON.stringify(data.chartData.labels)},
+                            datasets: ${JSON.stringify(data.chartData.datasets.map(ds => ({
+                                label: ds.label,
+                                data: ds.values,
+                                borderColor: ds.color,
+                                backgroundColor: ds.color + '20',
+                                fill: true,
+                                tension: 0.4
+                            })))}
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { position: 'top' }
+                            },
+                            scales: {
+                                y: {
+                                    ticks: {
+                                        callback: function(value) {
+                                            return '$' + value.toLocaleString();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });`;
+                }
+                chartScripts.push(chartScript);
+
+                // Add data table for charts
+                if (data.chartData.type === 'line' || data.chartData.type === 'bar') {
+                    reportHTML += `
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Period</th>`;
+                    data.chartData.datasets.forEach(ds => {
+                        reportHTML += `<th>${ds.label}</th>`;
+                    });
+                    reportHTML += `
+                </tr>
+            </thead>
+            <tbody>`;
+                    const maxRows = Math.min(data.chartData.labels.length, 10);
+                    for (let i = 0; i < maxRows; i++) {
+                        reportHTML += `
+                <tr>
+                    <td>${data.chartData.labels[i]}</td>`;
+                        data.chartData.datasets.forEach(ds => {
+                            reportHTML += `<td>${formatCurrency(ds.values[i])}</td>`;
+                        });
+                        reportHTML += `
+                </tr>`;
+                    }
+                    if (data.chartData.labels.length > 10) {
+                        reportHTML += `
+                <tr>
+                    <td colspan="${data.chartData.datasets.length + 1}" style="text-align: center; font-style: italic; color: #666;">
+                        ... and ${data.chartData.labels.length - 10} more periods
+                    </td>
+                </tr>`;
+                    }
+                    reportHTML += `
+            </tbody>
+        </table>`;
                 }
             }
-            reportHTML += '</div>';
+
         } else {
-            reportHTML += `<p class="not-calculated">This calculator has not been run yet. Please calculate results before generating the report.</p>`;
+            reportHTML += `<div class="not-calculated">This calculator has not been run yet. Please calculate results before generating the report.</div>`;
         }
-        reportHTML += '</div>';
+        reportHTML += `
+    </div>`;
     });
 
     reportHTML += `
-    <div class="footer">
-        <p>Generated by LoanDr. Mortgage Tools</p>
+    <div class="report-footer">
+        <div class="footer-brand">Generated by LoanDr. Mortgage Tools</div>
         <div class="disclaimer">
-            <strong>Disclaimer:</strong> This report is for informational purposes only and does not constitute financial advice.
-            All calculations are estimates based on the inputs provided. Actual rates, payments, and terms may vary.
-            Please consult with a licensed mortgage professional for personalized advice tailored to your specific situation.
+            <strong>Disclaimer:</strong> This report is for informational and educational purposes only and does not constitute financial, legal, or tax advice.
+            All calculations are estimates based on the inputs provided and various assumptions. Actual rates, payments, terms, and outcomes may vary significantly.
+            This analysis does not account for all possible factors that could affect your specific situation. Please consult with a licensed mortgage professional,
+            financial advisor, and/or tax professional for personalized advice tailored to your specific circumstances before making any financial decisions.
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            ${chartScripts.join('\n')}
+        });
+    <\/script>
 </body>
 </html>`;
 
