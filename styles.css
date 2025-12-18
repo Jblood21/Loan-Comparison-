@@ -4850,36 +4850,44 @@ input[type="range"]::-moz-range-thumb {
 }
 
 /* ============================================
-   PAGE SWITCHER TAB
+   PAGE SWITCHER TAB - BOTTOM NAVIGATION
    ============================================ */
 .page-switcher {
     position: fixed;
-    top: 50%;
+    bottom: 0;
+    left: 0;
     right: 0;
-    transform: translateY(-50%);
     z-index: 1000;
     display: flex;
-    flex-direction: column;
-    gap: 4px;
+    flex-direction: row;
+    gap: 0;
+    background: var(--white);
+    border-top: 1px solid var(--light-gray);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
 }
 
 .page-tab {
+    flex: 1;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 10px;
-    padding: 14px 18px;
-    background: var(--white);
-    border: 1px solid var(--light-gray);
-    border-right: none;
-    border-radius: 10px 0 0 10px;
+    justify-content: center;
+    gap: 6px;
+    padding: 12px 10px;
+    background: transparent;
+    border: none;
+    border-right: 1px solid var(--light-gray);
     color: var(--text-muted);
     text-decoration: none;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: -2px 2px 10px rgba(0, 0, 0, 0.08);
     white-space: nowrap;
+}
+
+.page-tab:last-child {
+    border-right: none;
 }
 
 .page-tab svg {
@@ -4890,23 +4898,24 @@ input[type="range"]::-moz-range-thumb {
 .page-tab:hover {
     background: var(--off-white);
     color: var(--navy-blue);
-    padding-right: 24px;
 }
 
 .page-tab.active {
-    background: var(--navy-blue);
+    background: linear-gradient(135deg, var(--navy-blue) 0%, var(--navy-light) 100%);
     color: var(--white);
-    border-color: var(--navy-blue);
-    box-shadow: -4px 2px 15px rgba(30, 58, 95, 0.25);
 }
 
 .page-tab.active svg {
     stroke: var(--white);
 }
 
-[data-theme="dark"] .page-tab {
+[data-theme="dark"] .page-switcher {
     background: var(--bg-secondary);
-    border-color: var(--border-color);
+    border-top-color: var(--border-color);
+}
+
+[data-theme="dark"] .page-tab {
+    border-right-color: var(--border-color);
 }
 
 [data-theme="dark"] .page-tab:hover {
@@ -4914,39 +4923,28 @@ input[type="range"]::-moz-range-thumb {
 }
 
 [data-theme="dark"] .page-tab.active {
-    background: var(--navy-blue);
-    border-color: var(--navy-blue);
+    background: linear-gradient(135deg, var(--navy-blue) 0%, var(--navy-light) 100%);
 }
 
-/* Page switcher mobile */
+/* Add padding to body for bottom nav on all screen sizes */
+body {
+    padding-bottom: 70px;
+}
+
+/* Page switcher responsive adjustments */
 @media (max-width: 900px) {
-    .page-switcher {
-        position: fixed;
-        top: auto;
-        bottom: 0;
-        right: 0;
-        left: 0;
-        transform: none;
-        flex-direction: row;
-        gap: 0;
-        border-radius: 0;
-    }
-
     .page-tab {
-        flex: 1;
-        justify-content: center;
-        border-radius: 0;
-        border: none;
-        border-top: 1px solid var(--light-gray);
-        padding: 12px 10px;
-        font-size: 0.8rem;
-        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08);
+        padding: 10px 8px;
+        font-size: 0.75rem;
     }
 
-    .page-tab:hover {
-        padding-right: 10px;
+    .page-tab svg {
+        width: 18px;
+        height: 18px;
     }
+}
 
+@media (max-width: 480px) {
     .page-tab span {
         display: none;
     }
@@ -4954,6 +4952,7 @@ input[type="range"]::-moz-range-thumb {
     .page-tab::after {
         content: attr(data-page);
         text-transform: capitalize;
+        font-size: 0.7rem;
     }
 
     .page-tab[data-page="forward"]::after {
@@ -4964,9 +4963,8 @@ input[type="range"]::-moz-range-thumb {
         content: "HECM";
     }
 
-    /* Add padding to body for bottom nav */
-    body {
-        padding-bottom: 60px;
+    .page-tab[data-page="tools"]::after {
+        content: "Tools";
     }
 }
 
