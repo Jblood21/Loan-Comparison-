@@ -1,0 +1,1601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LoanDr. - Mortgage Tools & Calculators</title>
+
+    <!-- Security Headers via Meta Tags -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+    <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=()">
+
+    <!-- Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline';
+        style-src 'self' 'unsafe-inline';
+        img-src 'self' data: blob:;
+        font-src 'self';
+        connect-src 'self';
+        frame-ancestors 'self';
+        form-action 'self';
+        base-uri 'self';
+    ">
+
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="tools.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Page Switcher Tab -->
+    <div class="page-switcher">
+        <a href="index.html" class="page-tab" data-page="forward">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+            <span>Forward Mortgages</span>
+        </a>
+        <a href="hecm.html" class="page-tab" data-page="hecm">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="8" r="5"/>
+                <path d="M20 21a8 8 0 0 0-16 0"/>
+                <path d="M12 13v8"/>
+                <path d="M9 18h6"/>
+            </svg>
+            <span>Reverse Mortgages (HECM)</span>
+        </a>
+        <a href="tools.html" class="page-tab active" data-page="tools">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+            </svg>
+            <span>Mortgage Tools</span>
+        </a>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="header-text">
+                    <div class="logo">
+                        <img src="logo.svg" alt="LoanDr." class="logo-img-header">
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <div class="user-info" id="userInfo">
+                        <span class="user-name" id="userName"></span>
+                        <span class="user-company" id="userCompany"></span>
+                    </div>
+                    <button class="settings-btn" id="settingsBtn" title="Settings">
+                        <svg class="settings-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                        <span class="settings-text">Settings</span>
+                    </button>
+                    <button class="logout-btn" id="logoutBtn" title="Sign Out">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                        <span class="logout-text">Sign Out</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Tools Hero Section -->
+        <section class="tools-hero">
+            <h1>Mortgage Tools & Calculators</h1>
+            <p>Comprehensive suite of calculators to help you and your clients make informed decisions</p>
+        </section>
+
+        <!-- Tool Categories Navigation -->
+        <nav class="tools-nav">
+            <button class="tool-nav-btn active" data-category="all">All Tools</button>
+            <button class="tool-nav-btn" data-category="affordability">Affordability</button>
+            <button class="tool-nav-btn" data-category="comparison">Comparison</button>
+            <button class="tool-nav-btn" data-category="analysis">Analysis</button>
+            <button class="tool-nav-btn" data-category="strategy">Strategy</button>
+        </nav>
+
+        <!-- Tools Grid -->
+        <div class="tools-grid">
+
+            <!-- ==================== AFFORDABILITY TOOLS ==================== -->
+
+            <!-- DTI Calculator -->
+            <div class="tool-card" data-category="affordability" id="dti-tool">
+                <div class="tool-card-header">
+                    <div class="tool-icon affordability">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                        </svg>
+                    </div>
+                    <div class="tool-title">
+                        <h3>Debt-to-Income Calculator</h3>
+                        <span class="tool-badge">Affordability</span>
+                    </div>
+                    <button class="tool-expand-btn" aria-label="Expand">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </button>
+                </div>
+                <p class="tool-description">Calculate front-end and back-end DTI ratios to determine loan eligibility</p>
+                <div class="tool-content">
+                    <div class="tool-form-grid">
+                        <div class="tool-input-group">
+                            <label>Gross Monthly Income</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="dti-income" value="8000" placeholder="8,000">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Co-Borrower Income (Optional)</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="dti-co-income" value="0" placeholder="0">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tool-section-divider">
+                        <span>Housing Expenses</span>
+                    </div>
+                    <div class="tool-form-grid">
+                        <div class="tool-input-group">
+                            <label>Proposed Mortgage Payment</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="dti-mortgage" value="2000" placeholder="2,000">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Property Taxes (Monthly)</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="dti-taxes" value="300" placeholder="300">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Homeowners Insurance (Monthly)</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="dti-insurance" value="150" placeholder="150">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>HOA Fees (Monthly)</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="dti-hoa" value="0" placeholder="0">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>PMI (Monthly)</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="dti-pmi" value="0" placeholder="0">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tool-section-divider">
+                        <span>Other Monthly Debts</span>
+                    </div>
+                    <div class="tool-form-grid">
+                        <div class="tool-input-group">
+                            <label>Car Payments</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="dti-car" value="400" placeholder="400">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Student Loans</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="dti-student" value="200" placeholder="200">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Credit Card Minimums</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="dti-credit" value="150" placeholder="150">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Other Debt Payments</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="dti-other" value="0" placeholder="0">
+                            </div>
+                        </div>
+                    </div>
+                    <button class="tool-calculate-btn" onclick="calculateDTI()">Calculate DTI Ratios</button>
+                    <div class="tool-results" id="dti-results">
+                        <div class="dti-gauges">
+                            <div class="dti-gauge-container">
+                                <div class="dti-gauge" id="dti-front-gauge">
+                                    <svg viewBox="0 0 100 50">
+                                        <path class="gauge-bg" d="M 10 50 A 40 40 0 0 1 90 50"/>
+                                        <path class="gauge-fill" id="dti-front-fill" d="M 10 50 A 40 40 0 0 1 90 50"/>
+                                    </svg>
+                                    <div class="gauge-value" id="dti-front-value">0%</div>
+                                </div>
+                                <div class="gauge-label">Front-End DTI</div>
+                                <div class="gauge-sublabel">Housing Only</div>
+                                <div class="gauge-target">Target: ≤28%</div>
+                            </div>
+                            <div class="dti-gauge-container">
+                                <div class="dti-gauge" id="dti-back-gauge">
+                                    <svg viewBox="0 0 100 50">
+                                        <path class="gauge-bg" d="M 10 50 A 40 40 0 0 1 90 50"/>
+                                        <path class="gauge-fill" id="dti-back-fill" d="M 10 50 A 40 40 0 0 1 90 50"/>
+                                    </svg>
+                                    <div class="gauge-value" id="dti-back-value">0%</div>
+                                </div>
+                                <div class="gauge-label">Back-End DTI</div>
+                                <div class="gauge-sublabel">All Debts</div>
+                                <div class="gauge-target">Target: ≤36%</div>
+                            </div>
+                        </div>
+                        <div class="dti-eligibility" id="dti-eligibility"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rent vs Buy Calculator -->
+            <div class="tool-card" data-category="affordability" id="rent-buy-tool">
+                <div class="tool-card-header">
+                    <div class="tool-icon affordability">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                            <polyline points="9 22 9 12 15 12 15 22"/>
+                        </svg>
+                    </div>
+                    <div class="tool-title">
+                        <h3>Rent vs Buy Calculator</h3>
+                        <span class="tool-badge">Affordability</span>
+                    </div>
+                    <button class="tool-expand-btn" aria-label="Expand">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </button>
+                </div>
+                <p class="tool-description">Compare the total cost of renting versus buying over time</p>
+                <div class="tool-content">
+                    <div class="rent-buy-columns">
+                        <div class="rent-column">
+                            <h4>Renting</h4>
+                            <div class="tool-input-group">
+                                <label>Monthly Rent</label>
+                                <div class="input-with-icon">
+                                    <span class="input-icon">$</span>
+                                    <input type="number" id="rb-rent" value="2000" placeholder="2,000">
+                                </div>
+                            </div>
+                            <div class="tool-input-group">
+                                <label>Annual Rent Increase</label>
+                                <div class="input-with-icon">
+                                    <input type="number" id="rb-rent-increase" value="3" step="0.1" placeholder="3">
+                                    <span class="input-icon right">%</span>
+                                </div>
+                            </div>
+                            <div class="tool-input-group">
+                                <label>Renter's Insurance (Monthly)</label>
+                                <div class="input-with-icon">
+                                    <span class="input-icon">$</span>
+                                    <input type="number" id="rb-renters-ins" value="25" placeholder="25">
+                                </div>
+                            </div>
+                            <div class="tool-input-group">
+                                <label>Security Deposit</label>
+                                <div class="input-with-icon">
+                                    <span class="input-icon">$</span>
+                                    <input type="number" id="rb-security" value="2000" placeholder="2,000">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="buy-column">
+                            <h4>Buying</h4>
+                            <div class="tool-input-group">
+                                <label>Home Price</label>
+                                <div class="input-with-icon">
+                                    <span class="input-icon">$</span>
+                                    <input type="number" id="rb-home-price" value="400000" placeholder="400,000">
+                                </div>
+                            </div>
+                            <div class="tool-input-group">
+                                <label>Down Payment</label>
+                                <div class="input-with-icon">
+                                    <input type="number" id="rb-down-pct" value="20" step="0.1" placeholder="20">
+                                    <span class="input-icon right">%</span>
+                                </div>
+                            </div>
+                            <div class="tool-input-group">
+                                <label>Interest Rate</label>
+                                <div class="input-with-icon">
+                                    <input type="number" id="rb-rate" value="6.5" step="0.125" placeholder="6.5">
+                                    <span class="input-icon right">%</span>
+                                </div>
+                            </div>
+                            <div class="tool-input-group">
+                                <label>Loan Term</label>
+                                <select id="rb-term">
+                                    <option value="30">30 Years</option>
+                                    <option value="20">20 Years</option>
+                                    <option value="15">15 Years</option>
+                                </select>
+                            </div>
+                            <div class="tool-input-group">
+                                <label>Property Tax Rate</label>
+                                <div class="input-with-icon">
+                                    <input type="number" id="rb-prop-tax" value="1.2" step="0.1" placeholder="1.2">
+                                    <span class="input-icon right">%</span>
+                                </div>
+                            </div>
+                            <div class="tool-input-group">
+                                <label>Home Appreciation</label>
+                                <div class="input-with-icon">
+                                    <input type="number" id="rb-appreciation" value="3" step="0.1" placeholder="3">
+                                    <span class="input-icon right">%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tool-input-group full-width">
+                        <label>Time Horizon (Years)</label>
+                        <div class="slider-container">
+                            <input type="range" id="rb-years" min="1" max="30" value="7">
+                            <span class="slider-value" id="rb-years-display">7 years</span>
+                        </div>
+                    </div>
+                    <button class="tool-calculate-btn" onclick="calculateRentVsBuy()">Compare Rent vs Buy</button>
+                    <div class="tool-results" id="rent-buy-results">
+                        <div class="rb-comparison">
+                            <div class="rb-result-card rent">
+                                <h4>Total Cost to Rent</h4>
+                                <div class="rb-amount" id="rb-rent-total">$0</div>
+                                <div class="rb-details" id="rb-rent-details"></div>
+                            </div>
+                            <div class="rb-vs">VS</div>
+                            <div class="rb-result-card buy">
+                                <h4>Net Cost to Buy</h4>
+                                <div class="rb-amount" id="rb-buy-total">$0</div>
+                                <div class="rb-details" id="rb-buy-details"></div>
+                            </div>
+                        </div>
+                        <div class="rb-recommendation" id="rb-recommendation"></div>
+                        <div class="rb-chart-container">
+                            <canvas id="rentBuyChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loan Program Eligibility Quiz -->
+            <div class="tool-card" data-category="affordability" id="eligibility-tool">
+                <div class="tool-card-header">
+                    <div class="tool-icon affordability">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 11l3 3L22 4"/>
+                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                        </svg>
+                    </div>
+                    <div class="tool-title">
+                        <h3>Loan Program Eligibility</h3>
+                        <span class="tool-badge">Affordability</span>
+                    </div>
+                    <button class="tool-expand-btn" aria-label="Expand">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </button>
+                </div>
+                <p class="tool-description">Find out which loan programs you may qualify for based on your profile</p>
+                <div class="tool-content">
+                    <div class="tool-form-grid">
+                        <div class="tool-input-group">
+                            <label>Credit Score</label>
+                            <select id="elig-credit">
+                                <option value="760">760+ (Excellent)</option>
+                                <option value="720">720-759 (Very Good)</option>
+                                <option value="680">680-719 (Good)</option>
+                                <option value="640" selected>640-679 (Fair)</option>
+                                <option value="600">600-639 (Below Average)</option>
+                                <option value="580">580-599 (Poor)</option>
+                                <option value="500">500-579 (Very Poor)</option>
+                            </select>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Down Payment Available</label>
+                            <div class="input-with-icon">
+                                <input type="number" id="elig-down" value="10" step="0.5" placeholder="10">
+                                <span class="input-icon right">%</span>
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Military/Veteran Status</label>
+                            <select id="elig-military">
+                                <option value="none">No Military Service</option>
+                                <option value="active">Active Duty</option>
+                                <option value="veteran">Veteran</option>
+                                <option value="guard">National Guard/Reserves</option>
+                                <option value="spouse">Surviving Spouse</option>
+                            </select>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Property Location</label>
+                            <select id="elig-location">
+                                <option value="urban">Urban/Suburban</option>
+                                <option value="rural">Rural Area</option>
+                            </select>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Household Income Level</label>
+                            <select id="elig-income">
+                                <option value="low">Below Area Median</option>
+                                <option value="moderate" selected>At/Near Area Median</option>
+                                <option value="high">Above 115% of Median</option>
+                            </select>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>First-Time Homebuyer?</label>
+                            <select id="elig-first-time">
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                            </select>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Borrower Age (for HECM)</label>
+                            <input type="number" id="elig-age" value="45" min="18" max="100" placeholder="45">
+                        </div>
+                        <div class="tool-input-group">
+                            <label>DTI Ratio</label>
+                            <div class="input-with-icon">
+                                <input type="number" id="elig-dti" value="36" step="1" placeholder="36">
+                                <span class="input-icon right">%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="tool-calculate-btn" onclick="checkEligibility()">Check Eligibility</button>
+                    <div class="tool-results" id="eligibility-results">
+                        <div class="eligibility-grid" id="eligibility-grid"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== COMPARISON TOOLS ==================== -->
+
+            <!-- Amortization Schedule -->
+            <div class="tool-card" data-category="comparison" id="amortization-tool">
+                <div class="tool-card-header">
+                    <div class="tool-icon comparison">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                            <line x1="3" y1="9" x2="21" y2="9"/>
+                            <line x1="9" y1="21" x2="9" y2="9"/>
+                        </svg>
+                    </div>
+                    <div class="tool-title">
+                        <h3>Amortization Schedule</h3>
+                        <span class="tool-badge comparison">Comparison</span>
+                    </div>
+                    <button class="tool-expand-btn" aria-label="Expand">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </button>
+                </div>
+                <p class="tool-description">View detailed payment breakdown with extra payment impact analysis</p>
+                <div class="tool-content">
+                    <div class="tool-form-grid">
+                        <div class="tool-input-group">
+                            <label>Loan Amount</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="amort-amount" value="350000" placeholder="350,000">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Interest Rate</label>
+                            <div class="input-with-icon">
+                                <input type="number" id="amort-rate" value="6.5" step="0.125" placeholder="6.5">
+                                <span class="input-icon right">%</span>
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Loan Term</label>
+                            <select id="amort-term">
+                                <option value="30" selected>30 Years</option>
+                                <option value="25">25 Years</option>
+                                <option value="20">20 Years</option>
+                                <option value="15">15 Years</option>
+                                <option value="10">10 Years</option>
+                            </select>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Start Date</label>
+                            <input type="month" id="amort-start" value="2025-01">
+                        </div>
+                    </div>
+                    <div class="tool-section-divider">
+                        <span>Extra Payments (Optional)</span>
+                    </div>
+                    <div class="tool-form-grid">
+                        <div class="tool-input-group">
+                            <label>Monthly Extra Payment</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="amort-extra-monthly" value="0" placeholder="0">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>One-Time Extra Payment</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="amort-extra-onetime" value="0" placeholder="0">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Apply One-Time In</label>
+                            <select id="amort-extra-when">
+                                <option value="1">Year 1</option>
+                                <option value="2">Year 2</option>
+                                <option value="3">Year 3</option>
+                                <option value="5" selected>Year 5</option>
+                                <option value="10">Year 10</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="tool-calculate-btn" onclick="calculateAmortization()">Generate Schedule</button>
+                    <div class="tool-results" id="amort-results">
+                        <div class="amort-summary">
+                            <div class="amort-stat">
+                                <span class="stat-label">Monthly Payment</span>
+                                <span class="stat-value" id="amort-payment">$0</span>
+                            </div>
+                            <div class="amort-stat">
+                                <span class="stat-label">Total Interest</span>
+                                <span class="stat-value" id="amort-total-interest">$0</span>
+                            </div>
+                            <div class="amort-stat">
+                                <span class="stat-label">Total Cost</span>
+                                <span class="stat-value" id="amort-total-cost">$0</span>
+                            </div>
+                            <div class="amort-stat highlight" id="amort-savings-stat" style="display:none;">
+                                <span class="stat-label">Interest Saved</span>
+                                <span class="stat-value" id="amort-savings">$0</span>
+                            </div>
+                            <div class="amort-stat highlight" id="amort-time-stat" style="display:none;">
+                                <span class="stat-label">Time Saved</span>
+                                <span class="stat-value" id="amort-time-saved">0 months</span>
+                            </div>
+                        </div>
+                        <div class="amort-chart-container">
+                            <canvas id="amortChart"></canvas>
+                        </div>
+                        <div class="amort-table-container">
+                            <div class="amort-table-controls">
+                                <button class="table-view-btn active" data-view="yearly">Yearly</button>
+                                <button class="table-view-btn" data-view="monthly">Monthly</button>
+                            </div>
+                            <div class="amort-table-wrapper">
+                                <table class="amort-table" id="amort-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Period</th>
+                                            <th>Payment</th>
+                                            <th>Principal</th>
+                                            <th>Interest</th>
+                                            <th>Balance</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="amort-table-body"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ARM vs Fixed Comparison -->
+            <div class="tool-card" data-category="comparison" id="arm-fixed-tool">
+                <div class="tool-card-header">
+                    <div class="tool-icon comparison">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                        </svg>
+                    </div>
+                    <div class="tool-title">
+                        <h3>ARM vs Fixed-Rate</h3>
+                        <span class="tool-badge comparison">Comparison</span>
+                    </div>
+                    <button class="tool-expand-btn" aria-label="Expand">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </button>
+                </div>
+                <p class="tool-description">Compare adjustable-rate vs fixed-rate mortgages under different scenarios</p>
+                <div class="tool-content">
+                    <div class="tool-form-grid">
+                        <div class="tool-input-group">
+                            <label>Loan Amount</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="arm-amount" value="400000" placeholder="400,000">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Loan Term</label>
+                            <select id="arm-term">
+                                <option value="30" selected>30 Years</option>
+                                <option value="15">15 Years</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="arm-comparison-inputs">
+                        <div class="arm-input-column">
+                            <h4>Fixed-Rate Loan</h4>
+                            <div class="tool-input-group">
+                                <label>Interest Rate</label>
+                                <div class="input-with-icon">
+                                    <input type="number" id="arm-fixed-rate" value="6.75" step="0.125" placeholder="6.75">
+                                    <span class="input-icon right">%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="arm-input-column">
+                            <h4>Adjustable-Rate Loan</h4>
+                            <div class="tool-input-group">
+                                <label>ARM Type</label>
+                                <select id="arm-type">
+                                    <option value="5/1">5/1 ARM</option>
+                                    <option value="7/1" selected>7/1 ARM</option>
+                                    <option value="10/1">10/1 ARM</option>
+                                </select>
+                            </div>
+                            <div class="tool-input-group">
+                                <label>Initial Rate</label>
+                                <div class="input-with-icon">
+                                    <input type="number" id="arm-initial-rate" value="5.75" step="0.125" placeholder="5.75">
+                                    <span class="input-icon right">%</span>
+                                </div>
+                            </div>
+                            <div class="tool-input-group">
+                                <label>Rate Cap (Per Adjustment)</label>
+                                <div class="input-with-icon">
+                                    <input type="number" id="arm-cap" value="2" step="0.5" placeholder="2">
+                                    <span class="input-icon right">%</span>
+                                </div>
+                            </div>
+                            <div class="tool-input-group">
+                                <label>Lifetime Cap</label>
+                                <div class="input-with-icon">
+                                    <input type="number" id="arm-lifetime-cap" value="5" step="0.5" placeholder="5">
+                                    <span class="input-icon right">%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tool-input-group full-width">
+                        <label>Expected Rate Change After Initial Period</label>
+                        <div class="rate-scenario-selector">
+                            <button class="scenario-btn" data-scenario="down">Rates Drop</button>
+                            <button class="scenario-btn active" data-scenario="stable">Rates Stable</button>
+                            <button class="scenario-btn" data-scenario="up">Rates Rise</button>
+                            <button class="scenario-btn" data-scenario="worst">Worst Case</button>
+                        </div>
+                    </div>
+                    <button class="tool-calculate-btn" onclick="calculateARMvsFixed()">Compare Loans</button>
+                    <div class="tool-results" id="arm-fixed-results">
+                        <div class="arm-comparison-cards">
+                            <div class="arm-result-card fixed">
+                                <div class="arm-card-header">
+                                    <h4>30-Year Fixed</h4>
+                                    <span class="arm-rate" id="arm-fixed-display">6.75%</span>
+                                </div>
+                                <div class="arm-card-stats">
+                                    <div class="arm-stat">
+                                        <span class="label">Monthly Payment</span>
+                                        <span class="value" id="arm-fixed-payment">$0</span>
+                                    </div>
+                                    <div class="arm-stat">
+                                        <span class="label">5-Year Cost</span>
+                                        <span class="value" id="arm-fixed-5yr">$0</span>
+                                    </div>
+                                    <div class="arm-stat">
+                                        <span class="label">Total Interest</span>
+                                        <span class="value" id="arm-fixed-interest">$0</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="arm-vs-badge">VS</div>
+                            <div class="arm-result-card arm">
+                                <div class="arm-card-header">
+                                    <h4 id="arm-type-display">7/1 ARM</h4>
+                                    <span class="arm-rate" id="arm-rate-display">5.75%</span>
+                                </div>
+                                <div class="arm-card-stats">
+                                    <div class="arm-stat">
+                                        <span class="label">Initial Payment</span>
+                                        <span class="value" id="arm-initial-payment">$0</span>
+                                    </div>
+                                    <div class="arm-stat">
+                                        <span class="label">5-Year Cost</span>
+                                        <span class="value" id="arm-5yr">$0</span>
+                                    </div>
+                                    <div class="arm-stat">
+                                        <span class="label">Est. Total Interest</span>
+                                        <span class="value" id="arm-total-interest">$0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="arm-recommendation" id="arm-recommendation"></div>
+                        <div class="arm-chart-container">
+                            <canvas id="armChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HELOC vs Cash-Out Refi -->
+            <div class="tool-card" data-category="comparison" id="heloc-tool">
+                <div class="tool-card-header">
+                    <div class="tool-icon comparison">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="5" width="20" height="14" rx="2"/>
+                            <line x1="2" y1="10" x2="22" y2="10"/>
+                        </svg>
+                    </div>
+                    <div class="tool-title">
+                        <h3>HELOC vs Cash-Out Refi</h3>
+                        <span class="tool-badge comparison">Comparison</span>
+                    </div>
+                    <button class="tool-expand-btn" aria-label="Expand">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </button>
+                </div>
+                <p class="tool-description">Compare home equity line of credit versus cash-out refinancing</p>
+                <div class="tool-content">
+                    <div class="tool-section-divider">
+                        <span>Current Mortgage Info</span>
+                    </div>
+                    <div class="tool-form-grid">
+                        <div class="tool-input-group">
+                            <label>Home Value</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="heloc-home-value" value="500000" placeholder="500,000">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Current Mortgage Balance</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="heloc-balance" value="300000" placeholder="300,000">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Current Interest Rate</label>
+                            <div class="input-with-icon">
+                                <input type="number" id="heloc-current-rate" value="4.5" step="0.125" placeholder="4.5">
+                                <span class="input-icon right">%</span>
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Remaining Term (Years)</label>
+                            <input type="number" id="heloc-remaining" value="25" min="1" max="30" placeholder="25">
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Cash Needed</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="heloc-cash-needed" value="75000" placeholder="75,000">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="heloc-comparison-inputs">
+                        <div class="heloc-input-column">
+                            <h4>HELOC Option</h4>
+                            <div class="tool-input-group">
+                                <label>HELOC Interest Rate</label>
+                                <div class="input-with-icon">
+                                    <input type="number" id="heloc-rate" value="8.5" step="0.125" placeholder="8.5">
+                                    <span class="input-icon right">%</span>
+                                </div>
+                            </div>
+                            <div class="tool-input-group">
+                                <label>Draw Period (Years)</label>
+                                <input type="number" id="heloc-draw" value="10" min="5" max="15" placeholder="10">
+                            </div>
+                            <div class="tool-input-group">
+                                <label>Repayment Period (Years)</label>
+                                <input type="number" id="heloc-repay" value="20" min="10" max="20" placeholder="20">
+                            </div>
+                            <div class="tool-input-group">
+                                <label>Closing Costs</label>
+                                <div class="input-with-icon">
+                                    <span class="input-icon">$</span>
+                                    <input type="number" id="heloc-closing" value="500" placeholder="500">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="heloc-input-column">
+                            <h4>Cash-Out Refinance</h4>
+                            <div class="tool-input-group">
+                                <label>New Interest Rate</label>
+                                <div class="input-with-icon">
+                                    <input type="number" id="refi-rate" value="6.75" step="0.125" placeholder="6.75">
+                                    <span class="input-icon right">%</span>
+                                </div>
+                            </div>
+                            <div class="tool-input-group">
+                                <label>New Loan Term</label>
+                                <select id="refi-term">
+                                    <option value="30" selected>30 Years</option>
+                                    <option value="20">20 Years</option>
+                                    <option value="15">15 Years</option>
+                                </select>
+                            </div>
+                            <div class="tool-input-group">
+                                <label>Closing Costs</label>
+                                <div class="input-with-icon">
+                                    <span class="input-icon">$</span>
+                                    <input type="number" id="refi-closing" value="8000" placeholder="8,000">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="tool-calculate-btn" onclick="calculateHELOCvsRefi()">Compare Options</button>
+                    <div class="tool-results" id="heloc-results">
+                        <div class="heloc-comparison-cards">
+                            <div class="heloc-result-card heloc">
+                                <h4>HELOC</h4>
+                                <div class="heloc-stats">
+                                    <div class="heloc-stat">
+                                        <span class="label">Keep Current Mortgage</span>
+                                        <span class="value" id="heloc-current-pmt">$0/mo</span>
+                                    </div>
+                                    <div class="heloc-stat">
+                                        <span class="label">+ HELOC Interest-Only</span>
+                                        <span class="value" id="heloc-io-pmt">$0/mo</span>
+                                    </div>
+                                    <div class="heloc-stat total">
+                                        <span class="label">Combined Payment</span>
+                                        <span class="value" id="heloc-combined">$0/mo</span>
+                                    </div>
+                                    <div class="heloc-stat">
+                                        <span class="label">Total Interest Cost</span>
+                                        <span class="value" id="heloc-total-interest">$0</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="heloc-vs">VS</div>
+                            <div class="heloc-result-card refi">
+                                <h4>Cash-Out Refinance</h4>
+                                <div class="heloc-stats">
+                                    <div class="heloc-stat">
+                                        <span class="label">New Loan Amount</span>
+                                        <span class="value" id="refi-new-loan">$0</span>
+                                    </div>
+                                    <div class="heloc-stat">
+                                        <span class="label">New Monthly Payment</span>
+                                        <span class="value" id="refi-payment">$0/mo</span>
+                                    </div>
+                                    <div class="heloc-stat">
+                                        <span class="label">Payment Change</span>
+                                        <span class="value" id="refi-change">$0/mo</span>
+                                    </div>
+                                    <div class="heloc-stat">
+                                        <span class="label">Total Interest Cost</span>
+                                        <span class="value" id="refi-total-interest">$0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="heloc-recommendation" id="heloc-recommendation"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== ANALYSIS TOOLS ==================== -->
+
+            <!-- PMI Removal Timeline -->
+            <div class="tool-card" data-category="analysis" id="pmi-tool">
+                <div class="tool-card-header">
+                    <div class="tool-icon analysis">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                    </div>
+                    <div class="tool-title">
+                        <h3>PMI Removal Timeline</h3>
+                        <span class="tool-badge analysis">Analysis</span>
+                    </div>
+                    <button class="tool-expand-btn" aria-label="Expand">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </button>
+                </div>
+                <p class="tool-description">Calculate when you'll reach 20% equity and can remove PMI</p>
+                <div class="tool-content">
+                    <div class="tool-form-grid">
+                        <div class="tool-input-group">
+                            <label>Original Home Price</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="pmi-home-price" value="400000" placeholder="400,000">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Original Loan Amount</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="pmi-loan-amount" value="380000" placeholder="380,000">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Interest Rate</label>
+                            <div class="input-with-icon">
+                                <input type="number" id="pmi-rate" value="6.5" step="0.125" placeholder="6.5">
+                                <span class="input-icon right">%</span>
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Loan Term</label>
+                            <select id="pmi-term">
+                                <option value="30" selected>30 Years</option>
+                                <option value="15">15 Years</option>
+                            </select>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Monthly PMI Cost</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="pmi-monthly" value="200" placeholder="200">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Expected Home Appreciation</label>
+                            <div class="input-with-icon">
+                                <input type="number" id="pmi-appreciation" value="3" step="0.5" placeholder="3">
+                                <span class="input-icon right">%/yr</span>
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Extra Monthly Payment</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="pmi-extra" value="0" placeholder="0">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Loan Start Date</label>
+                            <input type="month" id="pmi-start" value="2025-01">
+                        </div>
+                    </div>
+                    <button class="tool-calculate-btn" onclick="calculatePMIRemoval()">Calculate PMI Timeline</button>
+                    <div class="tool-results" id="pmi-results">
+                        <div class="pmi-timeline">
+                            <div class="pmi-milestone" id="pmi-milestone-20">
+                                <div class="milestone-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                        <polyline points="22 4 12 14.01 9 11.01"/>
+                                    </svg>
+                                </div>
+                                <div class="milestone-content">
+                                    <h4>20% Equity (Request PMI Removal)</h4>
+                                    <div class="milestone-date" id="pmi-20-date">--</div>
+                                    <div class="milestone-details" id="pmi-20-details"></div>
+                                </div>
+                            </div>
+                            <div class="pmi-milestone" id="pmi-milestone-22">
+                                <div class="milestone-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                    </svg>
+                                </div>
+                                <div class="milestone-content">
+                                    <h4>22% Equity (Auto PMI Removal)</h4>
+                                    <div class="milestone-date" id="pmi-22-date">--</div>
+                                    <div class="milestone-details" id="pmi-22-details"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pmi-savings-card">
+                            <h4>Total PMI Savings Potential</h4>
+                            <div class="pmi-savings-grid">
+                                <div class="pmi-saving">
+                                    <span class="label">PMI Until 20%</span>
+                                    <span class="value" id="pmi-cost-to-20">$0</span>
+                                </div>
+                                <div class="pmi-saving">
+                                    <span class="label">PMI Until Auto-Removal</span>
+                                    <span class="value" id="pmi-cost-to-22">$0</span>
+                                </div>
+                                <div class="pmi-saving highlight">
+                                    <span class="label">Savings by Requesting Early</span>
+                                    <span class="value" id="pmi-early-savings">$0</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pmi-chart-container">
+                            <canvas id="pmiChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Points Breakeven Calculator -->
+            <div class="tool-card" data-category="analysis" id="points-tool">
+                <div class="tool-card-header">
+                    <div class="tool-icon analysis">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="8" x2="12" y2="12"/>
+                            <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                    </div>
+                    <div class="tool-title">
+                        <h3>Points Breakeven Calculator</h3>
+                        <span class="tool-badge analysis">Analysis</span>
+                    </div>
+                    <button class="tool-expand-btn" aria-label="Expand">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </button>
+                </div>
+                <p class="tool-description">Determine if paying points is worth it based on your time horizon</p>
+                <div class="tool-content">
+                    <div class="tool-form-grid">
+                        <div class="tool-input-group">
+                            <label>Loan Amount</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="points-loan" value="400000" placeholder="400,000">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Loan Term</label>
+                            <select id="points-term">
+                                <option value="30" selected>30 Years</option>
+                                <option value="15">15 Years</option>
+                            </select>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Rate Without Points</label>
+                            <div class="input-with-icon">
+                                <input type="number" id="points-rate-no" value="6.75" step="0.125" placeholder="6.75">
+                                <span class="input-icon right">%</span>
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Rate With Points</label>
+                            <div class="input-with-icon">
+                                <input type="number" id="points-rate-yes" value="6.5" step="0.125" placeholder="6.5">
+                                <span class="input-icon right">%</span>
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Points to Pay</label>
+                            <div class="input-with-icon">
+                                <input type="number" id="points-amount" value="1" step="0.25" placeholder="1">
+                                <span class="input-icon right">pts</span>
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>How Long Will You Keep Loan?</label>
+                            <select id="points-horizon">
+                                <option value="3">3 Years</option>
+                                <option value="5">5 Years</option>
+                                <option value="7" selected>7 Years</option>
+                                <option value="10">10 Years</option>
+                                <option value="15">15 Years</option>
+                                <option value="30">Full Term</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="tool-calculate-btn" onclick="calculatePointsBreakeven()">Calculate Breakeven</button>
+                    <div class="tool-results" id="points-results">
+                        <div class="points-comparison">
+                            <div class="points-option no-points">
+                                <h4>Without Points</h4>
+                                <div class="points-stat">
+                                    <span class="label">Monthly Payment</span>
+                                    <span class="value" id="points-pmt-no">$0</span>
+                                </div>
+                                <div class="points-stat">
+                                    <span class="label">Upfront Cost</span>
+                                    <span class="value">$0</span>
+                                </div>
+                            </div>
+                            <div class="points-option with-points">
+                                <h4>With Points</h4>
+                                <div class="points-stat">
+                                    <span class="label">Monthly Payment</span>
+                                    <span class="value" id="points-pmt-yes">$0</span>
+                                </div>
+                                <div class="points-stat">
+                                    <span class="label">Upfront Cost</span>
+                                    <span class="value" id="points-cost">$0</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="points-breakeven-display">
+                            <div class="breakeven-months">
+                                <span class="number" id="points-breakeven-months">0</span>
+                                <span class="unit">months</span>
+                            </div>
+                            <div class="breakeven-label">to break even</div>
+                        </div>
+                        <div class="points-recommendation" id="points-recommendation"></div>
+                        <div class="points-savings-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>If You Keep Loan</th>
+                                        <th>Monthly Savings</th>
+                                        <th>Total Savings</th>
+                                        <th>Net Benefit</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="points-savings-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Refinance Breakeven Calculator -->
+            <div class="tool-card" data-category="analysis" id="refi-breakeven-tool">
+                <div class="tool-card-header">
+                    <div class="tool-icon analysis">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23 4 23 10 17 10"/>
+                            <polyline points="1 20 1 14 7 14"/>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                        </svg>
+                    </div>
+                    <div class="tool-title">
+                        <h3>Refinance Breakeven</h3>
+                        <span class="tool-badge analysis">Analysis</span>
+                    </div>
+                    <button class="tool-expand-btn" aria-label="Expand">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </button>
+                </div>
+                <p class="tool-description">Calculate how long until refinancing savings exceed closing costs</p>
+                <div class="tool-content">
+                    <div class="refi-columns">
+                        <div class="refi-column">
+                            <h4>Current Loan</h4>
+                            <div class="tool-input-group">
+                                <label>Current Balance</label>
+                                <div class="input-with-icon">
+                                    <span class="input-icon">$</span>
+                                    <input type="number" id="refi-current-balance" value="350000" placeholder="350,000">
+                                </div>
+                            </div>
+                            <div class="tool-input-group">
+                                <label>Current Rate</label>
+                                <div class="input-with-icon">
+                                    <input type="number" id="refi-current-rate" value="7.5" step="0.125" placeholder="7.5">
+                                    <span class="input-icon right">%</span>
+                                </div>
+                            </div>
+                            <div class="tool-input-group">
+                                <label>Remaining Term (Years)</label>
+                                <input type="number" id="refi-current-term" value="28" min="1" max="30" placeholder="28">
+                            </div>
+                            <div class="tool-input-group">
+                                <label>Current Monthly Payment</label>
+                                <div class="input-with-icon">
+                                    <span class="input-icon">$</span>
+                                    <input type="number" id="refi-current-pmt" value="2447" placeholder="2,447" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="refi-column">
+                            <h4>New Loan</h4>
+                            <div class="tool-input-group">
+                                <label>New Rate</label>
+                                <div class="input-with-icon">
+                                    <input type="number" id="refi-new-rate" value="6.5" step="0.125" placeholder="6.5">
+                                    <span class="input-icon right">%</span>
+                                </div>
+                            </div>
+                            <div class="tool-input-group">
+                                <label>New Loan Term</label>
+                                <select id="refi-new-term">
+                                    <option value="30" selected>30 Years</option>
+                                    <option value="20">20 Years</option>
+                                    <option value="15">15 Years</option>
+                                </select>
+                            </div>
+                            <div class="tool-input-group">
+                                <label>Estimated Closing Costs</label>
+                                <div class="input-with-icon">
+                                    <span class="input-icon">$</span>
+                                    <input type="number" id="refi-closing-costs" value="8000" placeholder="8,000">
+                                </div>
+                            </div>
+                            <div class="tool-input-group">
+                                <label>Roll Costs into Loan?</label>
+                                <select id="refi-roll-costs">
+                                    <option value="no">No - Pay at Closing</option>
+                                    <option value="yes">Yes - Add to Loan</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="tool-calculate-btn" onclick="calculateRefiBreakeven()">Calculate Breakeven</button>
+                    <div class="tool-results" id="refi-breakeven-results">
+                        <div class="refi-comparison-stats">
+                            <div class="refi-stat">
+                                <span class="label">New Monthly Payment</span>
+                                <span class="value" id="refi-new-pmt">$0</span>
+                            </div>
+                            <div class="refi-stat highlight">
+                                <span class="label">Monthly Savings</span>
+                                <span class="value" id="refi-monthly-savings">$0</span>
+                            </div>
+                            <div class="refi-stat">
+                                <span class="label">Closing Costs</span>
+                                <span class="value" id="refi-costs-display">$0</span>
+                            </div>
+                        </div>
+                        <div class="refi-breakeven-display">
+                            <div class="breakeven-months">
+                                <span class="number" id="refi-breakeven-months">0</span>
+                                <span class="unit">months</span>
+                            </div>
+                            <div class="breakeven-label">to break even</div>
+                            <div class="breakeven-date" id="refi-breakeven-date"></div>
+                        </div>
+                        <div class="refi-recommendation" id="refi-recommendation"></div>
+                        <div class="refi-chart-container">
+                            <canvas id="refiChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Cost of Ownership -->
+            <div class="tool-card" data-category="analysis" id="tco-tool">
+                <div class="tool-card-header">
+                    <div class="tool-icon analysis">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="1" x2="12" y2="23"/>
+                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                        </svg>
+                    </div>
+                    <div class="tool-title">
+                        <h3>Total Cost of Ownership</h3>
+                        <span class="tool-badge analysis">Analysis</span>
+                    </div>
+                    <button class="tool-expand-btn" aria-label="Expand">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </button>
+                </div>
+                <p class="tool-description">See the true cumulative cost of homeownership over time</p>
+                <div class="tool-content">
+                    <div class="tool-form-grid">
+                        <div class="tool-input-group">
+                            <label>Home Price</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="tco-price" value="450000" placeholder="450,000">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Down Payment</label>
+                            <div class="input-with-icon">
+                                <input type="number" id="tco-down" value="20" step="1" placeholder="20">
+                                <span class="input-icon right">%</span>
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Interest Rate</label>
+                            <div class="input-with-icon">
+                                <input type="number" id="tco-rate" value="6.5" step="0.125" placeholder="6.5">
+                                <span class="input-icon right">%</span>
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Loan Term</label>
+                            <select id="tco-term">
+                                <option value="30" selected>30 Years</option>
+                                <option value="15">15 Years</option>
+                            </select>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Property Tax Rate</label>
+                            <div class="input-with-icon">
+                                <input type="number" id="tco-tax-rate" value="1.2" step="0.1" placeholder="1.2">
+                                <span class="input-icon right">%</span>
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Home Insurance (Annual)</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="tco-insurance" value="2000" placeholder="2,000">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Maintenance (% of Value/Year)</label>
+                            <div class="input-with-icon">
+                                <input type="number" id="tco-maintenance" value="1" step="0.25" placeholder="1">
+                                <span class="input-icon right">%</span>
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>HOA (Monthly)</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="tco-hoa" value="0" placeholder="0">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Closing Costs</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="tco-closing" value="12000" placeholder="12,000">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Home Appreciation</label>
+                            <div class="input-with-icon">
+                                <input type="number" id="tco-appreciation" value="3" step="0.5" placeholder="3">
+                                <span class="input-icon right">%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="tool-calculate-btn" onclick="calculateTCO()">Calculate Total Costs</button>
+                    <div class="tool-results" id="tco-results">
+                        <div class="tco-timeline-select">
+                            <label>View at Year:</label>
+                            <div class="tco-year-buttons">
+                                <button class="tco-year-btn" data-year="5">5</button>
+                                <button class="tco-year-btn active" data-year="10">10</button>
+                                <button class="tco-year-btn" data-year="15">15</button>
+                                <button class="tco-year-btn" data-year="20">20</button>
+                                <button class="tco-year-btn" data-year="30">30</button>
+                            </div>
+                        </div>
+                        <div class="tco-summary" id="tco-summary">
+                            <div class="tco-card total-paid">
+                                <h4>Total Paid</h4>
+                                <div class="tco-amount" id="tco-total-paid">$0</div>
+                                <div class="tco-breakdown" id="tco-breakdown"></div>
+                            </div>
+                            <div class="tco-card equity">
+                                <h4>Home Equity</h4>
+                                <div class="tco-amount" id="tco-equity">$0</div>
+                                <div class="tco-subtext" id="tco-home-value"></div>
+                            </div>
+                            <div class="tco-card net-cost">
+                                <h4>Net Cost</h4>
+                                <div class="tco-amount" id="tco-net-cost">$0</div>
+                                <div class="tco-subtext">Total Paid - Equity</div>
+                            </div>
+                        </div>
+                        <div class="tco-chart-container">
+                            <canvas id="tcoChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== STRATEGY TOOLS ==================== -->
+
+            <!-- Buydown Calculator -->
+            <div class="tool-card" data-category="strategy" id="buydown-tool">
+                <div class="tool-card-header">
+                    <div class="tool-icon strategy">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2v20M2 12h20"/>
+                            <path d="M20 16l-4-4 4-4"/>
+                            <path d="M4 8l4 4-4 4"/>
+                        </svg>
+                    </div>
+                    <div class="tool-title">
+                        <h3>Buydown Calculator</h3>
+                        <span class="tool-badge strategy">Strategy</span>
+                    </div>
+                    <button class="tool-expand-btn" aria-label="Expand">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </button>
+                </div>
+                <p class="tool-description">Calculate 2-1 and 3-2-1 temporary buydown scenarios</p>
+                <div class="tool-content">
+                    <div class="tool-form-grid">
+                        <div class="tool-input-group">
+                            <label>Loan Amount</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="buydown-loan" value="400000" placeholder="400,000">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Note Rate (Full Rate)</label>
+                            <div class="input-with-icon">
+                                <input type="number" id="buydown-rate" value="7.0" step="0.125" placeholder="7.0">
+                                <span class="input-icon right">%</span>
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Loan Term</label>
+                            <select id="buydown-term">
+                                <option value="30" selected>30 Years</option>
+                                <option value="15">15 Years</option>
+                            </select>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Buydown Type</label>
+                            <select id="buydown-type">
+                                <option value="3-2-1">3-2-1 Buydown</option>
+                                <option value="2-1" selected>2-1 Buydown</option>
+                                <option value="1-1">1-1 Buydown</option>
+                                <option value="1-0">1-0 Buydown</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="tool-calculate-btn" onclick="calculateBuydown()">Calculate Buydown</button>
+                    <div class="tool-results" id="buydown-results">
+                        <div class="buydown-summary">
+                            <div class="buydown-cost-card">
+                                <h4>Buydown Cost</h4>
+                                <div class="buydown-cost" id="buydown-total-cost">$0</div>
+                                <p>Amount seller/builder pays upfront</p>
+                            </div>
+                        </div>
+                        <div class="buydown-schedule">
+                            <h4>Payment Schedule</h4>
+                            <div class="buydown-years" id="buydown-schedule"></div>
+                        </div>
+                        <div class="buydown-comparison">
+                            <h4>Savings During Buydown Period</h4>
+                            <div class="buydown-savings-grid" id="buydown-savings"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- What-If Simulator -->
+            <div class="tool-card large" data-category="strategy" id="whatif-tool">
+                <div class="tool-card-header">
+                    <div class="tool-icon strategy">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-3 3l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-3-3l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 3-3l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 3 3l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                        </svg>
+                    </div>
+                    <div class="tool-title">
+                        <h3>What-If Simulator</h3>
+                        <span class="tool-badge strategy">Strategy</span>
+                    </div>
+                    <button class="tool-expand-btn" aria-label="Expand">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </button>
+                </div>
+                <p class="tool-description">Interactive sliders to see real-time impact of rate changes, extra payments, and down payment adjustments</p>
+                <div class="tool-content">
+                    <div class="whatif-base-inputs">
+                        <div class="tool-input-group">
+                            <label>Home Price</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="whatif-price" value="450000" placeholder="450,000">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Loan Term</label>
+                            <select id="whatif-term">
+                                <option value="30" selected>30 Years</option>
+                                <option value="15">15 Years</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="whatif-sliders">
+                        <div class="whatif-slider-group">
+                            <div class="slider-header">
+                                <label>Interest Rate</label>
+                                <span class="slider-value" id="whatif-rate-display">6.5%</span>
+                            </div>
+                            <input type="range" id="whatif-rate" min="4" max="10" step="0.125" value="6.5">
+                            <div class="slider-range">
+                                <span>4%</span>
+                                <span>10%</span>
+                            </div>
+                        </div>
+                        <div class="whatif-slider-group">
+                            <div class="slider-header">
+                                <label>Down Payment</label>
+                                <span class="slider-value" id="whatif-down-display">20% ($90,000)</span>
+                            </div>
+                            <input type="range" id="whatif-down" min="3" max="30" step="1" value="20">
+                            <div class="slider-range">
+                                <span>3%</span>
+                                <span>30%</span>
+                            </div>
+                        </div>
+                        <div class="whatif-slider-group">
+                            <div class="slider-header">
+                                <label>Extra Monthly Payment</label>
+                                <span class="slider-value" id="whatif-extra-display">$0</span>
+                            </div>
+                            <input type="range" id="whatif-extra" min="0" max="1000" step="50" value="0">
+                            <div class="slider-range">
+                                <span>$0</span>
+                                <span>$1,000</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="whatif-results">
+                        <div class="whatif-main-stats">
+                            <div class="whatif-stat large">
+                                <span class="label">Monthly Payment</span>
+                                <span class="value" id="whatif-monthly">$0</span>
+                                <span class="sublabel">(Principal & Interest)</span>
+                            </div>
+                            <div class="whatif-stat">
+                                <span class="label">Loan Amount</span>
+                                <span class="value" id="whatif-loan-amt">$0</span>
+                            </div>
+                            <div class="whatif-stat">
+                                <span class="label">Total Interest</span>
+                                <span class="value" id="whatif-total-int">$0</span>
+                            </div>
+                            <div class="whatif-stat highlight" id="whatif-payoff-stat">
+                                <span class="label">Payoff Time</span>
+                                <span class="value" id="whatif-payoff">30 years</span>
+                            </div>
+                            <div class="whatif-stat highlight" id="whatif-savings-stat" style="display:none;">
+                                <span class="label">Interest Saved</span>
+                                <span class="value" id="whatif-saved">$0</span>
+                            </div>
+                        </div>
+                        <div class="whatif-pmi-warning" id="whatif-pmi-warning" style="display:none;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="12" y1="8" x2="12" y2="12"/>
+                                <line x1="12" y1="16" x2="12.01" y2="16"/>
+                            </svg>
+                            <span>PMI required (down payment &lt; 20%)</span>
+                        </div>
+                        <div class="whatif-chart-container">
+                            <canvas id="whatifChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Footer -->
+        <footer class="tools-footer">
+            <p>These calculators provide estimates for educational purposes only. Actual rates, payments, and terms may vary. Consult with a licensed mortgage professional for personalized advice.</p>
+        </footer>
+    </div>
+
+    <script src="tools.js"></script>
+</body>
+</html>
