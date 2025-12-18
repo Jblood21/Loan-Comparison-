@@ -1865,8 +1865,437 @@
         align-items: center;
     }
 
-    .rb-vs, .arm-vs-badge, .heloc-vs {
+    .rb-vs, .arm-vs-badge, .heloc-vs, .sr-vs-badge {
         transform: rotate(90deg);
         margin: 10px 0;
+    }
+}
+
+/* ============================================
+   TOOL SELECTION CHECKBOXES
+   ============================================ */
+
+.tool-select-checkbox {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-right: 5px;
+}
+
+.tool-select-checkbox input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkbox-custom {
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--card-bg);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.checkbox-custom::after {
+    content: '';
+    display: none;
+    width: 6px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    margin-bottom: 2px;
+}
+
+.tool-select-checkbox:hover .checkbox-custom {
+    border-color: var(--navy-blue);
+}
+
+.tool-select-checkbox input[type="checkbox"]:checked + .checkbox-custom {
+    background: linear-gradient(135deg, var(--navy-blue) 0%, var(--navy-light) 100%);
+    border-color: var(--navy-blue);
+}
+
+.tool-select-checkbox input[type="checkbox"]:checked + .checkbox-custom::after {
+    display: block;
+}
+
+.tool-card.selected {
+    border-color: var(--navy-blue);
+    box-shadow: 0 0 0 2px rgba(30, 58, 95, 0.2), 0 8px 30px rgba(0,0,0,0.1);
+}
+
+/* ============================================
+   SELL VS KEEP & RENT STYLES
+   ============================================ */
+
+.sr-comparison {
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    gap: 25px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+}
+
+.sr-option-card {
+    flex: 1;
+    min-width: 300px;
+    max-width: 400px;
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 25px;
+    border: 2px solid var(--border-color);
+}
+
+.sr-option-card.sell {
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.sr-option-card.rent {
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.sr-option-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.sr-option-header h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.sr-option-card.sell .sr-option-header h4 { color: #3b82f6; }
+.sr-option-card.rent .sr-option-header h4 { color: #10b981; }
+.sr-option-card.sell .sr-option-header svg { color: #3b82f6; }
+.sr-option-card.rent .sr-option-header svg { color: #10b981; }
+
+.sr-option-amount {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.sr-option-card.sell .sr-option-amount { color: #3b82f6; }
+.sr-option-card.rent .sr-option-amount { color: #10b981; }
+
+.sr-option-label {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+}
+
+.sr-option-details {
+    background: var(--bg-primary);
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.sr-detail {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    font-size: 0.9rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.sr-detail:last-child {
+    border-bottom: none;
+}
+
+.sr-detail span:first-child {
+    color: var(--text-muted);
+}
+
+.sr-detail span:last-child {
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.sr-future-value {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%);
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+}
+
+.sr-future-value span {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.sr-future-value strong {
+    display: block;
+    font-size: 1.5rem;
+    color: #3b82f6;
+    margin: 5px 0;
+}
+
+.sr-period {
+    font-size: 0.8rem !important;
+}
+
+.sr-monthly-breakdown {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+    border-radius: 10px;
+    padding: 15px;
+}
+
+.sr-monthly-breakdown h5 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 12px;
+}
+
+.sr-cashflow-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sr-cf-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    padding: 6px 0;
+}
+
+.sr-cf-item.income span:last-child {
+    color: #10b981;
+    font-weight: 600;
+}
+
+.sr-cf-item.expense span:last-child {
+    color: #ef4444;
+}
+
+.sr-cf-item.net {
+    border-top: 2px solid var(--border-color);
+    padding-top: 10px;
+    margin-top: 5px;
+}
+
+.sr-cf-item.net span {
+    font-weight: 700;
+}
+
+.sr-cf-item.net span:last-child {
+    color: var(--text-dark);
+}
+
+.sr-vs-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    background: var(--bg-tertiary);
+    border-radius: 50%;
+    font-weight: 700;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.sr-recommendation {
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    margin-bottom: 25px;
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+}
+
+.sr-recommendation.sell-better {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%);
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.sr-recommendation.rent-better {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.sr-recommendation h4 {
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+}
+
+.sr-recommendation.sell-better h4 { color: #3b82f6; }
+.sr-recommendation.rent-better h4 { color: #10b981; }
+
+.sr-recommendation p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+.sr-metrics {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 25px;
+}
+
+.sr-metrics h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: var(--text-dark);
+}
+
+.sr-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 15px;
+}
+
+.sr-metric {
+    text-align: center;
+    padding: 15px;
+    background: var(--bg-primary);
+    border-radius: 10px;
+}
+
+.sr-metric-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--navy-blue);
+    margin-bottom: 5px;
+}
+
+.sr-metric-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.sr-chart-container {
+    height: 350px;
+}
+
+/* ============================================
+   DOCUMENT GENERATOR STYLES
+   ============================================ */
+
+.document-generator {
+    background: linear-gradient(135deg, var(--navy-blue) 0%, var(--navy-light) 100%);
+    border-radius: 20px;
+    padding: 30px;
+    margin-bottom: 30px;
+    color: white;
+}
+
+.doc-gen-header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.doc-gen-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.doc-gen-header p {
+    opacity: 0.9;
+    font-size: 0.95rem;
+}
+
+.doc-gen-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.doc-gen-selected {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.doc-gen-selected span {
+    font-size: 1.5rem;
+    margin-right: 5px;
+}
+
+.doc-gen-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.doc-gen-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.doc-gen-btn.secondary {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+}
+
+.doc-gen-btn.secondary:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.doc-gen-btn.primary {
+    background: white;
+    color: var(--navy-blue);
+}
+
+.doc-gen-btn.primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+}
+
+.doc-gen-btn.primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Responsive adjustments for sell vs rent */
+@media (max-width: 768px) {
+    .sr-comparison {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .sr-option-card {
+        max-width: 100%;
+    }
+
+    .sr-vs-badge {
+        transform: rotate(90deg);
+        margin: 10px 0;
+    }
+
+    .doc-gen-controls {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .doc-gen-actions {
+        width: 100%;
+        justify-content: center;
     }
 }

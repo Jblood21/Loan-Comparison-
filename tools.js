@@ -1663,4 +1663,517 @@ document.addEventListener('DOMContentLoaded', () => {
     if (darkMode) {
         document.documentElement.setAttribute('data-theme', 'dark');
     }
+
+    // Initialize tool selection checkboxes
+    setupToolSelection();
 });
+
+// ============================================
+// SELL VS KEEP & RENT CALCULATOR
+// ============================================
+function calculateSellVsRent() {
+    // Get property details
+    const homeValue = parseFloat(document.getElementById('sr-home-value').value) || 0;
+    const mortgageBalance = parseFloat(document.getElementById('sr-mortgage-balance').value) || 0;
+    const mortgageRate = parseFloat(document.getElementById('sr-mortgage-rate').value) || 0;
+    const remainingTerm = parseInt(document.getElementById('sr-remaining-term').value) || 25;
+    const currentPayment = parseFloat(document.getElementById('sr-current-payment').value) || 0;
+    const purchasePrice = parseFloat(document.getElementById('sr-purchase-price').value) || 0;
+
+    // Sell scenario inputs
+    const sellingCostsPercent = parseFloat(document.getElementById('sr-selling-costs').value) || 8;
+    const capGainsRate = parseFloat(document.getElementById('sr-cap-gains-rate').value) || 15;
+    const isPrimaryResidence = document.getElementById('sr-primary-residence').value === 'yes';
+    const filingStatus = document.getElementById('sr-filing-status').value;
+
+    // Rent scenario inputs
+    const monthlyRent = parseFloat(document.getElementById('sr-monthly-rent').value) || 0;
+    const propertyTax = parseFloat(document.getElementById('sr-property-tax').value) || 0;
+    const insurance = parseFloat(document.getElementById('sr-insurance').value) || 0;
+    const hoa = parseFloat(document.getElementById('sr-hoa').value) || 0;
+    const maintenancePercent = parseFloat(document.getElementById('sr-maintenance').value) || 1;
+    const mgmtFeePercent = parseFloat(document.getElementById('sr-mgmt-fee').value) || 0;
+    const vacancyPercent = parseFloat(document.getElementById('sr-vacancy').value) || 5;
+    const rentIncreasePercent = parseFloat(document.getElementById('sr-rent-increase').value) || 3;
+
+    // Investment assumptions
+    const appreciationPercent = parseFloat(document.getElementById('sr-appreciation').value) || 3;
+    const altReturnPercent = parseFloat(document.getElementById('sr-alt-return').value) || 7;
+    const taxBracket = parseFloat(document.getElementById('sr-tax-bracket').value) || 24;
+    const analysisPeriod = parseInt(document.getElementById('sr-analysis-period').value) || 10;
+
+    // ========== SELL SCENARIO CALCULATIONS ==========
+    const sellingCosts = homeValue * (sellingCostsPercent / 100);
+    const grossProceeds = homeValue - sellingCosts - mortgageBalance;
+
+    // Capital gains calculation
+    const totalGain = homeValue - purchasePrice;
+    const exclusionAmount = isPrimaryResidence ? (filingStatus === 'married' ? 500000 : 250000) : 0;
+    const taxableGain = Math.max(0, totalGain - exclusionAmount);
+    const capGainsTax = taxableGain * (capGainsRate / 100);
+
+    const netSellProceeds = grossProceeds - capGainsTax;
+
+    // Future value if invested
+    const investedFutureValue = netSellProceeds * Math.pow(1 + altReturnPercent / 100, analysisPeriod);
+
+    // ========== RENT SCENARIO CALCULATIONS ==========
+    // Monthly expenses
+    const monthlyPropertyTax = propertyTax / 12;
+    const monthlyInsurance = insurance / 12;
+    const monthlyMaintenance = (homeValue * (maintenancePercent / 100)) / 12;
+    const monthlyMgmtFee = monthlyRent * (mgmtFeePercent / 100);
+
+    // Monthly cash flow (Year 1)
+    const effectiveRent = monthlyRent * (1 - vacancyPercent / 100);
+    const totalMonthlyExpenses = currentPayment + monthlyPropertyTax + monthlyInsurance + monthlyMaintenance + monthlyMgmtFee + hoa;
+    const monthlyCashFlow = effectiveRent - totalMonthlyExpenses;
+
+    // Calculate total cash flow over analysis period with rent increases
+    let totalCashFlow = 0;
+    let yearlyRent = monthlyRent * 12;
+    let yearlyExpenses = totalMonthlyExpenses * 12;
+
+    for (let year = 1; year <= analysisPeriod; year++) {
+        const effectiveYearlyRent = yearlyRent * (1 - vacancyPercent / 100);
+        totalCashFlow += effectiveYearlyRent - yearlyExpenses;
+        yearlyRent *= (1 + rentIncreasePercent / 100);
+        // Expenses increase at half the rate of rent (approximation)
+        yearlyExpenses *= 1.015;
+    }
+
+    // Future home value
+    const futureHomeValue = homeValue * Math.pow(1 + appreciationPercent / 100, analysisPeriod);
+
+    // Future mortgage balance (simplified amortization)
+    const monthlyRate = mortgageRate / 100 / 12;
+    let balance = mortgageBalance;
+    const totalMonths = Math.min(analysisPeriod * 12, remainingTerm * 12);
+
+    for (let month = 0; month < totalMonths; month++) {
+        const interestPayment = balance * monthlyRate;
+        const principalPayment = currentPayment - interestPayment;
+        balance = Math.max(0, balance - principalPayment);
+    }
+    const futureMortgageBalance = balance;
+
+    // Future equity
+    const futureEquity = futureHomeValue - futureMortgageBalance;
+
+    // Total rent scenario wealth
+    const rentTotalWealth = futureEquity + totalCashFlow;
+
+    // ========== RENTAL PROPERTY METRICS ==========
+    const annualGrossRent = monthlyRent * 12;
+    const annualNetOperatingIncome = (annualGrossRent * (1 - vacancyPercent / 100)) -
+        propertyTax - insurance - (homeValue * maintenancePercent / 100) - (annualGrossRent * mgmtFeePercent / 100) - (hoa * 12);
+
+    const capRate = (annualNetOperatingIncome / homeValue) * 100;
+    const currentEquity = homeValue - mortgageBalance;
+    const annualCashFlow = monthlyCashFlow * 12;
+    const cashOnCash = currentEquity > 0 ? (annualCashFlow / currentEquity) * 100 : 0;
+    const grossRentYield = (annualGrossRent / homeValue) * 100;
+
+    // Total ROI including appreciation
+    const totalAnnualReturn = annualCashFlow + (homeValue * appreciationPercent / 100);
+    const totalROI = currentEquity > 0 ? (totalAnnualReturn / currentEquity) * 100 : 0;
+
+    // ========== UPDATE DISPLAY ==========
+    // Sell scenario
+    document.getElementById('sr-sell-proceeds').textContent = formatCurrency(netSellProceeds);
+    document.getElementById('sr-sale-price').textContent = formatCurrency(homeValue);
+    document.getElementById('sr-selling-costs-amt').textContent = '-' + formatCurrency(sellingCosts);
+    document.getElementById('sr-mortgage-payoff').textContent = '-' + formatCurrency(mortgageBalance);
+    document.getElementById('sr-cap-gains-tax').textContent = capGainsTax > 0 ? '-' + formatCurrency(capGainsTax) : '$0';
+    document.getElementById('sr-alt-return-display').textContent = altReturnPercent + '%';
+    document.getElementById('sr-invested-value').textContent = formatCurrency(investedFutureValue);
+    document.getElementById('sr-period-sell').textContent = analysisPeriod;
+
+    // Rent scenario
+    document.getElementById('sr-rent-wealth').textContent = formatCurrency(rentTotalWealth);
+    document.getElementById('sr-period-rent').textContent = analysisPeriod;
+    document.getElementById('sr-future-home-value').textContent = formatCurrency(futureHomeValue);
+    document.getElementById('sr-future-mortgage').textContent = '-' + formatCurrency(futureMortgageBalance);
+    document.getElementById('sr-future-equity').textContent = formatCurrency(futureEquity);
+    document.getElementById('sr-total-cashflow').textContent = totalCashFlow >= 0 ? formatCurrency(totalCashFlow) : '-' + formatCurrency(Math.abs(totalCashFlow));
+
+    // Monthly cash flow breakdown
+    document.getElementById('sr-cf-rent').textContent = formatCurrency(effectiveRent);
+    document.getElementById('sr-cf-mortgage').textContent = '-' + formatCurrency(currentPayment);
+    document.getElementById('sr-cf-tax-ins').textContent = '-' + formatCurrency(monthlyPropertyTax + monthlyInsurance);
+    document.getElementById('sr-cf-other').textContent = '-' + formatCurrency(monthlyMaintenance + monthlyMgmtFee + hoa);
+    document.getElementById('sr-cf-net').textContent = monthlyCashFlow >= 0 ? formatCurrency(monthlyCashFlow) : '-' + formatCurrency(Math.abs(monthlyCashFlow));
+
+    // Rental metrics
+    document.getElementById('sr-cap-rate').textContent = formatPercent(capRate);
+    document.getElementById('sr-cash-on-cash').textContent = formatPercent(cashOnCash);
+    document.getElementById('sr-rent-yield').textContent = formatPercent(grossRentYield);
+    document.getElementById('sr-total-roi').textContent = formatPercent(totalROI);
+
+    // Recommendation
+    const recommendationDiv = document.getElementById('sr-recommendation');
+    const difference = investedFutureValue - rentTotalWealth;
+    const percentDiff = Math.abs(difference / Math.max(investedFutureValue, rentTotalWealth) * 100);
+
+    if (investedFutureValue > rentTotalWealth) {
+        recommendationDiv.className = 'sr-recommendation sell-better';
+        recommendationDiv.innerHTML = `
+            <h4>Recommendation: Consider Selling</h4>
+            <p>Based on your inputs, selling and investing the proceeds could yield approximately
+            <strong>${formatCurrency(Math.abs(difference))}</strong> more (${percentDiff.toFixed(1)}%)
+            over ${analysisPeriod} years compared to keeping as a rental.</p>
+        `;
+    } else {
+        recommendationDiv.className = 'sr-recommendation rent-better';
+        recommendationDiv.innerHTML = `
+            <h4>Recommendation: Consider Keeping as Rental</h4>
+            <p>Based on your inputs, keeping the property as a rental could yield approximately
+            <strong>${formatCurrency(Math.abs(difference))}</strong> more (${percentDiff.toFixed(1)}%)
+            over ${analysisPeriod} years compared to selling and investing.</p>
+        `;
+    }
+
+    // Show results
+    document.getElementById('sell-rent-results').style.display = 'block';
+
+    // Update chart
+    updateSellRentChart(analysisPeriod, netSellProceeds, altReturnPercent, homeValue, appreciationPercent, futureMortgageBalance, totalCashFlow);
+}
+
+function updateSellRentChart(years, sellProceeds, investReturn, homeValue, appreciation, finalMortgage, totalCashFlow) {
+    const ctx = document.getElementById('sellRentChart');
+    if (!ctx) return;
+
+    if (charts.sellRent) {
+        charts.sellRent.destroy();
+    }
+
+    const labels = [];
+    const sellData = [];
+    const rentEquityData = [];
+    const rentCashFlowData = [];
+
+    for (let year = 0; year <= years; year++) {
+        labels.push(`Year ${year}`);
+
+        // Sell scenario - invested proceeds growing
+        sellData.push(sellProceeds * Math.pow(1 + investReturn / 100, year));
+
+        // Rent scenario - home equity (simplified)
+        const futureValue = homeValue * Math.pow(1 + appreciation / 100, year);
+        const mortgageProgress = year / years;
+        const currentMortgage = homeValue - ((homeValue - finalMortgage) * mortgageProgress);
+        rentEquityData.push(futureValue - currentMortgage);
+
+        // Cumulative cash flow
+        rentCashFlowData.push((totalCashFlow / years) * year);
+    }
+
+    charts.sellRent = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Sell & Invest',
+                    data: sellData,
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                },
+                {
+                    label: 'Keep & Rent (Equity)',
+                    data: rentEquityData,
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'top' },
+                title: {
+                    display: true,
+                    text: 'Wealth Comparison Over Time'
+                }
+            },
+            scales: {
+                y: {
+                    ticks: {
+                        callback: (value) => formatCurrency(value)
+                    }
+                }
+            }
+        }
+    });
+}
+
+// ============================================
+// TOOL SELECTION & DOCUMENT GENERATION
+// ============================================
+function setupToolSelection() {
+    const checkboxes = document.querySelectorAll('.tool-checkbox');
+    const selectedCountEl = document.getElementById('selectedCount');
+    const generateBtn = document.getElementById('generateDocBtn');
+    const clearBtn = document.getElementById('clearSelectionsBtn');
+
+    if (!checkboxes.length) return;
+
+    // Handle checkbox changes
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', (e) => {
+            e.stopPropagation(); // Prevent card expansion
+            const card = checkbox.closest('.tool-card');
+            card.classList.toggle('selected', checkbox.checked);
+            updateSelectionCount();
+        });
+
+        // Prevent click from bubbling to header
+        checkbox.closest('.tool-select-checkbox').addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    });
+
+    // Clear all selections
+    if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+            checkboxes.forEach(cb => {
+                cb.checked = false;
+                cb.closest('.tool-card').classList.remove('selected');
+            });
+            updateSelectionCount();
+        });
+    }
+
+    // Generate document
+    if (generateBtn) {
+        generateBtn.addEventListener('click', generateClientReport);
+    }
+
+    function updateSelectionCount() {
+        const selectedCount = document.querySelectorAll('.tool-checkbox:checked').length;
+        if (selectedCountEl) {
+            selectedCountEl.textContent = selectedCount;
+        }
+        if (generateBtn) {
+            generateBtn.disabled = selectedCount === 0;
+        }
+    }
+}
+
+function generateClientReport() {
+    const selectedTools = document.querySelectorAll('.tool-checkbox:checked');
+    if (selectedTools.length === 0) {
+        alert('Please select at least one calculator to include in the report.');
+        return;
+    }
+
+    // Collect data from selected tools
+    const reportData = [];
+
+    selectedTools.forEach(checkbox => {
+        const toolId = checkbox.dataset.tool;
+        const card = checkbox.closest('.tool-card');
+        const title = card.querySelector('.tool-title h3').textContent;
+        const resultsDiv = card.querySelector('.tool-results');
+
+        // Check if results are visible (calculator was run)
+        if (resultsDiv && resultsDiv.style.display !== 'none') {
+            reportData.push({
+                id: toolId,
+                title: title,
+                results: extractToolResults(toolId, card)
+            });
+        } else {
+            reportData.push({
+                id: toolId,
+                title: title,
+                results: null,
+                message: 'Calculator not yet run'
+            });
+        }
+    });
+
+    // Generate HTML report
+    generateHTMLReport(reportData);
+}
+
+function extractToolResults(toolId, card) {
+    const results = {};
+
+    switch (toolId) {
+        case 'dti':
+            results.frontEndDTI = document.getElementById('dti-front-value')?.textContent;
+            results.backEndDTI = document.getElementById('dti-back-value')?.textContent;
+            break;
+        case 'rent-buy':
+            results.buyingCost = document.getElementById('rb-buying-total')?.textContent;
+            results.rentingCost = document.getElementById('rb-renting-total')?.textContent;
+            results.savings = document.getElementById('rb-savings')?.textContent;
+            break;
+        case 'amortization':
+            results.monthlyPayment = document.getElementById('amort-monthly-payment')?.textContent;
+            results.totalInterest = document.getElementById('amort-total-interest')?.textContent;
+            results.totalCost = document.getElementById('amort-total-cost')?.textContent;
+            break;
+        case 'arm-fixed':
+            results.fixedPayment = document.getElementById('arm-fixed-payment')?.textContent;
+            results.armInitialPayment = document.getElementById('arm-initial-payment')?.textContent;
+            break;
+        case 'pmi':
+            results.currentLTV = document.getElementById('pmi-current-ltv')?.textContent;
+            results.timeToRemove = document.getElementById('pmi-time-to-remove')?.textContent;
+            break;
+        case 'points':
+            results.breakeven = document.getElementById('points-breakeven')?.textContent;
+            results.pointsCost = document.getElementById('points-cost')?.textContent;
+            results.monthlySavings = document.getElementById('points-monthly-savings')?.textContent;
+            break;
+        case 'refi-breakeven':
+            results.breakeven = document.getElementById('refi-breakeven-months')?.textContent;
+            results.monthlySavings = document.getElementById('refi-monthly-savings')?.textContent;
+            results.lifetimeSavings = document.getElementById('refi-lifetime-savings')?.textContent;
+            break;
+        case 'buydown':
+            results.buydownCost = document.getElementById('buydown-total-cost')?.textContent;
+            break;
+        case 'sell-rent':
+            results.sellProceeds = document.getElementById('sr-sell-proceeds')?.textContent;
+            results.rentWealth = document.getElementById('sr-rent-wealth')?.textContent;
+            results.capRate = document.getElementById('sr-cap-rate')?.textContent;
+            results.cashOnCash = document.getElementById('sr-cash-on-cash')?.textContent;
+            break;
+        default:
+            // Generic extraction
+            const allValues = card.querySelectorAll('.tool-results [id]');
+            allValues.forEach(el => {
+                if (el.textContent) {
+                    results[el.id] = el.textContent;
+                }
+            });
+    }
+
+    return results;
+}
+
+function generateHTMLReport(reportData) {
+    // Get loan officer info from settings if available
+    const loName = localStorage.getItem('loName') || 'Loan Officer';
+    const loCompany = localStorage.getItem('loCompany') || '';
+    const loPhone = localStorage.getItem('loPhone') || '';
+    const loEmail = localStorage.getItem('loEmail') || '';
+    const loNMLS = localStorage.getItem('loNMLS') || '';
+
+    const currentDate = new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+
+    let reportHTML = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mortgage Analysis Report - ${currentDate}</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+        .header { text-align: center; margin-bottom: 40px; padding-bottom: 30px; border-bottom: 3px solid #1e3a5f; }
+        .header h1 { color: #1e3a5f; font-size: 2rem; margin-bottom: 10px; }
+        .header .subtitle { color: #666; font-size: 1.1rem; }
+        .header .date { color: #888; font-size: 0.9rem; margin-top: 10px; }
+        .lo-info { background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 30px; }
+        .lo-info h3 { color: #1e3a5f; margin-bottom: 10px; }
+        .lo-info p { margin: 5px 0; font-size: 0.95rem; }
+        .tool-section { margin-bottom: 35px; page-break-inside: avoid; }
+        .tool-section h2 { color: #1e3a5f; font-size: 1.3rem; padding-bottom: 10px; border-bottom: 2px solid #e5e7eb; margin-bottom: 15px; }
+        .results-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .result-item { background: #f8f9fa; padding: 15px; border-radius: 8px; }
+        .result-item .label { font-size: 0.85rem; color: #666; margin-bottom: 5px; }
+        .result-item .value { font-size: 1.2rem; font-weight: 600; color: #1e3a5f; }
+        .not-calculated { background: #fff3cd; padding: 15px; border-radius: 8px; color: #856404; font-style: italic; }
+        .footer { margin-top: 50px; padding-top: 30px; border-top: 2px solid #e5e7eb; text-align: center; color: #888; font-size: 0.85rem; }
+        .disclaimer { background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 20px; font-size: 0.8rem; color: #666; }
+        @media print { body { padding: 20px; } .tool-section { page-break-inside: avoid; } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Mortgage Analysis Report</h1>
+        <p class="subtitle">Customized Scenario Analysis</p>
+        <p class="date">Prepared on ${currentDate}</p>
+    </div>
+
+    ${loName || loCompany ? `
+    <div class="lo-info">
+        <h3>Prepared By</h3>
+        ${loName ? `<p><strong>${loName}</strong></p>` : ''}
+        ${loCompany ? `<p>${loCompany}</p>` : ''}
+        ${loPhone ? `<p>Phone: ${loPhone}</p>` : ''}
+        ${loEmail ? `<p>Email: ${loEmail}</p>` : ''}
+        ${loNMLS ? `<p>NMLS# ${loNMLS}</p>` : ''}
+    </div>
+    ` : ''}
+`;
+
+    reportData.forEach(tool => {
+        reportHTML += `
+    <div class="tool-section">
+        <h2>${tool.title}</h2>
+`;
+        if (tool.results) {
+            reportHTML += '<div class="results-grid">';
+            for (const [key, value] of Object.entries(tool.results)) {
+                if (value) {
+                    const label = formatResultLabel(key);
+                    reportHTML += `
+            <div class="result-item">
+                <div class="label">${label}</div>
+                <div class="value">${value}</div>
+            </div>`;
+                }
+            }
+            reportHTML += '</div>';
+        } else {
+            reportHTML += `<p class="not-calculated">This calculator has not been run yet. Please calculate results before generating the report.</p>`;
+        }
+        reportHTML += '</div>';
+    });
+
+    reportHTML += `
+    <div class="footer">
+        <p>Generated by LoanDr. Mortgage Tools</p>
+        <div class="disclaimer">
+            <strong>Disclaimer:</strong> This report is for informational purposes only and does not constitute financial advice.
+            All calculations are estimates based on the inputs provided. Actual rates, payments, and terms may vary.
+            Please consult with a licensed mortgage professional for personalized advice tailored to your specific situation.
+        </div>
+    </div>
+</body>
+</html>`;
+
+    // Open report in new window
+    const reportWindow = window.open('', '_blank');
+    reportWindow.document.write(reportHTML);
+    reportWindow.document.close();
+}
+
+function formatResultLabel(key) {
+    // Convert camelCase or kebab-case to readable label
+    return key
+        .replace(/([A-Z])/g, ' $1')
+        .replace(/-/g, ' ')
+        .replace(/^./, str => str.toUpperCase())
+        .replace(/dti/gi, 'DTI')
+        .replace(/ltv/gi, 'LTV')
+        .replace(/pmi/gi, 'PMI')
+        .replace(/arm/gi, 'ARM')
+        .trim();
+}
