@@ -5,51 +5,45 @@
 /* Hero Section */
 .tools-hero {
     text-align: center;
-    padding: 40px 20px;
-    background: linear-gradient(135deg, var(--navy-blue) 0%, var(--navy-light) 100%);
-    border-radius: 20px;
-    margin-bottom: 30px;
-    color: white;
+    padding: 30px 20px;
+    margin-bottom: 24px;
 }
 
 .tools-hero h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 10px;
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 6px;
 }
 
 .tools-hero p {
-    font-size: 1.1rem;
-    opacity: 0.9;
+    font-size: 0.95rem;
+    color: var(--text-muted);
 }
 
 /* Tools Navigation */
 .tools-nav {
     display: flex;
-    gap: 10px;
-    padding: 15px;
-    background: var(--card-bg);
-    border-radius: 15px;
-    margin-bottom: 25px;
+    gap: 6px;
+    margin-bottom: 24px;
     flex-wrap: wrap;
     justify-content: center;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
 
 .tool-nav-btn {
-    padding: 10px 20px;
+    padding: 8px 16px;
     border: none;
-    background: transparent;
+    background: var(--off-white);
     color: var(--text-muted);
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     font-weight: 500;
-    border-radius: 10px;
+    border-radius: 6px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.15s ease;
 }
 
 .tool-nav-btn:hover {
-    background: var(--bg-tertiary);
+    background: var(--light-gray);
     color: var(--text-dark);
 }
 
@@ -61,9 +55,9 @@
 /* Tools Grid */
 .tools-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-    gap: 25px;
-    margin-bottom: 40px;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 16px;
+    margin-bottom: 30px;
 }
 
 .tool-card.large {
@@ -82,60 +76,61 @@
 /* Tool Card Base Styles */
 .tool-card {
     background: var(--card-bg);
-    border-radius: 16px;
+    border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    transition: all 0.3s ease;
+    transition: all 0.15s ease;
     border: 1px solid var(--border-color);
 }
 
 .tool-card:hover {
-    box-shadow: 0 8px 30px rgba(0,0,0,0.1);
-    transform: translateY(-2px);
+    border-color: var(--light-gray);
 }
 
 .tool-card-header {
     display: flex;
     align-items: center;
-    padding: 20px;
-    gap: 15px;
+    padding: 16px 20px;
+    gap: 12px;
     cursor: pointer;
-    border-bottom: 1px solid transparent;
-    transition: border-color 0.3s ease;
 }
 
 .tool-card.expanded .tool-card-header {
-    border-bottom-color: var(--border-color);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .tool-icon {
-    width: 50px;
-    height: 50px;
-    border-radius: 12px;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
 }
 
+.tool-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
 .tool-icon.affordability {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: white;
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
 }
 
 .tool-icon.comparison {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-    color: white;
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
 }
 
 .tool-icon.analysis {
-    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-    color: white;
+    background: rgba(139, 92, 246, 0.1);
+    color: #8b5cf6;
 }
 
 .tool-icon.strategy {
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-    color: white;
+    background: rgba(245, 158, 11, 0.1);
+    color: #d97706;
 }
 
 .tool-title {
@@ -143,56 +138,33 @@
 }
 
 .tool-title h3 {
-    font-size: 1.1rem;
+    font-size: 0.95rem;
     font-weight: 600;
     color: var(--text-dark);
-    margin-bottom: 4px;
+    margin-bottom: 2px;
 }
 
 .tool-badge {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 0.7rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    background: rgba(16, 185, 129, 0.1);
-    color: #10b981;
-}
-
-.tool-badge.comparison {
-    background: rgba(59, 130, 246, 0.1);
-    color: #3b82f6;
-}
-
-.tool-badge.analysis {
-    background: rgba(139, 92, 246, 0.1);
-    color: #8b5cf6;
-}
-
-.tool-badge.strategy {
-    background: rgba(245, 158, 11, 0.1);
-    color: #d97706;
+    display: none;
 }
 
 .tool-expand-btn {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     border: none;
-    background: var(--bg-tertiary);
-    border-radius: 10px;
+    background: transparent;
+    border-radius: 6px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--text-muted);
-    transition: all 0.3s ease;
+    transition: all 0.15s ease;
 }
 
 .tool-expand-btn:hover {
-    background: var(--navy-blue);
-    color: white;
+    background: var(--off-white);
+    color: var(--navy-blue);
 }
 
 .tool-card.expanded .tool-expand-btn {
@@ -200,9 +172,9 @@
 }
 
 .tool-description {
-    padding: 0 20px 15px;
+    padding: 0 20px 12px;
     color: var(--text-muted);
-    font-size: 0.9rem;
+    font-size: 0.85rem;
 }
 
 /* Tool Content (Expandable) */
@@ -210,37 +182,24 @@
     display: none;
     padding: 20px;
     background: var(--bg-primary);
-    border-top: 1px solid var(--border-color);
 }
 
 .tool-card.expanded .tool-content {
     display: block;
-    animation: slideDown 0.3s ease;
-}
-
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 
 /* Tool Form Elements */
 .tool-form-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 15px;
-    margin-bottom: 20px;
+    gap: 12px;
+    margin-bottom: 16px;
 }
 
 .tool-input-group {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
 }
 
 .tool-input-group.full-width {
@@ -248,27 +207,35 @@
 }
 
 .tool-input-group label {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     font-weight: 500;
     color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
 }
 
 .tool-input-group input,
 .tool-input-group select {
-    padding: 12px 15px;
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-    font-size: 0.95rem;
-    background: var(--input-bg);
+    padding: 10px 12px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    background: var(--card-bg);
     color: var(--text-dark);
-    transition: all 0.2s ease;
+    transition: all 0.15s ease;
+}
+
+.tool-input-group input:hover,
+.tool-input-group select:hover {
+    background: var(--light-gray);
 }
 
 .tool-input-group input:focus,
 .tool-input-group select:focus {
-    outline: none;
+    background: var(--card-bg);
     border-color: var(--navy-blue);
-    box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.1);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(30, 58, 95, 0.08);
 }
 
 .input-with-icon {
@@ -328,21 +295,20 @@
 /* Calculate Button */
 .tool-calculate-btn {
     width: 100%;
-    padding: 14px 24px;
-    background: linear-gradient(135deg, var(--navy-blue) 0%, var(--navy-light) 100%);
+    padding: 12px 20px;
+    background: var(--navy-blue);
     color: white;
     border: none;
-    border-radius: 12px;
-    font-size: 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
-    margin-top: 10px;
+    transition: all 0.15s ease;
+    margin-top: 8px;
 }
 
 .tool-calculate-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 20px rgba(30, 58, 95, 0.3);
+    background: var(--navy-dark);
 }
 
 /* Tool Results */
