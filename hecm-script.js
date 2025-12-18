@@ -4,7 +4,7 @@ const HECMCalculator = {
     programDescriptions: {
         'hecm-standard': {
             name: 'HECM Standard',
-            description: 'The traditional FHA-insured reverse mortgage. Available to homeowners 62+. Includes upfront MIP (2%) and annual MIP (0.5%). Maximum claim amount of $1,149,825 (2024).',
+            description: 'The traditional FHA-insured reverse mortgage. Available to homeowners 62+. Includes upfront MIP (2%) and annual MIP (0.5%). Maximum claim amount of $1,209,750 (2025).',
             mipRate: 2.0,
             annualMipRate: 0.5
         },
@@ -61,7 +61,7 @@ const HECMCalculator = {
             initialRate: parseFloat(panel.querySelector('.initial-rate')?.value) || 5.5,
             margin: parseFloat(panel.querySelector('.margin')?.value) || 2.0,
             lenderCredit: parseFloat(panel.querySelector('.lender-credit')?.value) || 0,
-            fhaLimit: parseFloat(panel.querySelector('.fha-limit')?.value) || 1149825,
+            fhaLimit: parseFloat(panel.querySelector('.fha-limit')?.value) || 1209750,
             plf: parseFloat(panel.querySelector('.plf')?.value) || 52.4,
             paymentType: paymentType,
             termMonths: parseFloat(panel.querySelector('.term-months')?.value) || 120,
@@ -357,7 +357,8 @@ const HECMCalculator = {
             initialMIP,
             existingMortgage: data.existingMortgage,
             interestRate: data.interestRate,
-            paymentType: data.paymentType
+            paymentType: data.paymentType,
+            annualMipRate: annualMipRate
         };
 
         // Update comparison if both scenarios calculated
@@ -595,8 +596,8 @@ const HECMChartManager = {
             const initialBalance1 = r1.totalClosingCosts + r1.existingMortgage;
             const initialBalance2 = r2.totalClosingCosts + r2.existingMortgage;
 
-            const balances1 = years.map(y => HECMCalculator.calculateBalanceProjectionWithMip(initialBalance1, r1.interestRate, 0.5, y));
-            const balances2 = years.map(y => HECMCalculator.calculateBalanceProjectionWithMip(initialBalance2, r2.interestRate, 0.5, y));
+            const balances1 = years.map(y => HECMCalculator.calculateBalanceProjectionWithMip(initialBalance1, r1.interestRate, r1.annualMipRate || 0.5, y));
+            const balances2 = years.map(y => HECMCalculator.calculateBalanceProjectionWithMip(initialBalance2, r2.interestRate, r2.annualMipRate || 0.5, y));
 
             this.charts.balance = new Chart(balanceCtx, {
                 type: 'line',
@@ -656,8 +657,8 @@ const HECMChartManager = {
 
             const homeValues1 = years.map(y => homeValue1 * Math.pow(1 + appreciation, y));
             const homeValues2 = years.map(y => homeValue2 * Math.pow(1 + appreciation, y));
-            const balances1 = years.map(y => HECMCalculator.calculateBalanceProjectionWithMip(initialBalance1, r1.interestRate, 0.5, y));
-            const balances2 = years.map(y => HECMCalculator.calculateBalanceProjectionWithMip(initialBalance2, r2.interestRate, 0.5, y));
+            const balances1 = years.map(y => HECMCalculator.calculateBalanceProjectionWithMip(initialBalance1, r1.interestRate, r1.annualMipRate || 0.5, y));
+            const balances2 = years.map(y => HECMCalculator.calculateBalanceProjectionWithMip(initialBalance2, r2.interestRate, r2.annualMipRate || 0.5, y));
             const equities1 = years.map((y, i) => Math.max(0, homeValues1[i] - balances1[i]));
             const equities2 = years.map((y, i) => Math.max(0, homeValues2[i] - balances2[i]));
 
@@ -720,8 +721,8 @@ const HECMChartManager = {
         if (locCtx && (r1.locAmount > 0 || r2.locAmount > 0)) {
             const years = Array.from({length: 31}, (_, i) => i);
 
-            const loc1 = years.map(y => r1.locAmount > 0 ? HECMCalculator.calculateLOCGrowthWithMip(r1.locAmount, r1.interestRate, 0.5, y) : 0);
-            const loc2 = years.map(y => r2.locAmount > 0 ? HECMCalculator.calculateLOCGrowthWithMip(r2.locAmount, r2.interestRate, 0.5, y) : 0);
+            const loc1 = years.map(y => r1.locAmount > 0 ? HECMCalculator.calculateLOCGrowthWithMip(r1.locAmount, r1.interestRate, r1.annualMipRate || 0.5, y) : 0);
+            const loc2 = years.map(y => r2.locAmount > 0 ? HECMCalculator.calculateLOCGrowthWithMip(r2.locAmount, r2.interestRate, r2.annualMipRate || 0.5, y) : 0);
 
             this.charts.loc = new Chart(locCtx, {
                 type: 'line',
@@ -787,12 +788,12 @@ const HECMChartManager = {
         // Calculate projections
         const projHomeValue1 = homeValue1 * Math.pow(1 + appreciation, years);
         const projHomeValue2 = homeValue2 * Math.pow(1 + appreciation, years);
-        const projBalance1 = HECMCalculator.calculateBalanceProjectionWithMip(initialBalance1, r1.interestRate, 0.5, years);
-        const projBalance2 = HECMCalculator.calculateBalanceProjectionWithMip(initialBalance2, r2.interestRate, 0.5, years);
+        const projBalance1 = HECMCalculator.calculateBalanceProjectionWithMip(initialBalance1, r1.interestRate, r1.annualMipRate || 0.5, years);
+        const projBalance2 = HECMCalculator.calculateBalanceProjectionWithMip(initialBalance2, r2.interestRate, r2.annualMipRate || 0.5, years);
         const projEquity1 = Math.max(0, projHomeValue1 - projBalance1);
         const projEquity2 = Math.max(0, projHomeValue2 - projBalance2);
-        const projLOC1 = r1.locAmount > 0 ? HECMCalculator.calculateLOCGrowthWithMip(r1.locAmount, r1.interestRate, 0.5, years) : 0;
-        const projLOC2 = r2.locAmount > 0 ? HECMCalculator.calculateLOCGrowthWithMip(r2.locAmount, r2.interestRate, 0.5, years) : 0;
+        const projLOC1 = r1.locAmount > 0 ? HECMCalculator.calculateLOCGrowthWithMip(r1.locAmount, r1.interestRate, r1.annualMipRate || 0.5, years) : 0;
+        const projLOC2 = r2.locAmount > 0 ? HECMCalculator.calculateLOCGrowthWithMip(r2.locAmount, r2.interestRate, r2.annualMipRate || 0.5, years) : 0;
         const projInterest1 = projBalance1 - initialBalance1;
         const projInterest2 = projBalance2 - initialBalance2;
 
@@ -850,12 +851,12 @@ const HECMChartManager = {
         // Calculate projected values
         const projHomeValue1 = homeValue1 * Math.pow(1 + appreciation, years);
         const projHomeValue2 = homeValue2 * Math.pow(1 + appreciation, years);
-        const projBalance1 = HECMCalculator.calculateBalanceProjectionWithMip(initialBalance1, r1.interestRate, 0.5, years);
-        const projBalance2 = HECMCalculator.calculateBalanceProjectionWithMip(initialBalance2, r2.interestRate, 0.5, years);
+        const projBalance1 = HECMCalculator.calculateBalanceProjectionWithMip(initialBalance1, r1.interestRate, r1.annualMipRate || 0.5, years);
+        const projBalance2 = HECMCalculator.calculateBalanceProjectionWithMip(initialBalance2, r2.interestRate, r2.annualMipRate || 0.5, years);
         const projEquity1 = Math.max(0, projHomeValue1 - projBalance1);
         const projEquity2 = Math.max(0, projHomeValue2 - projBalance2);
-        const projLOC1 = r1.locAmount > 0 ? HECMCalculator.calculateLOCGrowthWithMip(r1.locAmount, r1.interestRate, 0.5, years) : 0;
-        const projLOC2 = r2.locAmount > 0 ? HECMCalculator.calculateLOCGrowthWithMip(r2.locAmount, r2.interestRate, 0.5, years) : 0;
+        const projLOC1 = r1.locAmount > 0 ? HECMCalculator.calculateLOCGrowthWithMip(r1.locAmount, r1.interestRate, r1.annualMipRate || 0.5, years) : 0;
+        const projLOC2 = r2.locAmount > 0 ? HECMCalculator.calculateLOCGrowthWithMip(r2.locAmount, r2.interestRate, r2.annualMipRate || 0.5, years) : 0;
         const projInterest1 = projBalance1 - initialBalance1;
         const projInterest2 = projBalance2 - initialBalance2;
 
@@ -983,8 +984,8 @@ const HECMChartManager = {
         }
 
         // Equity preservation at selected year
-        const projBalance1 = HECMCalculator.calculateBalanceProjectionWithMip(initialBalance1, r1.interestRate, 0.5, years);
-        const projBalance2 = HECMCalculator.calculateBalanceProjectionWithMip(initialBalance2, r2.interestRate, 0.5, years);
+        const projBalance1 = HECMCalculator.calculateBalanceProjectionWithMip(initialBalance1, r1.interestRate, r1.annualMipRate || 0.5, years);
+        const projBalance2 = HECMCalculator.calculateBalanceProjectionWithMip(initialBalance2, r2.interestRate, r2.annualMipRate || 0.5, years);
         const projEquity1 = Math.max(0, homeValue1 * Math.pow(1 + appreciation, years) - projBalance1);
         const projEquity2 = Math.max(0, homeValue2 * Math.pow(1 + appreciation, years) - projBalance2);
 
@@ -1622,7 +1623,7 @@ const ScenarioManager = {
                 initialRate: panel.querySelector('.initial-rate')?.value || '5.5',
                 margin: panel.querySelector('.margin')?.value || '2.0',
                 lenderCredit: panel.querySelector('.lender-credit')?.value || '0',
-                fhaLimit: panel.querySelector('.fha-limit')?.value || '1149825',
+                fhaLimit: panel.querySelector('.fha-limit')?.value || '1209750',
                 plf: panel.querySelector('.plf')?.value || '52.4',
                 paymentType: panel.querySelector(`input[name="payment-type-${id}"]:checked`)?.value || 'lump-sum',
                 termMonths: panel.querySelector('.term-months')?.value || '120',
@@ -1977,7 +1978,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         fhaLimitInput.placeholder = 'No FHA limit';
                     } else {
                         fhaLimitInput.setAttribute('readonly', true);
-                        fhaLimitInput.value = 1149825;
+                        fhaLimitInput.value = 1209750;
                     }
                 }
 
