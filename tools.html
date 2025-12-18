@@ -1596,6 +1596,131 @@
         </footer>
     </div>
 
+    <!-- Settings Panel -->
+    <div class="settings-panel hidden" id="settingsPanel">
+        <div class="settings-header">
+            <h2>Settings</h2>
+            <button class="close-settings" id="closeSettings">&times;</button>
+        </div>
+
+        <div class="settings-body">
+            <!-- Appearance Settings -->
+            <div class="settings-section">
+                <h3>Appearance</h3>
+                <p class="settings-note">Customize the look and feel of the application</p>
+
+                <div class="branding-toggle">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="darkModeToggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="toggle-text">Dark Mode</span>
+                </div>
+            </div>
+
+            <!-- Account Info -->
+            <div class="settings-section">
+                <h3>My Account</h3>
+                <p class="settings-note">Your information for documents and contact details</p>
+
+                <div class="settings-form">
+                    <div class="form-group">
+                        <label>Your Name</label>
+                        <input type="text" id="loName" placeholder="John Smith">
+                    </div>
+                    <div class="form-group">
+                        <label>Company Name</label>
+                        <input type="text" id="loCompany" placeholder="ABC Mortgage">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" id="loPhone" placeholder="(555) 123-4567">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="loEmail" placeholder="john@abcmortgage.com">
+                    </div>
+                    <div class="form-group">
+                        <label>NMLS #</label>
+                        <input type="text" id="loNMLS" placeholder="123456">
+                    </div>
+                </div>
+
+                <button class="save-settings-btn" id="saveLOSettings">Save Loan Officer Info</button>
+            </div>
+
+            <!-- Lender Information -->
+            <div class="settings-section">
+                <h3>Lender Information</h3>
+                <p class="settings-note">Enter your lending institution's details for documents and branding</p>
+
+                <div class="settings-form">
+                    <div class="form-group">
+                        <label>Lender Name</label>
+                        <input type="text" id="lenderName" placeholder="First National Bank">
+                    </div>
+                    <div class="form-group">
+                        <label>Lender NMLS #</label>
+                        <input type="text" id="lenderNMLS" placeholder="123456">
+                    </div>
+                    <div class="form-group">
+                        <label>Main Phone</label>
+                        <input type="tel" id="lenderPhone" placeholder="(800) 555-1234">
+                    </div>
+                    <div class="form-group">
+                        <label>Website</label>
+                        <input type="url" id="lenderWebsite" placeholder="www.firstnationalbank.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Address</label>
+                        <input type="text" id="lenderAddress" placeholder="123 Main Street, Suite 100">
+                    </div>
+                    <div class="form-group">
+                        <label>City, State ZIP</label>
+                        <input type="text" id="lenderCityStateZip" placeholder="New York, NY 10001">
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Equal Housing Lender Statement</label>
+                        <textarea id="lenderDisclaimer" rows="2" placeholder="Equal Housing Lender. NMLS# 123456"></textarea>
+                    </div>
+                </div>
+
+                <button class="save-settings-btn" id="saveLenderSettings">Save Lender Info</button>
+            </div>
+
+            <!-- Help & Support Section -->
+            <div class="settings-section help-section">
+                <h3>Help & Support</h3>
+                <p class="settings-note">Get help using LoanDr. or contact us with questions</p>
+
+                <div class="help-links">
+                    <a href="help.html" class="help-center-link">
+                        <svg class="help-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                        <div class="help-link-content">
+                            <strong>Help Center</strong>
+                            <span>Guides, FAQs, glossary, and tutorials</span>
+                        </div>
+                        <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                    </a>
+                    <a href="help.html#contact" class="help-center-link">
+                        <svg class="help-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                        <div class="help-link-content">
+                            <strong>Contact Support</strong>
+                            <span>Send us a message</span>
+                        </div>
+                        <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                    </a>
+                </div>
+
+                <div class="help-version">
+                    <small>LoanDr. v1.0 | Made for Loan Officers</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="settings-overlay hidden" id="settingsOverlay"></div>
+
+    <script src="script.js"></script>
     <script src="tools.js"></script>
 </body>
 </html>
