@@ -122,7 +122,7 @@ header {
 }
 
 .logo-img-header {
-    height: 100px;
+    height: 150px;
     width: auto;
     object-fit: contain;
 }
@@ -162,7 +162,7 @@ header {
     }
 
     .logo-img-header {
-        height: 70px;
+        height: 100px;
     }
 
     .logo-icon svg {
