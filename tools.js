@@ -3912,3 +3912,320 @@ function escapeHtml(text) {
 
 // Initialize chatbot when DOM is ready
 document.addEventListener('DOMContentLoaded', initChatbot);
+
+// ============================================
+// PROPERTY FLIP CALCULATOR
+// ============================================
+
+let flipChart = null;
+
+function calculateFlip() {
+    // Get all input values
+    const purchasePrice = parseFloat(document.getElementById('flipPurchasePrice').value) || 0;
+    const arv = parseFloat(document.getElementById('flipARV').value) || 0;
+    const downPaymentPercent = parseFloat(document.getElementById('flipDownPayment').value) || 20;
+    const interestRate = parseFloat(document.getElementById('flipInterestRate').value) || 8;
+    const loanTermMonths = parseFloat(document.getElementById('flipLoanTerm').value) || 6;
+
+    // Closing & Acquisition Costs
+    const buyerClosingPercent = parseFloat(document.getElementById('flipBuyerClosing').value) || 2;
+    const sellerClosingPercent = parseFloat(document.getElementById('flipSellerClosing').value) || 8;
+    const agentCommissionPercent = parseFloat(document.getElementById('flipAgentCommission').value) || 6;
+
+    // Renovation Costs
+    const renovationBudget = parseFloat(document.getElementById('flipRenovationBudget').value) || 0;
+    const contingencyPercent = parseFloat(document.getElementById('flipContingency').value) || 10;
+    const permitCosts = parseFloat(document.getElementById('flipPermitCosts').value) || 0;
+    const stagingCosts = parseFloat(document.getElementById('flipStagingCosts').value) || 0;
+
+    // Holding Costs
+    const holdTimeMonths = parseFloat(document.getElementById('flipHoldTime').value) || 6;
+    const propertyTaxes = parseFloat(document.getElementById('flipPropertyTaxes').value) || 0;
+    const insurance = parseFloat(document.getElementById('flipInsurance').value) || 0;
+    const utilities = parseFloat(document.getElementById('flipUtilities').value) || 0;
+    const hoaFees = parseFloat(document.getElementById('flipHOA').value) || 0;
+
+    // Validation
+    if (purchasePrice <= 0 || arv <= 0) {
+        showToast('Please enter valid Purchase Price and ARV values', 'error');
+        return;
+    }
+
+    // Calculate loan details
+    const downPayment = purchasePrice * (downPaymentPercent / 100);
+    const loanAmount = purchasePrice - downPayment;
+    const monthlyInterestRate = interestRate / 100 / 12;
+    const monthlyPayment = loanAmount * (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, loanTermMonths)) /
+                           (Math.pow(1 + monthlyInterestRate, loanTermMonths) - 1);
+
+    // Calculate all costs
+    const buyerClosingCosts = purchasePrice * (buyerClosingPercent / 100);
+    const sellerClosingCosts = arv * (sellerClosingPercent / 100);
+    const agentCommission = arv * (agentCommissionPercent / 100);
+
+    const contingency = renovationBudget * (contingencyPercent / 100);
+    const totalRenovationCosts = renovationBudget + contingency + permitCosts + stagingCosts;
+
+    const totalHoldingCosts = (monthlyPayment + propertyTaxes + insurance + utilities + hoaFees) * holdTimeMonths;
+    const loanInterestCosts = monthlyPayment * holdTimeMonths - (loanAmount / loanTermMonths * holdTimeMonths);
+
+    // Total acquisition cost
+    const totalAcquisitionCost = purchasePrice + buyerClosingCosts;
+
+    // Total selling costs
+    const totalSellingCosts = sellerClosingCosts + agentCommission;
+
+    // Total project cost
+    const totalProjectCost = totalAcquisitionCost + totalRenovationCosts + totalHoldingCosts;
+
+    // Cash invested (down payment + closing costs + renovation + holding costs)
+    const cashInvested = downPayment + buyerClosingCosts + totalRenovationCosts + totalHoldingCosts;
+
+    // Net proceeds from sale
+    const grossSaleProceeds = arv;
+    const netSaleProceeds = grossSaleProceeds - totalSellingCosts - loanAmount;
+
+    // Profit calculation
+    const profit = netSaleProceeds - cashInvested;
+
+    // ROI calculations
+    const roi = (profit / cashInvested) * 100;
+    const annualizedROI = (roi / holdTimeMonths) * 12;
+    const profitMargin = (profit / arv) * 100;
+
+    // 70% Rule Check
+    const maxAllowableOffer = (arv * 0.70) - totalRenovationCosts;
+    const seventyPercentRulePassed = purchasePrice <= maxAllowableOffer;
+
+    // Minimum margin check (15% is typical minimum)
+    const minMarginPassed = profitMargin >= 15;
+
+    // Determine verdict
+    let verdictClass, verdictIcon, verdictText, verdictSubtitle;
+    if (profit <= 0) {
+        verdictClass = 'risky';
+        verdictIcon = '⛔';
+        verdictText = 'DO NOT FLIP';
+        verdictSubtitle = 'This deal will lose money. Walk away.';
+    } else if (profitMargin < 10) {
+        verdictClass = 'risky';
+        verdictIcon = '⚠️';
+        verdictText = 'HIGH RISK';
+        verdictSubtitle = 'Margins are too thin. Small issues could wipe out profits.';
+    } else if (profitMargin < 15) {
+        verdictClass = 'marginal';
+        verdictIcon = '🤔';
+        verdictText = 'MARGINAL DEAL';
+        verdictSubtitle = 'Proceed with caution. Build in more contingency.';
+    } else if (profitMargin < 25) {
+        verdictClass = 'good';
+        verdictIcon = '👍';
+        verdictText = 'GOOD DEAL';
+        verdictSubtitle = 'Solid profit potential with reasonable risk.';
+    } else {
+        verdictClass = 'excellent';
+        verdictIcon = '🏆';
+        verdictText = 'EXCELLENT DEAL';
+        verdictSubtitle = 'Strong margins and healthy profit potential!';
+    }
+
+    // Show results
+    const resultsContainer = document.getElementById('flipResults');
+    resultsContainer.style.display = 'block';
+
+    // Update verdict
+    const verdictEl = document.getElementById('flipVerdict');
+    verdictEl.className = `flip-verdict ${verdictClass}`;
+    verdictEl.innerHTML = `
+        <div class="verdict-icon">${verdictIcon}</div>
+        <div class="verdict-text">${verdictText}</div>
+        <div class="verdict-subtitle">${verdictSubtitle}</div>
+    `;
+
+    // Update metrics
+    document.getElementById('flipProfit').textContent = formatCurrency(profit);
+    document.getElementById('flipProfit').className = `flip-metric-value ${profit >= 0 ? 'positive' : 'negative'}`;
+
+    document.getElementById('flipROI').textContent = roi.toFixed(1) + '%';
+    document.getElementById('flipROI').className = `flip-metric-value ${roi >= 0 ? 'positive' : 'negative'}`;
+
+    document.getElementById('flipCashOnCash').textContent = annualizedROI.toFixed(1) + '%';
+    document.getElementById('flipCashOnCash').className = `flip-metric-value ${annualizedROI >= 0 ? 'positive' : 'negative'}`;
+
+    document.getElementById('flipProfitMargin').textContent = profitMargin.toFixed(1) + '%';
+    document.getElementById('flipProfitMargin').className = `flip-metric-value ${profitMargin >= 15 ? 'positive' : profitMargin >= 10 ? '' : 'negative'}`;
+
+    // Update breakdown
+    document.getElementById('breakdownPurchase').textContent = formatCurrency(purchasePrice);
+    document.getElementById('breakdownBuyerClosing').textContent = formatCurrency(buyerClosingCosts);
+    document.getElementById('breakdownAcquisition').textContent = formatCurrency(totalAcquisitionCost);
+    document.getElementById('breakdownRenovation').textContent = formatCurrency(renovationBudget);
+    document.getElementById('breakdownContingency').textContent = formatCurrency(contingency);
+    document.getElementById('breakdownPermits').textContent = formatCurrency(permitCosts);
+    document.getElementById('breakdownStaging').textContent = formatCurrency(stagingCosts);
+    document.getElementById('breakdownRenoTotal').textContent = formatCurrency(totalRenovationCosts);
+    document.getElementById('breakdownLoanPayments').textContent = formatCurrency(monthlyPayment * holdTimeMonths);
+    document.getElementById('breakdownTaxes').textContent = formatCurrency(propertyTaxes * holdTimeMonths);
+    document.getElementById('breakdownInsurance').textContent = formatCurrency(insurance * holdTimeMonths);
+    document.getElementById('breakdownUtilities').textContent = formatCurrency(utilities * holdTimeMonths);
+    document.getElementById('breakdownHoldingTotal').textContent = formatCurrency(totalHoldingCosts);
+    document.getElementById('breakdownARV').textContent = formatCurrency(arv);
+    document.getElementById('breakdownSellerClosing').textContent = formatCurrency(sellerClosingCosts);
+    document.getElementById('breakdownCommission').textContent = formatCurrency(agentCommission);
+    document.getElementById('breakdownTotalInvestment').textContent = formatCurrency(cashInvested);
+    document.getElementById('breakdownNetProfit').textContent = formatCurrency(profit);
+    document.getElementById('breakdownNetProfit').className = `breakdown-value ${profit >= 0 ? 'income' : 'expense'}`;
+
+    // Update rules
+    const rule70El = document.getElementById('rule70');
+    rule70El.className = `flip-rule-card ${seventyPercentRulePassed ? 'pass' : 'fail'}`;
+    document.getElementById('rule70Status').textContent = seventyPercentRulePassed ? '✓' : '✗';
+    document.getElementById('rule70Target').textContent = formatCurrency(maxAllowableOffer);
+    document.getElementById('rule70Actual').textContent = formatCurrency(purchasePrice);
+
+    const ruleMarginEl = document.getElementById('ruleMargin');
+    ruleMarginEl.className = `flip-rule-card ${minMarginPassed ? 'pass' : profitMargin >= 10 ? 'warning' : 'fail'}`;
+    document.getElementById('ruleMarginStatus').textContent = minMarginPassed ? '✓' : profitMargin >= 10 ? '!' : '✗';
+    document.getElementById('ruleMarginActual').textContent = profitMargin.toFixed(1) + '%';
+
+    // Generate sensitivity analysis
+    generateSensitivityAnalysis(arv, purchasePrice, totalRenovationCosts, totalHoldingCosts, totalSellingCosts, loanAmount, cashInvested);
+
+    // Generate chart
+    generateFlipChart(totalAcquisitionCost, totalRenovationCosts, totalHoldingCosts, totalSellingCosts);
+
+    // Generate recommendations
+    generateFlipRecommendations(profit, profitMargin, seventyPercentRulePassed, minMarginPassed, holdTimeMonths, renovationBudget, arv);
+
+    // Scroll to results
+    resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    showToast('Flip analysis complete!', 'success');
+}
+
+function generateSensitivityAnalysis(arv, purchasePrice, renovationCosts, holdingCosts, sellingCosts, loanAmount, cashInvested) {
+    const tbody = document.getElementById('sensitivityBody');
+    tbody.innerHTML = '';
+
+    // Analyze different ARV scenarios
+    const arvVariations = [-15, -10, -5, 0, 5, 10];
+
+    arvVariations.forEach(variation => {
+        const adjustedARV = arv * (1 + variation / 100);
+        const adjustedSellingCosts = adjustedARV * 0.14; // Approx seller closing + commission
+        const adjustedNetProceeds = adjustedARV - adjustedSellingCosts - loanAmount;
+        const adjustedProfit = adjustedNetProceeds - cashInvested;
+        const adjustedROI = (adjustedProfit / cashInvested) * 100;
+        const adjustedMargin = (adjustedProfit / adjustedARV) * 100;
+
+        const row = document.createElement('tr');
+        if (variation === 0) row.className = 'current';
+
+        row.innerHTML = `
+            <td>${variation >= 0 ? '+' : ''}${variation}%</td>
+            <td>${formatCurrency(adjustedARV)}</td>
+            <td class="${adjustedProfit >= 0 ? 'profit-positive' : 'profit-negative'}">${formatCurrency(adjustedProfit)}</td>
+            <td class="${adjustedROI >= 0 ? 'profit-positive' : 'profit-negative'}">${adjustedROI.toFixed(1)}%</td>
+            <td class="${adjustedMargin >= 15 ? 'profit-positive' : adjustedMargin >= 0 ? '' : 'profit-negative'}">${adjustedMargin.toFixed(1)}%</td>
+        `;
+
+        tbody.appendChild(row);
+    });
+}
+
+function generateFlipChart(acquisition, renovation, holding, selling) {
+    const ctx = document.getElementById('flipCostChart');
+
+    if (flipChart) {
+        flipChart.destroy();
+    }
+
+    flipChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Acquisition', 'Renovation', 'Holding Costs', 'Selling Costs'],
+            datasets: [{
+                data: [acquisition, renovation, holding, selling],
+                backgroundColor: [
+                    'rgba(30, 58, 95, 0.8)',
+                    'rgba(245, 158, 11, 0.8)',
+                    'rgba(139, 92, 246, 0.8)',
+                    'rgba(239, 68, 68, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(30, 58, 95, 1)',
+                    'rgba(245, 158, 11, 1)',
+                    'rgba(139, 92, 246, 1)',
+                    'rgba(239, 68, 68, 1)'
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((context.raw / total) * 100).toFixed(1);
+                            return `${context.label}: ${formatCurrency(context.raw)} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function generateFlipRecommendations(profit, profitMargin, rule70Passed, marginPassed, holdTime, renovationBudget, arv) {
+    const container = document.getElementById('flipRecommendations');
+    const recommendations = [];
+
+    if (profit <= 0) {
+        recommendations.push('This deal will lose money. Consider negotiating a lower purchase price or walking away.');
+    }
+
+    if (!rule70Passed) {
+        recommendations.push('The purchase price exceeds the 70% rule. Try to negotiate a lower price or find ways to reduce renovation costs.');
+    }
+
+    if (!marginPassed && profitMargin > 0) {
+        recommendations.push('Profit margin is below the recommended 15%. Look for ways to increase ARV or reduce costs.');
+    }
+
+    if (holdTime > 6) {
+        recommendations.push('Extended holding time increases risk and costs. Consider ways to speed up the renovation timeline.');
+    }
+
+    if (renovationBudget > arv * 0.3) {
+        recommendations.push('Renovation costs are high relative to ARV. Ensure the improvements will actually add value.');
+    }
+
+    if (profitMargin >= 25) {
+        recommendations.push('Excellent profit margins! Consider moving quickly to secure this property.');
+    }
+
+    if (profitMargin >= 15 && profitMargin < 25) {
+        recommendations.push('Good profit potential. Ensure you have accurate renovation estimates and a reliable contractor.');
+    }
+
+    // Always add some general advice
+    recommendations.push('Get multiple contractor quotes and add 10-15% contingency for unexpected issues.');
+    recommendations.push('Verify ARV with recent comparable sales in the same neighborhood.');
+
+    container.innerHTML = `
+        <h5>📋 Recommendations</h5>
+        <ul>
+            ${recommendations.slice(0, 5).map(rec => `<li>${rec}</li>`).join('')}
+        </ul>
+    `;
+}

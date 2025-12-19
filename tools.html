@@ -1970,6 +1970,434 @@
                 </div>
             </div>
 
+            <!-- ==================== PROPERTY FLIP CALCULATOR ==================== -->
+
+            <!-- Property Flip Calculator -->
+            <div class="tool-card featured-tool flip-calculator" data-category="analysis" id="flip-calculator-tool">
+                <div class="tool-card-header">
+                    <label class="tool-select-checkbox" title="Select for report">
+                        <input type="checkbox" class="tool-checkbox" data-tool="flip-calculator">
+                        <span class="checkbox-custom"></span>
+                    </label>
+                    <div class="tool-icon flip">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                            <polyline points="9 22 9 12 15 12 15 22"/>
+                            <path d="M14 2v4"/>
+                            <path d="M18 6l-4-4"/>
+                        </svg>
+                    </div>
+                    <div class="tool-title">
+                        <h3>Property Flip Analyzer</h3>
+                        <span class="tool-badge featured">New</span>
+                    </div>
+                    <button class="tool-expand-btn" aria-label="Expand">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </button>
+                </div>
+                <p class="tool-description">Analyze if a property is worth flipping - calculate ROI, holding costs, and projected profit</p>
+                <div class="tool-content">
+                    <div class="flip-intro">
+                        <div class="intro-icon">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                                <path d="M2 17l10 5 10-5"/>
+                                <path d="M2 12l10 5 10-5"/>
+                            </svg>
+                        </div>
+                        <p>Enter the property details and costs to analyze whether this flip will be profitable. We'll calculate your potential ROI, break-even point, and provide a recommendation.</p>
+                    </div>
+
+                    <div class="tool-section-divider">
+                        <span>Purchase Details</span>
+                    </div>
+                    <div class="tool-form-grid">
+                        <div class="tool-input-group">
+                            <label>Purchase Price</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="flip-purchase-price" placeholder="200,000">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>After Repair Value (ARV)</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="flip-arv" placeholder="300,000">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Down Payment</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="flip-down-payment" placeholder="40,000">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Loan Interest Rate</label>
+                            <div class="input-with-icon">
+                                <input type="number" id="flip-interest-rate" placeholder="8.5" step="0.125">
+                                <span class="input-icon right">%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tool-section-divider">
+                        <span>Closing & Acquisition Costs</span>
+                    </div>
+                    <div class="tool-form-grid">
+                        <div class="tool-input-group">
+                            <label>Buying Closing Costs</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="flip-buy-closing" placeholder="5,000">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Selling Closing Costs</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="flip-sell-closing" placeholder="8,000">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Agent Commission</label>
+                            <div class="input-with-icon">
+                                <input type="number" id="flip-commission" placeholder="6" step="0.5" value="6">
+                                <span class="input-icon right">%</span>
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Other Acquisition Costs</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="flip-other-acquisition" placeholder="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tool-section-divider">
+                        <span>Renovation Costs</span>
+                    </div>
+                    <div class="tool-form-grid">
+                        <div class="tool-input-group">
+                            <label>Total Renovation Budget</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="flip-renovation" placeholder="50,000">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Contingency Buffer</label>
+                            <div class="input-with-icon">
+                                <input type="number" id="flip-contingency" placeholder="15" value="15">
+                                <span class="input-icon right">%</span>
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Permits & Fees</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="flip-permits" placeholder="2,000">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Staging Costs</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="flip-staging" placeholder="3,000">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tool-section-divider">
+                        <span>Holding Costs</span>
+                    </div>
+                    <div class="tool-form-grid">
+                        <div class="tool-input-group">
+                            <label>Estimated Hold Time</label>
+                            <div class="input-with-icon">
+                                <input type="number" id="flip-hold-months" placeholder="6" value="6">
+                                <span class="input-icon right">months</span>
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Monthly Property Taxes</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="flip-taxes" placeholder="400">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Monthly Insurance</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="flip-insurance" placeholder="200">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Monthly Utilities</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="flip-utilities" placeholder="150">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Monthly HOA</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="flip-hoa" placeholder="0">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Other Monthly Costs</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="flip-other-monthly" placeholder="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="tool-calculate-btn flip-calc-btn" onclick="calculateFlip()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                            <path d="M2 17l10 5 10-5"/>
+                            <path d="M2 12l10 5 10-5"/>
+                        </svg>
+                        Analyze This Flip
+                    </button>
+
+                    <div class="tool-results flip-results" id="flip-results">
+                        <!-- Verdict Banner -->
+                        <div class="flip-verdict" id="flip-verdict">
+                            <div class="verdict-icon" id="flip-verdict-icon"></div>
+                            <div class="verdict-content">
+                                <h3 id="flip-verdict-title">Analyzing...</h3>
+                                <p id="flip-verdict-text"></p>
+                            </div>
+                        </div>
+
+                        <!-- Key Metrics -->
+                        <div class="flip-metrics">
+                            <div class="flip-metric primary">
+                                <div class="metric-value" id="flip-profit">$0</div>
+                                <div class="metric-label">Net Profit</div>
+                            </div>
+                            <div class="flip-metric">
+                                <div class="metric-value" id="flip-roi">0%</div>
+                                <div class="metric-label">Return on Investment</div>
+                            </div>
+                            <div class="flip-metric">
+                                <div class="metric-value" id="flip-cash-roi">0%</div>
+                                <div class="metric-label">Cash-on-Cash Return</div>
+                            </div>
+                            <div class="flip-metric">
+                                <div class="metric-value" id="flip-profit-margin">0%</div>
+                                <div class="metric-label">Profit Margin</div>
+                            </div>
+                        </div>
+
+                        <!-- Cost Breakdown -->
+                        <div class="flip-breakdown">
+                            <h4>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
+                                    <path d="M9 12l2 2 4-4"/>
+                                </svg>
+                                Complete Cost Breakdown
+                            </h4>
+                            <div class="breakdown-grid">
+                                <div class="breakdown-category">
+                                    <div class="category-header">
+                                        <span class="category-name">Acquisition Costs</span>
+                                        <span class="category-total" id="flip-total-acquisition">$0</span>
+                                    </div>
+                                    <div class="category-items">
+                                        <div class="category-item">
+                                            <span>Purchase Price</span>
+                                            <span id="flip-item-purchase">$0</span>
+                                        </div>
+                                        <div class="category-item">
+                                            <span>Buying Closing Costs</span>
+                                            <span id="flip-item-buy-closing">$0</span>
+                                        </div>
+                                        <div class="category-item">
+                                            <span>Other Acquisition</span>
+                                            <span id="flip-item-other-acq">$0</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="breakdown-category">
+                                    <div class="category-header">
+                                        <span class="category-name">Renovation Costs</span>
+                                        <span class="category-total" id="flip-total-renovation">$0</span>
+                                    </div>
+                                    <div class="category-items">
+                                        <div class="category-item">
+                                            <span>Renovation Budget</span>
+                                            <span id="flip-item-reno">$0</span>
+                                        </div>
+                                        <div class="category-item">
+                                            <span>Contingency</span>
+                                            <span id="flip-item-contingency">$0</span>
+                                        </div>
+                                        <div class="category-item">
+                                            <span>Permits & Fees</span>
+                                            <span id="flip-item-permits">$0</span>
+                                        </div>
+                                        <div class="category-item">
+                                            <span>Staging</span>
+                                            <span id="flip-item-staging">$0</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="breakdown-category">
+                                    <div class="category-header">
+                                        <span class="category-name">Holding Costs</span>
+                                        <span class="category-total" id="flip-total-holding">$0</span>
+                                    </div>
+                                    <div class="category-items">
+                                        <div class="category-item">
+                                            <span>Loan Interest</span>
+                                            <span id="flip-item-interest">$0</span>
+                                        </div>
+                                        <div class="category-item">
+                                            <span>Property Taxes</span>
+                                            <span id="flip-item-taxes">$0</span>
+                                        </div>
+                                        <div class="category-item">
+                                            <span>Insurance</span>
+                                            <span id="flip-item-insurance">$0</span>
+                                        </div>
+                                        <div class="category-item">
+                                            <span>Utilities & Other</span>
+                                            <span id="flip-item-utilities">$0</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="breakdown-category">
+                                    <div class="category-header">
+                                        <span class="category-name">Selling Costs</span>
+                                        <span class="category-total" id="flip-total-selling">$0</span>
+                                    </div>
+                                    <div class="category-items">
+                                        <div class="category-item">
+                                            <span>Agent Commission</span>
+                                            <span id="flip-item-commission">$0</span>
+                                        </div>
+                                        <div class="category-item">
+                                            <span>Selling Closing Costs</span>
+                                            <span id="flip-item-sell-closing">$0</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="breakdown-totals">
+                                <div class="total-row">
+                                    <span>Total Investment</span>
+                                    <span id="flip-total-investment">$0</span>
+                                </div>
+                                <div class="total-row">
+                                    <span>Cash Required</span>
+                                    <span id="flip-cash-required">$0</span>
+                                </div>
+                                <div class="total-row sale">
+                                    <span>Sale Price (ARV)</span>
+                                    <span id="flip-sale-price">$0</span>
+                                </div>
+                                <div class="total-row profit">
+                                    <span>Net Profit</span>
+                                    <span id="flip-net-profit">$0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 70% Rule Check -->
+                        <div class="flip-rules">
+                            <h4>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                </svg>
+                                Flip Rules Analysis
+                            </h4>
+                            <div class="rules-grid">
+                                <div class="rule-card" id="rule-70">
+                                    <div class="rule-status" id="rule-70-status"></div>
+                                    <div class="rule-content">
+                                        <div class="rule-name">70% Rule</div>
+                                        <div class="rule-formula">Max Purchase = (ARV × 70%) - Repairs</div>
+                                        <div class="rule-result" id="rule-70-result">Max: $0</div>
+                                    </div>
+                                </div>
+                                <div class="rule-card" id="rule-margin">
+                                    <div class="rule-status" id="rule-margin-status"></div>
+                                    <div class="rule-content">
+                                        <div class="rule-name">Minimum Profit Margin</div>
+                                        <div class="rule-formula">Target: ≥15% of ARV</div>
+                                        <div class="rule-result" id="rule-margin-result">Current: 0%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sensitivity Analysis -->
+                        <div class="flip-sensitivity">
+                            <h4>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M3 3v18h18"/>
+                                    <path d="M18 17l3-10-7 3-4-3-7 10"/>
+                                </svg>
+                                What-If Scenarios
+                            </h4>
+                            <div class="sensitivity-table">
+                                <div class="sensitivity-header">
+                                    <span>If ARV Changes...</span>
+                                    <span>Profit</span>
+                                    <span>ROI</span>
+                                </div>
+                                <div class="sensitivity-row negative" id="sens-minus-10">
+                                    <span>ARV -10%</span>
+                                    <span>$0</span>
+                                    <span>0%</span>
+                                </div>
+                                <div class="sensitivity-row negative" id="sens-minus-5">
+                                    <span>ARV -5%</span>
+                                    <span>$0</span>
+                                    <span>0%</span>
+                                </div>
+                                <div class="sensitivity-row current" id="sens-current">
+                                    <span>Current ARV</span>
+                                    <span>$0</span>
+                                    <span>0%</span>
+                                </div>
+                                <div class="sensitivity-row positive" id="sens-plus-5">
+                                    <span>ARV +5%</span>
+                                    <span>$0</span>
+                                    <span>0%</span>
+                                </div>
+                                <div class="sensitivity-row positive" id="sens-plus-10">
+                                    <span>ARV +10%</span>
+                                    <span>$0</span>
+                                    <span>0%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Chart -->
+                        <div class="flip-chart-container">
+                            <h4>Cost vs. Profit Visualization</h4>
+                            <canvas id="flipChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- ==================== FINANCIAL HEALTH SCORE ==================== -->
 
             <!-- Financial Health Score -->

@@ -3532,3 +3532,551 @@
         width: 100%;
     }
 }
+
+/* ============================================
+   PROPERTY FLIP CALCULATOR STYLES
+   ============================================ */
+
+.flip-calculator {
+    background: var(--card-bg);
+}
+
+.flip-intro {
+    text-align: center;
+    padding: 20px;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(16, 185, 129, 0.05) 100%);
+    border-radius: 12px;
+    margin-bottom: 24px;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.flip-intro h4 {
+    font-size: 1.1rem;
+    color: var(--navy-blue);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.flip-intro p {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+/* Flip Results Container */
+.flip-results {
+    margin-top: 24px;
+}
+
+/* Flip Verdict Banner */
+.flip-verdict {
+    padding: 24px;
+    border-radius: 16px;
+    text-align: center;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+.flip-verdict::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0.1;
+    pointer-events: none;
+}
+
+.flip-verdict.excellent {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+}
+
+.flip-verdict.good {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+}
+
+.flip-verdict.marginal {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+}
+
+.flip-verdict.risky {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+}
+
+.verdict-icon {
+    font-size: 3rem;
+    margin-bottom: 12px;
+}
+
+.verdict-text {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.verdict-subtitle {
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+/* Flip Metrics Grid */
+.flip-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.flip-metric-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+}
+
+.flip-metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.flip-metric-card.profit {
+    border-left: 4px solid #10b981;
+}
+
+.flip-metric-card.roi {
+    border-left: 4px solid #3b82f6;
+}
+
+.flip-metric-card.cash {
+    border-left: 4px solid #8b5cf6;
+}
+
+.flip-metric-card.margin {
+    border-left: 4px solid #f59e0b;
+}
+
+.flip-metric-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
+.flip-metric-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--navy-blue);
+}
+
+.flip-metric-value.positive {
+    color: #10b981;
+}
+
+.flip-metric-value.negative {
+    color: #ef4444;
+}
+
+.flip-metric-subtext {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+/* Flip Cost Breakdown */
+.flip-breakdown {
+    background: var(--bg-primary);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    border: 1px solid var(--border-color);
+}
+
+.flip-breakdown h5 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--navy-blue);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.breakdown-row:last-child {
+    border-bottom: none;
+}
+
+.breakdown-row.category {
+    background: rgba(30, 58, 95, 0.03);
+    margin: 0 -20px;
+    padding: 10px 20px;
+    font-weight: 600;
+    color: var(--navy-blue);
+}
+
+.breakdown-row.total {
+    background: linear-gradient(135deg, rgba(30, 58, 95, 0.08) 0%, rgba(30, 58, 95, 0.03) 100%);
+    margin: 16px -20px -20px;
+    padding: 16px 20px;
+    border-radius: 0 0 12px 12px;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.breakdown-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-dark);
+}
+
+.breakdown-value {
+    font-weight: 600;
+    color: var(--navy-blue);
+}
+
+.breakdown-value.expense {
+    color: #ef4444;
+}
+
+.breakdown-value.income {
+    color: #10b981;
+}
+
+/* Flip Rules Check */
+.flip-rules {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.flip-rule-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 20px;
+    border: 2px solid var(--border-color);
+    position: relative;
+    overflow: hidden;
+}
+
+.flip-rule-card.pass {
+    border-color: #10b981;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, transparent 100%);
+}
+
+.flip-rule-card.fail {
+    border-color: #ef4444;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, transparent 100%);
+}
+
+.flip-rule-card.warning {
+    border-color: #f59e0b;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, transparent 100%);
+}
+
+.rule-status {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.flip-rule-card.pass .rule-status {
+    background: #10b981;
+    color: white;
+}
+
+.flip-rule-card.fail .rule-status {
+    background: #ef4444;
+    color: white;
+}
+
+.flip-rule-card.warning .rule-status {
+    background: #f59e0b;
+    color: white;
+}
+
+.rule-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--navy-blue);
+    margin-bottom: 8px;
+}
+
+.rule-description {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    line-height: 1.5;
+}
+
+.rule-values {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 8px;
+}
+
+.rule-target, .rule-actual {
+    text-align: center;
+}
+
+.rule-target span, .rule-actual span {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.rule-target strong, .rule-actual strong {
+    font-size: 1.1rem;
+    color: var(--navy-blue);
+}
+
+.flip-rule-card.pass .rule-actual strong {
+    color: #10b981;
+}
+
+.flip-rule-card.fail .rule-actual strong {
+    color: #ef4444;
+}
+
+/* Sensitivity Analysis Table */
+.flip-sensitivity {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    border: 1px solid var(--border-color);
+}
+
+.flip-sensitivity h5 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--navy-blue);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sensitivity-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.sensitivity-table th {
+    background: rgba(30, 58, 95, 0.08);
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--navy-blue);
+    border-bottom: 2px solid var(--border-color);
+}
+
+.sensitivity-table td {
+    padding: 12px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-dark);
+}
+
+.sensitivity-table tr:last-child td {
+    border-bottom: none;
+}
+
+.sensitivity-table tr:hover {
+    background: rgba(30, 58, 95, 0.02);
+}
+
+.sensitivity-table tr.current {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+    font-weight: 600;
+}
+
+.sensitivity-table tr.current td:first-child::before {
+    content: '→ ';
+    color: #10b981;
+}
+
+.sensitivity-table .profit-positive {
+    color: #10b981;
+    font-weight: 600;
+}
+
+.sensitivity-table .profit-negative {
+    color: #ef4444;
+    font-weight: 600;
+}
+
+/* Flip Chart Container */
+.flip-chart-container {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+}
+
+.flip-chart-container h5 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--navy-blue);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#flipCostChart {
+    max-height: 300px;
+}
+
+/* Flip Recommendations */
+.flip-recommendations {
+    margin-top: 24px;
+    padding: 20px;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, transparent 100%);
+    border-radius: 12px;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.flip-recommendations h5 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--navy-blue);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.flip-recommendations ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.flip-recommendations li {
+    padding: 10px 0;
+    padding-left: 28px;
+    position: relative;
+    color: var(--text-dark);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.flip-recommendations li:last-child {
+    border-bottom: none;
+}
+
+.flip-recommendations li::before {
+    content: '💡';
+    position: absolute;
+    left: 0;
+    top: 10px;
+}
+
+/* Dark Mode Support for Flip Calculator */
+[data-theme="dark"] .flip-intro {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(16, 185, 129, 0.1) 100%);
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+[data-theme="dark"] .flip-metric-card {
+    background: var(--card-bg);
+}
+
+[data-theme="dark"] .flip-metric-value {
+    color: var(--text-light);
+}
+
+[data-theme="dark"] .flip-breakdown {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+[data-theme="dark"] .flip-rule-card {
+    background: var(--card-bg);
+}
+
+[data-theme="dark"] .flip-sensitivity {
+    background: var(--card-bg);
+}
+
+[data-theme="dark"] .sensitivity-table th {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .flip-chart-container {
+    background: var(--card-bg);
+}
+
+[data-theme="dark"] .flip-recommendations {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%);
+}
+
+/* Mobile Responsive for Flip Calculator */
+@media (max-width: 768px) {
+    .flip-verdict {
+        padding: 20px;
+    }
+
+    .verdict-icon {
+        font-size: 2.5rem;
+    }
+
+    .verdict-text {
+        font-size: 1.25rem;
+    }
+
+    .flip-metrics {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .flip-metric-value {
+        font-size: 1.4rem;
+    }
+
+    .flip-rules {
+        grid-template-columns: 1fr;
+    }
+
+    .sensitivity-table {
+        font-size: 0.75rem;
+    }
+
+    .sensitivity-table th,
+    .sensitivity-table td {
+        padding: 8px 6px;
+    }
+}
