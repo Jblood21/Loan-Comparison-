@@ -1970,6 +1970,315 @@
                 </div>
             </div>
 
+            <!-- ==================== FINANCIAL HEALTH SCORE ==================== -->
+
+            <!-- Financial Health Score -->
+            <div class="tool-card featured-tool" data-category="affordability" id="health-score-tool">
+                <div class="tool-card-header">
+                    <label class="tool-select-checkbox" title="Select for report">
+                        <input type="checkbox" class="tool-checkbox" data-tool="health-score">
+                        <span class="checkbox-custom"></span>
+                    </label>
+                    <div class="tool-icon health-score">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                        </svg>
+                    </div>
+                    <div class="tool-title">
+                        <h3>Mortgage Readiness Score</h3>
+                        <span class="tool-badge featured">Featured</span>
+                    </div>
+                    <button class="tool-expand-btn" aria-label="Expand">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </button>
+                </div>
+                <p class="tool-description">Get your personalized mortgage readiness score with actionable tips to improve your approval odds</p>
+                <div class="tool-content">
+                    <div class="health-score-intro">
+                        <div class="intro-icon">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                                <path d="M2 17l10 5 10-5"/>
+                                <path d="M2 12l10 5 10-5"/>
+                            </svg>
+                        </div>
+                        <p>Answer a few questions about your financial situation and we'll calculate your mortgage readiness score with personalized recommendations.</p>
+                    </div>
+
+                    <div class="tool-section-divider">
+                        <span>Income & Employment</span>
+                    </div>
+                    <div class="tool-form-grid">
+                        <div class="tool-input-group">
+                            <label>Annual Gross Income</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="hs-income" value="" placeholder="75,000">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Years at Current Job</label>
+                            <div class="input-with-icon">
+                                <input type="number" id="hs-job-years" value="" placeholder="2" step="0.5">
+                                <span class="input-icon right">yrs</span>
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Employment Type</label>
+                            <select id="hs-employment-type">
+                                <option value="">Select...</option>
+                                <option value="w2">W-2 Employee</option>
+                                <option value="self">Self-Employed</option>
+                                <option value="contract">Contract/1099</option>
+                                <option value="retired">Retired</option>
+                            </select>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Additional Income Sources</label>
+                            <select id="hs-additional-income">
+                                <option value="none">None</option>
+                                <option value="some">Some (rental, investments)</option>
+                                <option value="significant">Significant (>20% of income)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="tool-section-divider">
+                        <span>Credit & Debt</span>
+                    </div>
+                    <div class="tool-form-grid">
+                        <div class="tool-input-group">
+                            <label>Estimated Credit Score</label>
+                            <select id="hs-credit-score">
+                                <option value="">Select range...</option>
+                                <option value="760">Excellent (760+)</option>
+                                <option value="720">Very Good (720-759)</option>
+                                <option value="680">Good (680-719)</option>
+                                <option value="640">Fair (640-679)</option>
+                                <option value="600">Poor (600-639)</option>
+                                <option value="550">Very Poor (Below 600)</option>
+                            </select>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Total Monthly Debt Payments</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="hs-monthly-debt" value="" placeholder="500">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Credit History Length</label>
+                            <select id="hs-credit-history">
+                                <option value="">Select...</option>
+                                <option value="10">10+ years</option>
+                                <option value="5">5-10 years</option>
+                                <option value="3">3-5 years</option>
+                                <option value="1">1-3 years</option>
+                                <option value="0">Less than 1 year</option>
+                            </select>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Recent Late Payments (2 yrs)</label>
+                            <select id="hs-late-payments">
+                                <option value="0">None</option>
+                                <option value="1">1-2 late payments</option>
+                                <option value="3">3-5 late payments</option>
+                                <option value="6">More than 5</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="tool-section-divider">
+                        <span>Savings & Down Payment</span>
+                    </div>
+                    <div class="tool-form-grid">
+                        <div class="tool-input-group">
+                            <label>Target Home Price</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="hs-home-price" value="" placeholder="350,000">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Available Down Payment</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="hs-down-payment" value="" placeholder="35,000">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Cash Reserves (after closing)</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="hs-reserves" value="" placeholder="10,000">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Down Payment Source</label>
+                            <select id="hs-dp-source">
+                                <option value="">Select...</option>
+                                <option value="savings">Personal Savings</option>
+                                <option value="gift">Gift from Family</option>
+                                <option value="401k">401k/Retirement</option>
+                                <option value="sale">Home Sale Proceeds</option>
+                                <option value="grant">Down Payment Assistance</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="tool-section-divider">
+                        <span>Property & Loan Details</span>
+                    </div>
+                    <div class="tool-form-grid">
+                        <div class="tool-input-group">
+                            <label>Property Type</label>
+                            <select id="hs-property-type">
+                                <option value="">Select...</option>
+                                <option value="sfr">Single Family Home</option>
+                                <option value="condo">Condo</option>
+                                <option value="townhouse">Townhouse</option>
+                                <option value="multi">Multi-Family (2-4 units)</option>
+                                <option value="manufactured">Manufactured Home</option>
+                            </select>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Occupancy</label>
+                            <select id="hs-occupancy">
+                                <option value="primary">Primary Residence</option>
+                                <option value="secondary">Second Home</option>
+                                <option value="investment">Investment Property</option>
+                            </select>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>First-Time Homebuyer?</label>
+                            <select id="hs-first-time">
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                            </select>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Preferred Loan Type</label>
+                            <select id="hs-loan-type">
+                                <option value="">Select...</option>
+                                <option value="conventional">Conventional</option>
+                                <option value="fha">FHA</option>
+                                <option value="va">VA</option>
+                                <option value="usda">USDA</option>
+                                <option value="unsure">Not Sure</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button class="tool-calculate-btn health-score-btn" onclick="calculateHealthScore()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                        </svg>
+                        Calculate My Score
+                    </button>
+
+                    <div class="tool-results health-score-results" id="health-score-results">
+                        <!-- Score Gauge -->
+                        <div class="score-gauge-container">
+                            <div class="score-gauge">
+                                <svg viewBox="0 0 200 120" class="score-gauge-svg">
+                                    <defs>
+                                        <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                            <stop offset="0%" style="stop-color:#ef4444"/>
+                                            <stop offset="25%" style="stop-color:#f97316"/>
+                                            <stop offset="50%" style="stop-color:#eab308"/>
+                                            <stop offset="75%" style="stop-color:#22c55e"/>
+                                            <stop offset="100%" style="stop-color:#10b981"/>
+                                        </linearGradient>
+                                    </defs>
+                                    <path class="gauge-track" d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#e5e7eb" stroke-width="16" stroke-linecap="round"/>
+                                    <path class="gauge-progress" id="hs-gauge-progress" d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="url(#scoreGradient)" stroke-width="16" stroke-linecap="round" stroke-dasharray="251.2" stroke-dashoffset="251.2"/>
+                                </svg>
+                                <div class="score-value-container">
+                                    <div class="score-value" id="hs-score-value">0</div>
+                                    <div class="score-label">out of 100</div>
+                                </div>
+                            </div>
+                            <div class="score-rating" id="hs-score-rating">Calculate to see your score</div>
+                            <div class="score-tagline" id="hs-score-tagline"></div>
+                        </div>
+
+                        <!-- Score Breakdown -->
+                        <div class="score-breakdown" id="hs-breakdown">
+                            <h4>Score Breakdown</h4>
+                            <div class="breakdown-items">
+                                <div class="breakdown-item">
+                                    <div class="breakdown-header">
+                                        <span class="breakdown-label">Credit Score</span>
+                                        <span class="breakdown-points" id="hs-credit-points">0/25</span>
+                                    </div>
+                                    <div class="breakdown-bar">
+                                        <div class="breakdown-fill" id="hs-credit-bar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                <div class="breakdown-item">
+                                    <div class="breakdown-header">
+                                        <span class="breakdown-label">Debt-to-Income</span>
+                                        <span class="breakdown-points" id="hs-dti-points">0/25</span>
+                                    </div>
+                                    <div class="breakdown-bar">
+                                        <div class="breakdown-fill" id="hs-dti-bar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                <div class="breakdown-item">
+                                    <div class="breakdown-header">
+                                        <span class="breakdown-label">Down Payment & Reserves</span>
+                                        <span class="breakdown-points" id="hs-dp-points">0/25</span>
+                                    </div>
+                                    <div class="breakdown-bar">
+                                        <div class="breakdown-fill" id="hs-dp-bar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                <div class="breakdown-item">
+                                    <div class="breakdown-header">
+                                        <span class="breakdown-label">Employment & Stability</span>
+                                        <span class="breakdown-points" id="hs-emp-points">0/25</span>
+                                    </div>
+                                    <div class="breakdown-bar">
+                                        <div class="breakdown-fill" id="hs-emp-bar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recommendations -->
+                        <div class="score-recommendations" id="hs-recommendations">
+                            <h4>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                                    <path d="M2 17l10 5 10-5"/>
+                                    <path d="M2 12l10 5 10-5"/>
+                                </svg>
+                                Ways to Improve Your Score
+                            </h4>
+                            <div class="recommendations-list" id="hs-recommendations-list">
+                                <!-- Recommendations will be inserted here -->
+                            </div>
+                        </div>
+
+                        <!-- Loan Options -->
+                        <div class="loan-options" id="hs-loan-options">
+                            <h4>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 12l2 2 4-4"/>
+                                    <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
+                                </svg>
+                                Loan Programs You May Qualify For
+                            </h4>
+                            <div class="loan-options-grid" id="hs-loan-options-list">
+                                <!-- Loan options will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
         <!-- Document Generator Section -->
@@ -2134,6 +2443,80 @@
         </div>
     </div>
     <div class="settings-overlay hidden" id="settingsOverlay"></div>
+
+    <!-- AI Mortgage Assistant Chatbot -->
+    <div class="chat-widget" id="chatWidget">
+        <div class="chat-toggle" id="chatToggle">
+            <div class="chat-toggle-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                </svg>
+            </div>
+            <div class="chat-toggle-pulse"></div>
+            <span class="chat-toggle-label">Ask AI</span>
+        </div>
+        <div class="chat-window" id="chatWindow">
+            <div class="chat-header">
+                <div class="chat-header-info">
+                    <div class="chat-avatar">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2a4 4 0 0 1 4 4v2a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4z"/>
+                            <path d="M16 14H8a4 4 0 0 0-4 4v2h16v-2a4 4 0 0 0-4-4z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="chat-title">Mortgage Assistant</div>
+                        <div class="chat-status">
+                            <span class="status-dot"></span>
+                            Online
+                        </div>
+                    </div>
+                </div>
+                <button class="chat-close" id="chatClose">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+                <div class="chat-message bot">
+                    <div class="message-avatar">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2a4 4 0 0 1 4 4v2a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4z"/>
+                            <path d="M16 14H8a4 4 0 0 0-4 4v2h16v-2a4 4 0 0 0-4-4z"/>
+                        </svg>
+                    </div>
+                    <div class="message-content">
+                        <p>Hi! I'm your mortgage assistant. I can help you understand:</p>
+                        <ul>
+                            <li>Loan types (FHA, VA, Conventional, etc.)</li>
+                            <li>Down payment requirements</li>
+                            <li>Credit score guidelines</li>
+                            <li>DTI ratios and affordability</li>
+                            <li>Closing costs and fees</li>
+                        </ul>
+                        <p>What would you like to know?</p>
+                    </div>
+                </div>
+            </div>
+            <div class="chat-quick-questions" id="chatQuickQuestions">
+                <button class="quick-question" data-question="What credit score do I need for a mortgage?">Credit requirements</button>
+                <button class="quick-question" data-question="What is PMI and how can I avoid it?">About PMI</button>
+                <button class="quick-question" data-question="What's the difference between FHA and Conventional loans?">FHA vs Conventional</button>
+                <button class="quick-question" data-question="How much down payment do I need?">Down payment</button>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="chatInput" placeholder="Type your mortgage question..." autocomplete="off">
+                <button class="chat-send" id="chatSend">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="22" y1="2" x2="11" y2="13"/>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
     <script src="tools.js"></script>

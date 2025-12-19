@@ -3183,3 +3183,602 @@ function formatResultLabel(key) {
         .replace(/arm/gi, 'ARM')
         .trim();
 }
+
+// ============================================
+// MORTGAGE READINESS SCORE (Health Score)
+// ============================================
+
+function calculateHealthScore() {
+    // Get all inputs
+    const income = parseFloat(document.getElementById('hs-income').value) || 0;
+    const jobYears = parseFloat(document.getElementById('hs-job-years').value) || 0;
+    const employmentType = document.getElementById('hs-employment-type').value;
+    const additionalIncome = document.getElementById('hs-additional-income').value;
+    const creditScore = parseInt(document.getElementById('hs-credit-score').value) || 0;
+    const monthlyDebt = parseFloat(document.getElementById('hs-monthly-debt').value) || 0;
+    const creditHistory = parseInt(document.getElementById('hs-credit-history').value) || 0;
+    const latePayments = parseInt(document.getElementById('hs-late-payments').value) || 0;
+    const homePrice = parseFloat(document.getElementById('hs-home-price').value) || 0;
+    const downPayment = parseFloat(document.getElementById('hs-down-payment').value) || 0;
+    const reserves = parseFloat(document.getElementById('hs-reserves').value) || 0;
+    const dpSource = document.getElementById('hs-dp-source').value;
+    const propertyType = document.getElementById('hs-property-type').value;
+    const occupancy = document.getElementById('hs-occupancy').value;
+    const firstTime = document.getElementById('hs-first-time').value;
+    const loanType = document.getElementById('hs-loan-type').value;
+
+    // Calculate component scores (each out of 25 points)
+    let creditPoints = 0;
+    let dtiPoints = 0;
+    let dpPoints = 0;
+    let empPoints = 0;
+
+    // Credit Score Points (25 max)
+    if (creditScore >= 760) creditPoints = 25;
+    else if (creditScore >= 720) creditPoints = 22;
+    else if (creditScore >= 680) creditPoints = 18;
+    else if (creditScore >= 640) creditPoints = 12;
+    else if (creditScore >= 600) creditPoints = 6;
+    else if (creditScore > 0) creditPoints = 2;
+
+    // Adjust for credit history length
+    if (creditHistory >= 10) creditPoints = Math.min(25, creditPoints + 2);
+    else if (creditHistory >= 5) creditPoints = Math.min(25, creditPoints + 1);
+    else if (creditHistory <= 1) creditPoints = Math.max(0, creditPoints - 3);
+
+    // Adjust for late payments
+    if (latePayments >= 6) creditPoints = Math.max(0, creditPoints - 10);
+    else if (latePayments >= 3) creditPoints = Math.max(0, creditPoints - 5);
+    else if (latePayments >= 1) creditPoints = Math.max(0, creditPoints - 2);
+
+    // DTI Points (25 max)
+    const monthlyIncome = income / 12;
+    const estimatedPayment = (homePrice - downPayment) * 0.006; // Rough estimate
+    const totalMonthlyDebt = monthlyDebt + estimatedPayment;
+    const dti = monthlyIncome > 0 ? (totalMonthlyDebt / monthlyIncome) * 100 : 100;
+
+    if (dti <= 28) dtiPoints = 25;
+    else if (dti <= 36) dtiPoints = 22;
+    else if (dti <= 43) dtiPoints = 16;
+    else if (dti <= 50) dtiPoints = 10;
+    else dtiPoints = 3;
+
+    // Down Payment & Reserves Points (25 max)
+    const dpPercent = homePrice > 0 ? (downPayment / homePrice) * 100 : 0;
+    const monthsReserves = estimatedPayment > 0 ? reserves / estimatedPayment : 0;
+
+    if (dpPercent >= 20) dpPoints = 15;
+    else if (dpPercent >= 10) dpPoints = 12;
+    else if (dpPercent >= 5) dpPoints = 8;
+    else if (dpPercent >= 3) dpPoints = 5;
+    else dpPoints = 2;
+
+    if (monthsReserves >= 6) dpPoints += 10;
+    else if (monthsReserves >= 3) dpPoints += 7;
+    else if (monthsReserves >= 2) dpPoints += 4;
+    else dpPoints += 1;
+
+    dpPoints = Math.min(25, dpPoints);
+
+    // Adjust for down payment source
+    if (dpSource === 'savings' || dpSource === 'sale') dpPoints = Math.min(25, dpPoints + 1);
+
+    // Employment Points (25 max)
+    if (employmentType === 'w2') empPoints = 12;
+    else if (employmentType === 'retired') empPoints = 10;
+    else if (employmentType === 'self') empPoints = 8;
+    else if (employmentType === 'contract') empPoints = 6;
+    else empPoints = 4;
+
+    if (jobYears >= 5) empPoints += 10;
+    else if (jobYears >= 2) empPoints += 8;
+    else if (jobYears >= 1) empPoints += 5;
+    else empPoints += 2;
+
+    if (additionalIncome === 'significant') empPoints += 3;
+    else if (additionalIncome === 'some') empPoints += 1;
+
+    empPoints = Math.min(25, empPoints);
+
+    // Calculate total score
+    const totalScore = creditPoints + dtiPoints + dpPoints + empPoints;
+
+    // Determine rating
+    let rating, tagline, ratingColor;
+    if (totalScore >= 85) {
+        rating = 'Excellent';
+        tagline = 'You\'re in great shape for mortgage approval!';
+        ratingColor = '#10b981';
+    } else if (totalScore >= 70) {
+        rating = 'Good';
+        tagline = 'You have a strong chance of approval with competitive rates.';
+        ratingColor = '#22c55e';
+    } else if (totalScore >= 55) {
+        rating = 'Fair';
+        tagline = 'You may qualify, but there\'s room for improvement.';
+        ratingColor = '#eab308';
+    } else if (totalScore >= 40) {
+        rating = 'Needs Work';
+        tagline = 'Consider improving your profile before applying.';
+        ratingColor = '#f97316';
+    } else {
+        rating = 'Not Ready';
+        tagline = 'Focus on building your financial foundation first.';
+        ratingColor = '#ef4444';
+    }
+
+    // Update UI
+    document.getElementById('health-score-results').classList.add('active');
+
+    // Animate score
+    animateScore(totalScore);
+
+    document.getElementById('hs-score-rating').textContent = rating;
+    document.getElementById('hs-score-rating').style.color = ratingColor;
+    document.getElementById('hs-score-tagline').textContent = tagline;
+
+    // Update breakdown bars
+    updateBreakdownBar('hs-credit', creditPoints, 25);
+    updateBreakdownBar('hs-dti', dtiPoints, 25);
+    updateBreakdownBar('hs-dp', dpPoints, 25);
+    updateBreakdownBar('hs-emp', empPoints, 25);
+
+    // Generate recommendations
+    generateRecommendations(creditScore, creditPoints, dti, dtiPoints, dpPercent, dpPoints, jobYears, empPoints);
+
+    // Generate loan options
+    generateLoanOptions(creditScore, dpPercent, dti, firstTime, loanType);
+
+    // Scroll to results
+    document.getElementById('health-score-results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function animateScore(targetScore) {
+    const scoreElement = document.getElementById('hs-score-value');
+    const gaugeProgress = document.getElementById('hs-gauge-progress');
+    const totalLength = 251.2; // Arc length
+    let currentScore = 0;
+    const duration = 1500;
+    const startTime = performance.now();
+
+    function animate(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+
+        // Easing function
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        currentScore = Math.round(targetScore * easeOut);
+
+        scoreElement.textContent = currentScore;
+
+        // Update gauge
+        const offset = totalLength - (totalLength * (currentScore / 100));
+        gaugeProgress.style.strokeDashoffset = offset;
+
+        if (progress < 1) {
+            requestAnimationFrame(animate);
+        }
+    }
+
+    requestAnimationFrame(animate);
+}
+
+function updateBreakdownBar(prefix, points, max) {
+    const percentage = (points / max) * 100;
+    document.getElementById(`${prefix}-points`).textContent = `${points}/${max}`;
+    document.getElementById(`${prefix}-bar`).style.width = `${percentage}%`;
+}
+
+function generateRecommendations(creditScore, creditPoints, dti, dtiPoints, dpPercent, dpPoints, jobYears, empPoints) {
+    const recommendations = [];
+
+    // Credit recommendations
+    if (creditScore < 680) {
+        recommendations.push({
+            priority: 'high',
+            title: 'Improve Your Credit Score',
+            text: `Your estimated credit score of ${creditScore} is below the ideal threshold. Pay down credit card balances, avoid new credit inquiries, and dispute any errors on your credit report.`,
+            icon: 'credit-card'
+        });
+    } else if (creditScore < 740) {
+        recommendations.push({
+            priority: 'medium',
+            title: 'Boost Your Credit Score',
+            text: 'A score above 740 gets you the best rates. Keep credit utilization below 30% and maintain on-time payments.',
+            icon: 'trending-up'
+        });
+    }
+
+    // DTI recommendations
+    if (dti > 43) {
+        recommendations.push({
+            priority: 'high',
+            title: 'Lower Your Debt-to-Income Ratio',
+            text: `Your DTI of ${dti.toFixed(1)}% exceeds the typical 43% limit. Pay off small debts, avoid new loans, or consider a less expensive home.`,
+            icon: 'percent'
+        });
+    } else if (dti > 36) {
+        recommendations.push({
+            priority: 'medium',
+            title: 'Consider Reducing Debt',
+            text: 'Lowering your DTI below 36% will improve your options and potentially get you better rates.',
+            icon: 'percent'
+        });
+    }
+
+    // Down payment recommendations
+    if (dpPercent < 5) {
+        recommendations.push({
+            priority: 'high',
+            title: 'Increase Your Down Payment',
+            text: 'Most loans require at least 3-5% down. Look into down payment assistance programs or set up automatic savings.',
+            icon: 'piggy-bank'
+        });
+    } else if (dpPercent < 20) {
+        recommendations.push({
+            priority: 'low',
+            title: 'Consider Saving More for Down Payment',
+            text: `At ${dpPercent.toFixed(1)}% down, you'll pay PMI. Reaching 20% eliminates this extra cost and lowers your monthly payment.`,
+            icon: 'piggy-bank'
+        });
+    }
+
+    // Employment recommendations
+    if (jobYears < 2) {
+        recommendations.push({
+            priority: 'medium',
+            title: 'Build Employment History',
+            text: 'Lenders prefer 2+ years at your current job. If possible, wait before applying or document your career progression.',
+            icon: 'briefcase'
+        });
+    }
+
+    // Always add a positive note if score is good
+    if (recommendations.length === 0) {
+        recommendations.push({
+            priority: 'low',
+            title: 'You\'re in Great Shape!',
+            text: 'Your financial profile is strong. Consider getting pre-approved to lock in rates and show sellers you\'re a serious buyer.',
+            icon: 'check-circle'
+        });
+    }
+
+    // Render recommendations
+    const container = document.getElementById('hs-recommendations-list');
+    container.innerHTML = recommendations.map(rec => `
+        <div class="recommendation-item ${rec.priority}-priority">
+            <div class="recommendation-icon">
+                ${getRecommendationIcon(rec.icon)}
+            </div>
+            <div class="recommendation-text">
+                <strong>${rec.title}</strong>
+                <p>${rec.text}</p>
+            </div>
+        </div>
+    `).join('');
+}
+
+function getRecommendationIcon(type) {
+    const icons = {
+        'credit-card': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>',
+        'trending-up': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>',
+        'percent': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>',
+        'piggy-bank': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 5c-1.5 0-2.8 1.4-3 2-3.5-1.5-11-.3-11 5 0 1.8 0 3 2 4.5V20h4v-2h3v2h4v-4c1-.5 1.7-1 2-2h2v-4h-2c0-1-.5-1.5-1-2V5z"/><path d="M2 9v1c0 1.1.9 2 2 2h1"/><path d="M16 11h.01"/></svg>',
+        'briefcase': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',
+        'check-circle': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
+    };
+    return icons[type] || icons['check-circle'];
+}
+
+function generateLoanOptions(creditScore, dpPercent, dti, firstTime, preferredLoan) {
+    const options = [];
+
+    // Conventional
+    if (creditScore >= 620 && dpPercent >= 3) {
+        options.push({
+            name: 'Conventional Loan',
+            details: `<strong>Min Credit:</strong> 620 | <strong>Min Down:</strong> 3%<br>Best rates with 740+ credit and 20%+ down. ${dpPercent < 20 ? 'PMI required until 20% equity.' : 'No PMI needed!'}`,
+            recommended: creditScore >= 700 && dpPercent >= 10
+        });
+    }
+
+    // FHA
+    if (creditScore >= 500) {
+        const fhaDown = creditScore >= 580 ? '3.5%' : '10%';
+        options.push({
+            name: 'FHA Loan',
+            details: `<strong>Min Credit:</strong> 500 | <strong>Min Down:</strong> ${fhaDown}<br>Great for first-time buyers. Requires mortgage insurance for life of loan.`,
+            recommended: creditScore < 680 || dpPercent < 10
+        });
+    }
+
+    // VA (if first-time, assume possible veteran)
+    options.push({
+        name: 'VA Loan',
+        details: `<strong>Min Credit:</strong> None (620+ preferred) | <strong>Min Down:</strong> 0%<br>For veterans and service members. No PMI, competitive rates.`,
+        recommended: false
+    });
+
+    // USDA
+    if (dti <= 41) {
+        options.push({
+            name: 'USDA Loan',
+            details: `<strong>Min Credit:</strong> 640 | <strong>Min Down:</strong> 0%<br>For rural/suburban areas. Income limits apply. Low mortgage insurance.`,
+            recommended: dpPercent < 5
+        });
+    }
+
+    // Render options
+    const container = document.getElementById('hs-loan-options-list');
+    container.innerHTML = options.map(opt => `
+        <div class="loan-option-card ${opt.recommended ? 'recommended' : ''}">
+            <div class="loan-option-name">${opt.name}</div>
+            <div class="loan-option-details">${opt.details}</div>
+        </div>
+    `).join('');
+}
+
+// ============================================
+// AI MORTGAGE ASSISTANT CHATBOT
+// ============================================
+
+const mortgageKnowledge = {
+    'credit score': {
+        keywords: ['credit', 'score', 'fico', 'credit score'],
+        response: `<p><strong>Credit Score Requirements:</strong></p>
+        <ul>
+            <li><strong>Conventional:</strong> Minimum 620, best rates at 740+</li>
+            <li><strong>FHA:</strong> Minimum 500 (10% down) or 580 (3.5% down)</li>
+            <li><strong>VA:</strong> No minimum, but 620+ preferred</li>
+            <li><strong>USDA:</strong> Minimum 640</li>
+        </ul>
+        <p>Higher scores = lower rates. Each 20-point increase can save thousands over the loan term.</p>`
+    },
+    'pmi': {
+        keywords: ['pmi', 'mortgage insurance', 'private mortgage insurance', 'avoid pmi'],
+        response: `<p><strong>Private Mortgage Insurance (PMI):</strong></p>
+        <p>PMI protects the lender if you default. It's required on conventional loans with less than 20% down.</p>
+        <p><strong>How to avoid PMI:</strong></p>
+        <ul>
+            <li>Put 20% or more down</li>
+            <li>Use a piggyback loan (80/10/10)</li>
+            <li>Choose lender-paid PMI (higher rate)</li>
+            <li>Get a VA loan (no PMI ever)</li>
+        </ul>
+        <p>PMI typically costs 0.5-1% of loan amount annually and can be removed at 20% equity.</p>`
+    },
+    'fha vs conventional': {
+        keywords: ['fha', 'conventional', 'fha vs', 'difference between'],
+        response: `<p><strong>FHA vs Conventional Loans:</strong></p>
+        <p><strong>FHA Loans:</strong></p>
+        <ul>
+            <li>Lower credit score requirements (500-580+)</li>
+            <li>3.5% minimum down payment</li>
+            <li>Mortgage insurance for life of loan</li>
+            <li>More flexible debt-to-income ratios</li>
+        </ul>
+        <p><strong>Conventional Loans:</strong></p>
+        <ul>
+            <li>Minimum 620 credit score</li>
+            <li>3% minimum down payment</li>
+            <li>PMI removed at 20% equity</li>
+            <li>Better rates with good credit</li>
+        </ul>
+        <p>Choose FHA for lower credit/down payment, Conventional for better long-term savings.</p>`
+    },
+    'down payment': {
+        keywords: ['down payment', 'down', 'how much down', 'minimum down'],
+        response: `<p><strong>Down Payment Requirements:</strong></p>
+        <ul>
+            <li><strong>Conventional:</strong> 3-5% minimum (20% to avoid PMI)</li>
+            <li><strong>FHA:</strong> 3.5% with 580+ credit, 10% with 500-579</li>
+            <li><strong>VA:</strong> 0% down for eligible veterans</li>
+            <li><strong>USDA:</strong> 0% down in eligible rural areas</li>
+        </ul>
+        <p><strong>Down Payment Assistance:</strong> Many states offer grants or low-interest loans for first-time buyers. Ask your loan officer about local programs!</p>`
+    },
+    'dti': {
+        keywords: ['dti', 'debt to income', 'debt-to-income', 'ratio', 'qualify'],
+        response: `<p><strong>Debt-to-Income (DTI) Ratio:</strong></p>
+        <p>DTI = (Monthly Debts / Gross Monthly Income) × 100</p>
+        <p><strong>Two types:</strong></p>
+        <ul>
+            <li><strong>Front-end:</strong> Housing costs only (target: ≤28%)</li>
+            <li><strong>Back-end:</strong> All debts including housing (target: ≤36-43%)</li>
+        </ul>
+        <p><strong>Maximum DTI by loan type:</strong></p>
+        <ul>
+            <li>Conventional: Up to 50% with strong factors</li>
+            <li>FHA: Up to 57% in some cases</li>
+            <li>VA: No max, but 41% is guideline</li>
+        </ul>`
+    },
+    'closing costs': {
+        keywords: ['closing', 'costs', 'fees', 'closing costs'],
+        response: `<p><strong>Closing Costs:</strong></p>
+        <p>Typically 2-5% of loan amount. Common costs include:</p>
+        <ul>
+            <li><strong>Lender fees:</strong> Origination, underwriting, processing</li>
+            <li><strong>Third party:</strong> Appraisal, title insurance, inspection</li>
+            <li><strong>Prepaid items:</strong> Property taxes, homeowners insurance</li>
+            <li><strong>Government:</strong> Recording fees, transfer taxes</li>
+        </ul>
+        <p><strong>Ways to reduce:</strong> Negotiate with seller, shop lenders, ask about lender credits.</p>`
+    },
+    'refinance': {
+        keywords: ['refinance', 'refi', 'refinancing', 'lower rate'],
+        response: `<p><strong>When to Refinance:</strong></p>
+        <p>Consider refinancing when:</p>
+        <ul>
+            <li>Rates drop 0.5-1% below your current rate</li>
+            <li>Your credit score has improved significantly</li>
+            <li>You want to switch from ARM to fixed rate</li>
+            <li>You need to tap home equity (cash-out refi)</li>
+        </ul>
+        <p><strong>Break-even:</strong> Divide closing costs by monthly savings to find how long until you benefit.</p>`
+    },
+    'va loan': {
+        keywords: ['va', 'veteran', 'military', 'va loan'],
+        response: `<p><strong>VA Loans:</strong></p>
+        <p>Exclusive benefits for veterans and service members:</p>
+        <ul>
+            <li>No down payment required</li>
+            <li>No PMI ever</li>
+            <li>Competitive interest rates</li>
+            <li>Limited closing costs</li>
+            <li>No prepayment penalty</li>
+        </ul>
+        <p><strong>Eligibility:</strong> Active duty, veterans with honorable discharge, National Guard, Reserves, and surviving spouses.</p>`
+    },
+    'pre-approval': {
+        keywords: ['pre-approval', 'preapproval', 'pre-approved', 'preapproved', 'get approved'],
+        response: `<p><strong>Mortgage Pre-Approval:</strong></p>
+        <p>Pre-approval shows sellers you're a serious, qualified buyer.</p>
+        <p><strong>What you need:</strong></p>
+        <ul>
+            <li>Photo ID and Social Security number</li>
+            <li>W-2s and tax returns (2 years)</li>
+            <li>Pay stubs (30 days)</li>
+            <li>Bank statements (2-3 months)</li>
+            <li>Employment verification</li>
+        </ul>
+        <p>Pre-approval typically lasts 60-90 days. Get pre-approved before house hunting!</p>`
+    },
+    'default': {
+        response: `<p>I can help you understand mortgage topics like:</p>
+        <ul>
+            <li>Credit score requirements</li>
+            <li>Down payment options</li>
+            <li>FHA vs Conventional loans</li>
+            <li>PMI and how to avoid it</li>
+            <li>Closing costs</li>
+            <li>DTI ratios</li>
+        </ul>
+        <p>Try asking a specific question, or click one of the quick question buttons below!</p>`
+    }
+};
+
+function initChatbot() {
+    const toggle = document.getElementById('chatToggle');
+    const window = document.getElementById('chatWindow');
+    const closeBtn = document.getElementById('chatClose');
+    const input = document.getElementById('chatInput');
+    const sendBtn = document.getElementById('chatSend');
+    const quickQuestions = document.querySelectorAll('.quick-question');
+
+    if (!toggle) return;
+
+    toggle.addEventListener('click', () => {
+        window.classList.toggle('active');
+    });
+
+    closeBtn.addEventListener('click', () => {
+        window.classList.remove('active');
+    });
+
+    sendBtn.addEventListener('click', sendMessage);
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
+    });
+
+    quickQuestions.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const question = btn.dataset.question;
+            input.value = question;
+            sendMessage();
+        });
+    });
+}
+
+function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const messages = document.getElementById('chatMessages');
+    const question = input.value.trim();
+
+    if (!question) return;
+
+    // Add user message
+    messages.innerHTML += `
+        <div class="chat-message user">
+            <div class="message-avatar">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+            </div>
+            <div class="message-content">
+                <p>${escapeHtml(question)}</p>
+            </div>
+        </div>
+    `;
+
+    input.value = '';
+    messages.scrollTop = messages.scrollHeight;
+
+    // Show typing indicator
+    const typingId = 'typing-' + Date.now();
+    messages.innerHTML += `
+        <div class="chat-message bot" id="${typingId}">
+            <div class="message-avatar">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2a4 4 0 0 1 4 4v2a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4z"/>
+                    <path d="M16 14H8a4 4 0 0 0-4 4v2h16v-2a4 4 0 0 0-4-4z"/>
+                </svg>
+            </div>
+            <div class="typing-indicator">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+    `;
+    messages.scrollTop = messages.scrollHeight;
+
+    // Simulate response delay
+    setTimeout(() => {
+        const typingElement = document.getElementById(typingId);
+        if (typingElement) {
+            typingElement.remove();
+        }
+
+        const response = getResponse(question);
+        messages.innerHTML += `
+            <div class="chat-message bot">
+                <div class="message-avatar">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2a4 4 0 0 1 4 4v2a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4z"/>
+                        <path d="M16 14H8a4 4 0 0 0-4 4v2h16v-2a4 4 0 0 0-4-4z"/>
+                    </svg>
+                </div>
+                <div class="message-content">
+                    ${response}
+                </div>
+            </div>
+        `;
+        messages.scrollTop = messages.scrollHeight;
+    }, 1000 + Math.random() * 500);
+}
+
+function getResponse(question) {
+    const lowerQuestion = question.toLowerCase();
+
+    // Find matching topic
+    for (const [topic, data] of Object.entries(mortgageKnowledge)) {
+        if (topic === 'default') continue;
+
+        for (const keyword of data.keywords) {
+            if (lowerQuestion.includes(keyword)) {
+                return data.response;
+            }
+        }
+    }
+
+    return mortgageKnowledge.default.response;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Initialize chatbot when DOM is ready
+document.addEventListener('DOMContentLoaded', initChatbot);
