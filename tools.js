@@ -37,15 +37,145 @@ const calculateMonthlyPayment = (principal, annualRate, years) => {
 const charts = {};
 
 // ============================================
+// INPUT FORMATTING & VALIDATION
+// ============================================
+
+// Format number with commas as user types
+function formatNumberInput(input) {
+    let value = input.value.replace(/[^0-9.]/g, '');
+
+    // Handle decimal numbers
+    const parts = value.split('.');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+    input.value = parts.join('.');
+}
+
+// Get raw number from formatted input
+function getRawNumber(value) {
+    if (!value) return 0;
+    return parseFloat(value.toString().replace(/,/g, '')) || 0;
+}
+
+// Initialize input formatting
+function initInputFormatting() {
+    // Auto-format currency inputs on blur
+    document.querySelectorAll('input[type="number"]').forEach(input => {
+        // Add placeholder hints based on input label
+        const label = input.closest('.tool-input-group')?.querySelector('label')?.textContent?.toLowerCase() || '';
+
+        if (label.includes('price') || label.includes('value') || label.includes('amount') || label.includes('income') || label.includes('payment') || label.includes('balance')) {
+            if (!input.placeholder) {
+                input.placeholder = 'Enter amount';
+            }
+        } else if (label.includes('rate')) {
+            if (!input.placeholder) {
+                input.placeholder = 'e.g. 6.5';
+            }
+        } else if (label.includes('year') || label.includes('term')) {
+            if (!input.placeholder) {
+                input.placeholder = 'e.g. 30';
+            }
+        }
+
+        // Visual feedback on input
+        input.addEventListener('input', function() {
+            this.classList.remove('valid', 'invalid');
+            if (this.value && parseFloat(this.value) > 0) {
+                this.classList.add('valid');
+            }
+        });
+
+        input.addEventListener('blur', function() {
+            this.classList.remove('valid', 'invalid');
+        });
+    });
+}
+
+// Show toast notification
+function showToast(message, type = 'info') {
+    // Remove existing toast
+    const existing = document.querySelector('.toast-notification');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.className = `toast-notification toast-${type}`;
+    toast.innerHTML = `
+        <div class="toast-content">
+            <svg class="toast-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                ${type === 'success'
+                    ? '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>'
+                    : type === 'error'
+                    ? '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>'
+                    : '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'
+                }
+            </svg>
+            <span>${message}</span>
+        </div>
+    `;
+    document.body.appendChild(toast);
+
+    // Animate in
+    setTimeout(() => toast.classList.add('show'), 10);
+
+    // Remove after delay
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+// Validate required inputs before calculation
+function validateInputs(inputIds) {
+    let isValid = true;
+    let firstInvalid = null;
+
+    inputIds.forEach(id => {
+        const input = document.getElementById(id);
+        if (input) {
+            const value = parseFloat(input.value);
+            if (!input.value || isNaN(value) || value <= 0) {
+                input.classList.add('invalid');
+                isValid = false;
+                if (!firstInvalid) firstInvalid = input;
+            } else {
+                input.classList.remove('invalid');
+            }
+        }
+    });
+
+    if (!isValid && firstInvalid) {
+        firstInvalid.focus();
+        showToast('Please fill in all required fields', 'error');
+    }
+
+    return isValid;
+}
+
+// ============================================
 // TOOL CARD EXPAND/COLLAPSE
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
-    // Tool card expand/collapse
+    // Initialize input formatting
+    initInputFormatting();
+
+    // Tool card expand/collapse with smooth animation
     document.querySelectorAll('.tool-card-header').forEach(header => {
         header.addEventListener('click', (e) => {
+            // Don't toggle if clicking checkbox
+            if (e.target.closest('.tool-select-checkbox')) return;
+
             if (e.target.closest('.tool-expand-btn') || e.target.closest('.tool-card-header')) {
                 const card = header.closest('.tool-card');
+                const wasExpanded = card.classList.contains('expanded');
                 card.classList.toggle('expanded');
+
+                // Scroll into view if expanding
+                if (!wasExpanded) {
+                    setTimeout(() => {
+                        card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 100);
+                }
             }
         });
     });
