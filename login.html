@@ -2,8 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
     <title>Sign In - LoanDr.</title>
+
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="LoanDr.">
+    <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+    <link rel="apple-touch-icon" href="icons/icon-152x152.png">
 
     <!-- Security Headers -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
@@ -12,6 +21,14 @@
     <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
 
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="app.css">
+    <meta name="theme-color" content="#1e3a5f">
+
+    <!-- Core modules - load early for theme flash prevention -->
+    <script src="theme.js"></script>
+    <script src="security.js"></script>
+    <script src="pwa.js" defer></script>
+
     <style>
         :root {
             --navy-blue: #1e3a5f;
@@ -59,7 +76,50 @@
             justify-content: center;
             padding: 20px;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: var(--off-white);
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 25%, #1e3a5f 50%, #2e7d32 75%, #1b5e20 100%);
+            background-size: 400% 400%;
+            animation: gradientFlow 15s ease infinite;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(circle at 20% 80%, rgba(46, 125, 50, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(30, 58, 95, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(129, 199, 132, 0.2) 0%, transparent 40%),
+                radial-gradient(circle at 90% 90%, rgba(21, 42, 69, 0.5) 0%, transparent 40%);
+            pointer-events: none;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            animation: floatPattern 60s linear infinite;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        @keyframes gradientFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes floatPattern {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
         }
 
         .auth-wrapper {
@@ -70,17 +130,22 @@
             background: var(--white);
             border-radius: 24px;
             overflow: hidden;
-            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15);
-            border: 1px solid var(--light-gray);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4), 0 0 100px rgba(46, 125, 50, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 1;
         }
 
         .auth-branding {
             flex: 1;
-            background: linear-gradient(135deg, var(--navy-blue) 0%, var(--navy-dark) 50%, var(--green-dark) 100%);
+            background: linear-gradient(145deg, rgba(15, 15, 26, 0.95) 0%, rgba(30, 58, 95, 0.9) 50%, rgba(27, 94, 32, 0.9) 100%);
+            backdrop-filter: blur(20px);
             padding: 60px 50px;
             display: flex;
             flex-direction: column;
             justify-content: center;
+            align-items: center;
+            text-align: center;
             position: relative;
             overflow: hidden;
         }
@@ -92,8 +157,21 @@
             left: -50%;
             width: 200%;
             height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 60%);
-            animation: shimmer 15s infinite linear;
+            background:
+                radial-gradient(circle at 30% 30%, rgba(46, 125, 50, 0.4) 0%, transparent 40%),
+                radial-gradient(circle at 70% 70%, rgba(30, 58, 95, 0.5) 0%, transparent 40%);
+            animation: shimmer 20s infinite linear;
+        }
+
+        .auth-branding::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(0deg, rgba(0,0,0,0.3) 0%, transparent 50%, rgba(0,0,0,0.2) 100%);
+            pointer-events: none;
         }
 
         @keyframes shimmer {
@@ -104,46 +182,68 @@
         .branding-content {
             position: relative;
             z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .brand-logo {
-            margin-bottom: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+            animation: logoFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .brand-logo img {
+            width: 320px;
+            height: auto;
+            filter: drop-shadow(0 15px 40px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 80px rgba(46, 125, 50, 0.5));
         }
 
         .brand-logo svg {
-            width: 70px;
-            height: 70px;
+            width: 280px;
+            height: 280px;
+            filter: drop-shadow(0 15px 40px rgba(0, 0, 0, 0.6));
         }
 
         .brand-title {
-            font-size: 2.4rem;
+            font-size: 3.5rem;
             font-weight: 700;
-            color: var(--white);
-            margin-bottom: 15px;
+            color: #ffffff;
+            margin-bottom: 20px;
             line-height: 1.2;
+            text-shadow: 0 6px 25px rgba(0, 0, 0, 0.6);
         }
 
         .brand-title .logo-accent {
             color: #81c784;
             font-weight: 800;
+            text-shadow: 0 0 30px rgba(129, 199, 132, 0.6);
         }
 
         .brand-subtitle {
-            font-size: 1.1rem;
-            color: rgba(255, 255, 255, 0.85);
+            font-size: 1.15rem;
+            color: rgba(255, 255, 255, 0.9);
             line-height: 1.6;
             margin-bottom: 40px;
+            max-width: 350px;
         }
 
         .brand-features {
             list-style: none;
+            text-align: left;
         }
 
         .brand-features li {
             display: flex;
             align-items: center;
             gap: 12px;
-            color: rgba(255, 255, 255, 0.9);
+            color: rgba(255, 255, 255, 0.95);
             font-size: 1rem;
             margin-bottom: 15px;
         }
@@ -153,11 +253,12 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 24px;
-            height: 24px;
-            background: rgba(255, 255, 255, 0.2);
+            width: 26px;
+            height: 26px;
+            background: linear-gradient(135deg, rgba(46, 125, 50, 0.6) 0%, rgba(129, 199, 132, 0.4) 100%);
             border-radius: 50%;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
+            box-shadow: 0 4px 15px rgba(46, 125, 50, 0.4);
         }
 
         .auth-form-container {
@@ -422,8 +523,17 @@
                 padding: 40px 30px;
             }
 
+            .brand-logo img {
+                width: 220px;
+            }
+
+            .brand-logo svg {
+                width: 180px;
+                height: 180px;
+            }
+
             .brand-title {
-                font-size: 1.8rem;
+                font-size: 2.2rem;
             }
 
             .brand-features {
@@ -455,8 +565,9 @@
         <div class="auth-branding">
             <div class="branding-content">
                 <div class="brand-logo">
-                    <img src="logo.svg" alt="LoanDr." class="logo-img-header" style="height: 80px;">
+                    <img src="logo.svg" alt="LoanDr.">
                 </div>
+                <h1 class="brand-title">Loan<span class="logo-accent">Dr.</span></h1>
                 <p class="brand-subtitle">Professional mortgage comparison software for loan officers. Create detailed loan estimates and closing cost breakdowns in minutes.</p>
                 <ul class="brand-features">
                     <li>Compare multiple loan scenarios side-by-side</li>
