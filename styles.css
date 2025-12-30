@@ -33,8 +33,10 @@
     --header-text: #ffffff;
 }
 
-/* Dark Mode Theme */
-[data-theme="dark"] {
+/* Dark Mode Theme - supports both data-theme attribute and body class */
+[data-theme="dark"],
+body.dark-mode,
+html[data-theme="dark"] body {
     --navy-blue: #5d8cc9;
     --navy-dark: #4a7ab8;
     --navy-light: #7ba3d6;
@@ -58,6 +60,11 @@
     --card-bg: #1a1a2e;
     --header-bg: #1a1a2e;
     --header-text: #ffffff;
+}
+
+/* Smooth theme transitions */
+*, *::before, *::after {
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 body {
@@ -1434,18 +1441,21 @@ select {
     width: 100%;
     padding: 12px 14px;
     padding-left: 28px;
-    background: var(--off-white);
-    border: 1px solid transparent;
+    background: var(--white);
+    border: 2px solid var(--navy-blue);
     border-radius: 8px;
     color: var(--text-dark);
     font-size: 0.95rem;
     transition: all 0.15s ease;
+    box-shadow: 0 2px 4px rgba(30, 58, 95, 0.1);
 }
 
 input[type="number"]:hover,
 input[type="text"]:hover,
 select:hover {
-    background: var(--light-gray);
+    background: var(--off-white);
+    border-color: #2c5282;
+    box-shadow: 0 3px 6px rgba(30, 58, 95, 0.15);
 }
 
 input[type="number"]:focus,
@@ -1453,8 +1463,9 @@ input[type="text"]:focus,
 select:focus {
     outline: none;
     background: var(--white);
-    border-color: var(--navy-blue);
-    box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.08);
+    border-color: #2c5282;
+    border-width: 2px;
+    box-shadow: 0 0 0 4px rgba(30, 58, 95, 0.2), 0 4px 8px rgba(30, 58, 95, 0.15);
 }
 
 select {
