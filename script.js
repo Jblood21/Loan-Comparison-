@@ -2185,6 +2185,7 @@ class LoanManager {
                 btn.classList.add('active');
                 this.comparisonType = btn.dataset.type;
                 this.updateComparisonTypeBanner();
+                this.togglePropertyAddressFields();
             });
         });
 
@@ -2212,6 +2213,22 @@ class LoanManager {
         const scenarioNameInput = newPanel.querySelector('input[name="scenarioName"]');
         if (scenarioNameInput) {
             scenarioNameInput.value = '';
+        }
+
+        // Reset property address
+        const propertyAddressInput = newPanel.querySelector('input[name="propertyAddress"]');
+        if (propertyAddressInput) {
+            propertyAddressInput.value = '';
+        }
+
+        // Set property address visibility based on comparison type
+        const addressGroup = newPanel.querySelector('.property-address-group');
+        if (addressGroup) {
+            if (this.comparisonType === 'different') {
+                addressGroup.classList.remove('hidden');
+            } else {
+                addressGroup.classList.add('hidden');
+            }
         }
 
         // Add new panel
@@ -2364,6 +2381,18 @@ class LoanManager {
                 <span class="banner-text">Comparing different loan options for the <strong>same property</strong></span>
             `;
         }
+    }
+
+    togglePropertyAddressFields() {
+        // Show/hide property address fields on all loan panels based on comparison type
+        const addressGroups = document.querySelectorAll('.property-address-group');
+        addressGroups.forEach(group => {
+            if (this.comparisonType === 'different') {
+                group.classList.remove('hidden');
+            } else {
+                group.classList.add('hidden');
+            }
+        });
     }
 
     updateComparisonTable() {
@@ -4224,78 +4253,40 @@ If you have any questions about these loan options, please don't hesitate to rea
 }
 
 // ============================================
-// Dark Mode Manager
+// Dark Mode Manager (uses unified ThemeManager)
 // ============================================
 const DarkMode = {
-    storageKey: 'loanComparisonDarkMode',
-
+    // Wrapper for backward compatibility - delegates to ThemeManager
     init() {
-        // Check for saved preference
-        const savedMode = localStorage.getItem(this.storageKey);
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-        // Apply dark mode if saved or system prefers it
-        if (savedMode === 'true' || (savedMode === null && prefersDark)) {
-            this.enable(false); // Don't save, just apply
+        // ThemeManager auto-initializes via theme.js
+        // This is kept for backward compatibility with existing code
+        if (typeof ThemeManager !== 'undefined') {
+            ThemeManager.init();
         }
-
-        // Set up toggle listener
-        const toggle = document.getElementById('darkModeToggle');
-        if (toggle) {
-            toggle.checked = document.documentElement.getAttribute('data-theme') === 'dark';
-            toggle.addEventListener('change', (e) => {
-                if (e.target.checked) {
-                    this.enable(true);
-                } else {
-                    this.disable(true);
-                }
-            });
-        }
-
-        // Listen for system preference changes
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-            const savedMode = localStorage.getItem(this.storageKey);
-            // Only auto-switch if user hasn't set a preference
-            if (savedMode === null) {
-                if (e.matches) {
-                    this.enable(false);
-                } else {
-                    this.disable(false);
-                }
-                // Update toggle if present
-                const toggle = document.getElementById('darkModeToggle');
-                if (toggle) toggle.checked = e.matches;
-            }
-        });
     },
 
-    enable(save = true) {
-        document.documentElement.setAttribute('data-theme', 'dark');
-        if (save) {
-            localStorage.setItem(this.storageKey, 'true');
+    enable() {
+        if (typeof ThemeManager !== 'undefined') {
+            ThemeManager.setTheme(ThemeManager.THEME_DARK);
         }
-        const toggle = document.getElementById('darkModeToggle');
-        if (toggle) toggle.checked = true;
     },
 
-    disable(save = true) {
-        document.documentElement.removeAttribute('data-theme');
-        if (save) {
-            localStorage.setItem(this.storageKey, 'false');
+    disable() {
+        if (typeof ThemeManager !== 'undefined') {
+            ThemeManager.setTheme(ThemeManager.THEME_LIGHT);
         }
-        const toggle = document.getElementById('darkModeToggle');
-        if (toggle) toggle.checked = false;
     },
 
     toggle() {
-        if (document.documentElement.getAttribute('data-theme') === 'dark') {
-            this.disable(true);
-        } else {
-            this.enable(true);
+        if (typeof ThemeManager !== 'undefined') {
+            ThemeManager.toggleTheme();
         }
     },
 
     isDark() {
+        if (typeof ThemeManager !== 'undefined') {
+            return ThemeManager.isDarkMode();
+        }
         return document.documentElement.getAttribute('data-theme') === 'dark';
     }
 };

@@ -3249,6 +3249,65 @@ input[type="range"]::-moz-range-thumb {
     flex-wrap: wrap;
 }
 
+/* Property Address Group (shown when comparing different properties) */
+.property-address-group {
+    margin-top: 15px;
+    padding: 15px;
+    background: linear-gradient(135deg, rgba(46, 125, 50, 0.06) 0%, rgba(30, 58, 95, 0.06) 100%);
+    border: 2px solid rgba(46, 125, 50, 0.25);
+    border-radius: 10px;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.property-address-group label {
+    display: flex;
+    align-items: center;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--green-primary);
+    margin-bottom: 10px;
+}
+
+.property-address-group label svg {
+    color: var(--green-primary);
+}
+
+.property-address-group input {
+    width: 100%;
+    padding: 14px 16px;
+    background: var(--white);
+    border: 2px solid var(--navy-blue);
+    border-radius: 8px;
+    font-size: 1rem;
+    color: var(--text-dark);
+    transition: all 0.2s ease;
+}
+
+.property-address-group input:focus {
+    outline: none;
+    border-color: var(--green-primary);
+    box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.15);
+}
+
+.property-address-group input::placeholder {
+    color: var(--text-muted);
+}
+
+.property-address-group.hidden {
+    display: none;
+}
+
 /* ============================================
    ARM (ADJUSTABLE RATE MORTGAGE) STYLES
    ============================================ */
