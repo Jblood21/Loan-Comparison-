@@ -138,7 +138,7 @@
 
         .auth-branding {
             flex: 1;
-            background: linear-gradient(145deg, rgba(15, 15, 26, 0.95) 0%, rgba(30, 58, 95, 0.9) 50%, rgba(27, 94, 32, 0.9) 100%);
+            background: linear-gradient(145deg, #1a365d 0%, #234e82 50%, #2d6a4f 100%);
             backdrop-filter: blur(20px);
             padding: 60px 50px;
             display: flex;
@@ -158,8 +158,8 @@
             width: 200%;
             height: 200%;
             background:
-                radial-gradient(circle at 30% 30%, rgba(46, 125, 50, 0.4) 0%, transparent 40%),
-                radial-gradient(circle at 70% 70%, rgba(30, 58, 95, 0.5) 0%, transparent 40%);
+                radial-gradient(circle at 30% 30%, rgba(74, 144, 226, 0.3) 0%, transparent 40%),
+                radial-gradient(circle at 70% 70%, rgba(64, 224, 208, 0.2) 0%, transparent 40%);
             animation: shimmer 20s infinite linear;
         }
 
@@ -191,7 +191,12 @@
             margin-bottom: 30px;
             display: flex;
             justify-content: center;
+            align-items: center;
             animation: logoFloat 3s ease-in-out infinite;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 100px rgba(255, 255, 255, 0.4);
         }
 
         @keyframes logoFloat {
@@ -202,13 +207,12 @@
         .brand-logo img {
             width: 320px;
             height: auto;
-            filter: drop-shadow(0 15px 40px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 80px rgba(46, 125, 50, 0.5));
+            filter: none;
         }
 
         .brand-logo svg {
             width: 280px;
             height: 280px;
-            filter: drop-shadow(0 15px 40px rgba(0, 0, 0, 0.6));
         }
 
         .brand-title {
@@ -523,13 +527,17 @@
                 padding: 40px 30px;
             }
 
+            .brand-logo {
+                padding: 20px 30px;
+            }
+
             .brand-logo img {
-                width: 220px;
+                width: 200px;
             }
 
             .brand-logo svg {
-                width: 180px;
-                height: 180px;
+                width: 160px;
+                height: 160px;
             }
 
             .brand-title {
