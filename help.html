@@ -2,9 +2,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
     <title>Help Center - LoanDr.</title>
+
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1e3a5f">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="LoanDr.">
+
+    <!-- Icons -->
+    <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+    <link rel="apple-touch-icon" href="icons/icon-152x152.png">
+
+    <!-- Stylesheets -->
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="app.css">
+
+    <!-- Core modules - load early for theme flash prevention -->
+    <script src="theme.js"></script>
+    <script src="security.js"></script>
+
     <style>
         /* Help Center Specific Styles */
         .help-page {
@@ -745,10 +765,13 @@
             }
         });
 
-        // Dark mode support
-        if (localStorage.getItem('loanComparisonDarkMode') === 'true') {
-            document.documentElement.setAttribute('data-theme', 'dark');
+        // Dark mode support - use ThemeManager
+        if (typeof ThemeManager !== 'undefined') {
+            ThemeManager.init();
         }
     </script>
+
+    <!-- PWA Service Worker -->
+    <script src="pwa.js" defer></script>
 </body>
 </html>

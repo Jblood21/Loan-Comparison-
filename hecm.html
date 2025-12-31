@@ -2,8 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
     <title>LoanDr. - HECM Reverse Mortgage Comparison</title>
+
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="LoanDr.">
+    <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+    <link rel="apple-touch-icon" href="icons/icon-152x152.png">
 
     <!-- Security Headers via Meta Tags -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
@@ -13,13 +22,15 @@
     <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=()">
 
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="app.css">
+    <meta name="theme-color" content="#1e3a5f">
+
+    <!-- Core modules - load early for theme flash prevention -->
+    <script src="theme.js"></script>
+    <script src="security.js"></script>
+    <script src="pwa.js" defer></script>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Apply dark mode immediately to prevent flash -->
-    <script>
-        if (localStorage.getItem('theme') === 'dark') {
-            document.documentElement.setAttribute('data-theme', 'dark');
-        }
-    </script>
 </head>
 <body>
     <!-- Page Switcher Tab -->

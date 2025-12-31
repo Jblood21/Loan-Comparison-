@@ -1146,18 +1146,11 @@ const SettingsManager = {
         document.body.style.overflow = '';
     },
 
-    toggleDarkMode() {
-        // Use unified ThemeManager
-        if (typeof ThemeManager !== 'undefined') {
-            ThemeManager.toggleTheme();
-        }
-    },
-
     loadSettings() {
         // Theme is handled by unified ThemeManager in theme.js
         // Sync toggle checkbox state with ThemeManager
         if (typeof ThemeManager !== 'undefined' && this.darkModeToggle) {
-            this.darkModeToggle.checked = ThemeManager.isDarkMode();
+            this.darkModeToggle.checked = (ThemeManager.getTheme() === 'dark');
         }
 
         // Load LO info
@@ -1903,6 +1896,11 @@ document.addEventListener('DOMContentLoaded', () => {
     ScenarioManager.init();
     HECMChartManager.init();
     PLFLookup.init();
+
+    // Ensure theme toggle is properly bound after all initializations
+    if (typeof ThemeManager !== 'undefined') {
+        ThemeManager.setupToggle();
+    }
 
     // Scenario tabs
     const tabs = document.querySelectorAll('.loan-tab');

@@ -4259,7 +4259,6 @@ const DarkMode = {
     // Wrapper for backward compatibility - delegates to ThemeManager
     init() {
         // ThemeManager auto-initializes via theme.js
-        // This is kept for backward compatibility with existing code
         if (typeof ThemeManager !== 'undefined') {
             ThemeManager.init();
         }
@@ -4267,13 +4266,13 @@ const DarkMode = {
 
     enable() {
         if (typeof ThemeManager !== 'undefined') {
-            ThemeManager.setTheme(ThemeManager.THEME_DARK);
+            ThemeManager.setTheme('dark');
         }
     },
 
     disable() {
         if (typeof ThemeManager !== 'undefined') {
-            ThemeManager.setTheme(ThemeManager.THEME_LIGHT);
+            ThemeManager.setTheme('light');
         }
     },
 
@@ -4285,7 +4284,7 @@ const DarkMode = {
 
     isDark() {
         if (typeof ThemeManager !== 'undefined') {
-            return ThemeManager.isDarkMode();
+            return ThemeManager.getTheme() === 'dark';
         }
         return document.documentElement.getAttribute('data-theme') === 'dark';
     }

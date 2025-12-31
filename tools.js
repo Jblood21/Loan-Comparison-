@@ -1787,13 +1787,9 @@ function updateWhatIfChart(loanAmount, rate, term, extra) {
     });
 }
 
-// Initialize dark mode from localStorage
+// Initialize dark mode (handled by unified ThemeManager in theme.js)
 document.addEventListener('DOMContentLoaded', () => {
-    const darkMode = localStorage.getItem('darkMode') === 'true';
-    if (darkMode) {
-        document.documentElement.setAttribute('data-theme', 'dark');
-    }
-
+    // ThemeManager handles dark mode initialization automatically
     // Initialize tool selection checkboxes
     setupToolSelection();
 });

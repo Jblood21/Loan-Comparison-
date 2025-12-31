@@ -1,0 +1,437 @@
+/* ============================================
+   LOANDR. MOBILE APP STYLES
+   PWA-specific styling for app-like experience
+   ============================================ */
+
+/* Prevent pull-to-refresh on mobile */
+html, body {
+    overscroll-behavior-y: contain;
+}
+
+/* Standalone app mode adjustments */
+@media all and (display-mode: standalone) {
+    /* Hide browser-specific elements */
+    .browser-only {
+        display: none !important;
+    }
+
+    /* Add safe area padding for notched devices */
+    body {
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+    }
+
+    /* Fixed header stays in safe area */
+    header, .page-switcher {
+        padding-top: env(safe-area-inset-top);
+    }
+
+    /* Bottom navigation adjustments */
+    .bottom-nav {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+}
+
+/* iOS-specific fixes */
+@supports (-webkit-touch-callout: none) {
+    /* Prevent text selection on iOS */
+    body {
+        -webkit-user-select: none;
+        user-select: none;
+    }
+
+    /* Allow text selection in inputs */
+    input, textarea, [contenteditable] {
+        -webkit-user-select: text;
+        user-select: text;
+    }
+
+    /* Fix iOS input zoom */
+    input, select, textarea {
+        font-size: 16px !important;
+    }
+
+    /* Fix iOS bottom bar overlap */
+    .container {
+        padding-bottom: calc(20px + env(safe-area-inset-bottom));
+    }
+}
+
+/* Touch-friendly tap targets */
+button,
+.btn,
+a.page-tab,
+.tool-nav-btn,
+.settings-btn,
+.logout-btn,
+input[type="checkbox"],
+input[type="radio"],
+select {
+    min-height: 44px;
+    min-width: 44px;
+}
+
+/* Larger touch targets for mobile */
+@media (max-width: 768px) {
+    button, .btn {
+        padding: 14px 20px;
+    }
+
+    input, select, textarea {
+        padding: 14px;
+        font-size: 16px;
+    }
+
+    .page-tab {
+        padding: 12px 16px;
+    }
+
+    .tool-nav-btn {
+        padding: 12px 18px;
+    }
+}
+
+/* Smooth scrolling for app feel */
+html {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* App-like page transitions */
+.page-content {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Loading states */
+.app-loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: opacity 0.3s ease;
+}
+
+.app-loading.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.app-loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid var(--border-color);
+    border-top-color: var(--navy-blue);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Bottom sheet style for mobile modals */
+@media (max-width: 768px) {
+    .settings-panel {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: auto !important;
+        max-height: 85vh;
+        border-radius: 20px 20px 0 0;
+        transform: translateY(100%);
+        transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+    }
+
+    .settings-panel:not(.hidden) {
+        transform: translateY(0);
+    }
+
+    .settings-panel::before {
+        content: '';
+        display: block;
+        width: 40px;
+        height: 4px;
+        background: var(--border-color);
+        border-radius: 2px;
+        margin: 12px auto;
+    }
+}
+
+/* Haptic feedback visual cue */
+button:active,
+.btn:active,
+.page-tab:active,
+.tool-nav-btn:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
+}
+
+/* App-like card styling */
+.card, .loan-card, .tool-panel {
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Mobile navigation bar */
+.mobile-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--card-bg);
+    border-top: 1px solid var(--border-color);
+    padding: 8px 0;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom));
+    z-index: 1000;
+}
+
+@media (max-width: 768px) {
+    .mobile-nav {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+    }
+
+    /* Add bottom padding to content when mobile nav is visible */
+    .container {
+        padding-bottom: 80px;
+    }
+}
+
+.mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 16px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.mobile-nav-item.active {
+    color: var(--navy-blue);
+}
+
+.mobile-nav-item svg {
+    width: 24px;
+    height: 24px;
+}
+
+/* Pull to refresh indicator */
+.pull-refresh-indicator {
+    position: fixed;
+    top: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--card-bg);
+    padding: 10px 20px;
+    border-radius: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 9999;
+    transition: top 0.3s ease;
+}
+
+.pull-refresh-indicator.visible {
+    top: 20px;
+}
+
+/* Toast notifications */
+.toast {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--dark-gray);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 9999;
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    max-width: 90%;
+    text-align: center;
+}
+
+.toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+/* Install prompt */
+.install-prompt {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    z-index: 9999;
+    display: none;
+}
+
+.install-prompt.show {
+    display: block;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.install-prompt-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.install-prompt-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+}
+
+.install-prompt-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.install-prompt-desc {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.install-prompt-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.install-prompt-btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.install-prompt-btn.primary {
+    background: var(--navy-blue);
+    color: white;
+}
+
+.install-prompt-btn.secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-muted);
+}
+
+/* Offline indicator */
+.offline-indicator {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #f44336;
+    color: white;
+    text-align: center;
+    padding: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 9999;
+    transform: translateY(-100%);
+    transition: transform 0.3s ease;
+}
+
+.offline-indicator.show {
+    transform: translateY(0);
+}
+
+/* Update available banner */
+.update-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: var(--green-primary);
+    color: white;
+    text-align: center;
+    padding: 12px 20px;
+    font-size: 14px;
+    z-index: 9999;
+    display: none;
+}
+
+.update-banner.show {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+}
+
+.update-banner button {
+    background: white;
+    color: var(--green-primary);
+    border: none;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* Dark mode adjustments for app elements */
+[data-theme="dark"] .mobile-nav,
+body.dark-mode .mobile-nav {
+    background: var(--bg-secondary);
+    border-top-color: var(--border-color);
+}
+
+[data-theme="dark"] .toast,
+body.dark-mode .toast {
+    background: var(--light-gray);
+}
+
+[data-theme="dark"] .install-prompt,
+body.dark-mode .install-prompt {
+    background: var(--bg-secondary);
+}
