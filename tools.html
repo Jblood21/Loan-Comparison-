@@ -2,8 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
     <title>LoanDr. - Mortgage Tools & Calculators</title>
+
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="LoanDr.">
+    <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+    <link rel="apple-touch-icon" href="icons/icon-152x152.png">
 
     <!-- Security Headers via Meta Tags -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
@@ -27,6 +36,14 @@
 
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="tools.css">
+    <link rel="stylesheet" href="app.css">
+    <meta name="theme-color" content="#1e3a5f">
+
+    <!-- Core modules - load early for theme flash prevention -->
+    <script src="theme.js"></script>
+    <script src="security.js"></script>
+    <script src="pwa.js" defer></script>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
@@ -1973,7 +1990,7 @@
             <!-- ==================== PROPERTY FLIP CALCULATOR ==================== -->
 
             <!-- Property Flip Calculator -->
-            <div class="tool-card featured-tool flip-calculator" data-category="analysis" id="flip-calculator-tool">
+            <div class="tool-card flip-calculator" data-category="strategy" id="flip-calculator-tool">
                 <div class="tool-card-header">
                     <label class="tool-select-checkbox" title="Select for report">
                         <input type="checkbox" class="tool-checkbox" data-tool="flip-calculator">
@@ -1989,7 +2006,7 @@
                     </div>
                     <div class="tool-title">
                         <h3>Property Flip Analyzer</h3>
-                        <span class="tool-badge featured">New</span>
+                        <span class="tool-badge strategy">Strategy</span>
                     </div>
                     <button class="tool-expand-btn" aria-label="Expand">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -2401,7 +2418,7 @@
             <!-- ==================== FINANCIAL HEALTH SCORE ==================== -->
 
             <!-- Financial Health Score -->
-            <div class="tool-card featured-tool" data-category="affordability" id="health-score-tool">
+            <div class="tool-card" data-category="affordability" id="health-score-tool">
                 <div class="tool-card-header">
                     <label class="tool-select-checkbox" title="Select for report">
                         <input type="checkbox" class="tool-checkbox" data-tool="health-score">
@@ -2414,7 +2431,7 @@
                     </div>
                     <div class="tool-title">
                         <h3>Mortgage Readiness Score</h3>
-                        <span class="tool-badge featured">Featured</span>
+                        <span class="tool-badge">Affordability</span>
                     </div>
                     <button class="tool-expand-btn" aria-label="Expand">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
