@@ -1035,12 +1035,8 @@
             } catch {}
         }
 
-        // Apply dark mode if saved
-        const darkMode = localStorage.getItem('loanComparisonDarkMode');
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (darkMode === 'true' || (darkMode === null && prefersDark)) {
-            document.documentElement.setAttribute('data-theme', 'dark');
-        }
+        // Dark mode is handled by unified ThemeManager in theme.js
+        // ThemeManager auto-initializes and applies saved theme
     </script>
 </body>
 </html>

@@ -1109,7 +1109,7 @@ const SettingsManager = {
         this.settingsBtn?.addEventListener('click', () => this.openSettings());
         this.closeSettingsBtn?.addEventListener('click', () => this.closeSettings());
         this.settingsOverlay?.addEventListener('click', () => this.closeSettings());
-        this.darkModeToggle?.addEventListener('change', () => this.toggleDarkMode());
+        // Dark mode toggle is handled by unified ThemeManager in theme.js - no duplicate listener needed
 
         // Load saved settings
         this.loadSettings();
@@ -1147,22 +1147,17 @@ const SettingsManager = {
     },
 
     toggleDarkMode() {
-        const isDark = this.darkModeToggle?.checked;
-        if (isDark) {
-            document.documentElement.setAttribute('data-theme', 'dark');
-            localStorage.setItem('theme', 'dark');
-        } else {
-            document.documentElement.removeAttribute('data-theme');
-            localStorage.setItem('theme', 'light');
+        // Use unified ThemeManager
+        if (typeof ThemeManager !== 'undefined') {
+            ThemeManager.toggleTheme();
         }
     },
 
     loadSettings() {
-        // Load theme
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark') {
-            document.documentElement.setAttribute('data-theme', 'dark');
-            if (this.darkModeToggle) this.darkModeToggle.checked = true;
+        // Theme is handled by unified ThemeManager in theme.js
+        // Sync toggle checkbox state with ThemeManager
+        if (typeof ThemeManager !== 'undefined' && this.darkModeToggle) {
+            this.darkModeToggle.checked = ThemeManager.isDarkMode();
         }
 
         // Load LO info
