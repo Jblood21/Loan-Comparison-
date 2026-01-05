@@ -5747,3 +5747,373 @@ body {
     background: #1e293b;
     color: #e2e8f0;
 }
+
+/* ============================================
+   USER-FRIENDLY LAYOUT IMPROVEMENTS
+   ============================================ */
+
+/* Enhanced Page Navigation - More prominent and clear */
+.page-switcher {
+    background: linear-gradient(to top, var(--white) 0%, var(--off-white) 100%);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.page-tab {
+    padding: 12px 16px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.page-tab.active {
+    color: var(--green-primary);
+    background: rgba(46, 125, 50, 0.08);
+}
+
+.page-tab.active::after {
+    background: var(--green-primary);
+    height: 4px;
+    width: 50px;
+}
+
+.page-tab svg {
+    width: 22px;
+    height: 22px;
+}
+
+/* Enhanced Section Headers - Clearer purpose */
+.form-section {
+    background: var(--white);
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    margin-bottom: 16px;
+}
+
+.form-section h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--navy-blue);
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--light-gray);
+}
+
+.form-section h3 svg {
+    width: 20px;
+    height: 20px;
+    color: var(--green-primary);
+}
+
+/* Section descriptions for user guidance */
+.section-description {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
+/* Enhanced Form Groups - Better visual hierarchy */
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-group label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+}
+
+.form-group label svg {
+    width: 16px;
+    height: 16px;
+    color: var(--navy-blue);
+    opacity: 0.7;
+}
+
+/* Input field improvements */
+.form-group input,
+.form-group select {
+    font-size: 1rem;
+    padding: 14px 16px;
+}
+
+/* Help text under inputs */
+.input-help {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 6px;
+    line-height: 1.4;
+}
+
+/* Enhanced Buttons - More prominent CTAs */
+.btn-primary,
+.calculate-btn,
+.generate-btn {
+    background: linear-gradient(135deg, var(--green-primary) 0%, var(--green-dark) 100%);
+    color: white;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 16px 32px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-primary:hover,
+.calculate-btn:hover,
+.generate-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4);
+}
+
+/* Secondary buttons */
+.btn-secondary {
+    background: var(--white);
+    color: var(--navy-blue);
+    font-weight: 600;
+    padding: 12px 24px;
+    border: 2px solid var(--navy-blue);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+    background: var(--navy-blue);
+    color: var(--white);
+}
+
+/* Enhanced Loan Tabs - Clearer scenario selection */
+.loan-tabs {
+    background: var(--off-white);
+    padding: 8px;
+    border-radius: 12px;
+    gap: 6px;
+}
+
+.loan-tab {
+    background: transparent;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.loan-tab:hover {
+    background: var(--white);
+    border-color: var(--light-gray);
+}
+
+.loan-tab.active {
+    background: var(--white);
+    border-color: var(--green-primary);
+    color: var(--green-primary);
+    box-shadow: 0 2px 8px rgba(46, 125, 50, 0.15);
+}
+
+/* Add loan button enhancement */
+.add-loan-btn {
+    background: linear-gradient(135deg, var(--navy-blue) 0%, var(--navy-dark) 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(30, 58, 95, 0.3);
+}
+
+.add-loan-btn:hover {
+    transform: scale(1.05);
+}
+
+/* Results section improvements */
+.results-container {
+    background: linear-gradient(135deg, var(--off-white) 0%, var(--white) 100%);
+    border: 2px solid var(--light-gray);
+    border-radius: 16px;
+    padding: 24px;
+}
+
+.result-item {
+    background: var(--white);
+    border-radius: 10px;
+    padding: 16px;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+}
+
+.result-item:hover {
+    border-color: var(--green-primary);
+    box-shadow: 0 4px 12px rgba(46, 125, 50, 0.1);
+}
+
+.result-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+
+.result-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--navy-blue);
+}
+
+/* Quick tips/info boxes */
+.info-tip {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: rgba(30, 58, 95, 0.05);
+    border-left: 4px solid var(--navy-blue);
+    padding: 14px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 16px 0;
+}
+
+.info-tip svg {
+    width: 20px;
+    height: 20px;
+    color: var(--navy-blue);
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.info-tip p {
+    font-size: 0.85rem;
+    color: var(--text-dark);
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* Warning boxes */
+.warning-tip {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: rgba(255, 152, 0, 0.08);
+    border-left: 4px solid #ff9800;
+    padding: 14px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 16px 0;
+}
+
+.warning-tip svg {
+    width: 20px;
+    height: 20px;
+    color: #ff9800;
+    flex-shrink: 0;
+}
+
+/* Success highlight */
+.success-highlight {
+    background: rgba(46, 125, 50, 0.08);
+    border: 1px solid rgba(46, 125, 50, 0.2);
+    border-radius: 8px;
+    padding: 12px 16px;
+}
+
+/* Enhanced comparison type toggle */
+.comparison-type-toggle {
+    background: var(--off-white);
+    padding: 16px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+}
+
+.comparison-type-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.comparison-type-btn {
+    flex: 1;
+    padding: 14px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.comparison-type-btn.active {
+    box-shadow: 0 4px 12px rgba(30, 58, 95, 0.2);
+}
+
+/* Improved spacing for mobile */
+@media (max-width: 768px) {
+    .form-section {
+        padding: 16px;
+        margin-bottom: 12px;
+    }
+
+    .form-section h3 {
+        font-size: 1rem;
+    }
+
+    .btn-primary,
+    .calculate-btn,
+    .generate-btn {
+        width: 100%;
+        padding: 14px 24px;
+    }
+
+    .result-value {
+        font-size: 1.2rem;
+    }
+
+    .comparison-type-buttons {
+        flex-direction: column;
+    }
+}
+
+/* Dark mode adjustments for new styles */
+[data-theme="dark"] .form-section {
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .loan-tabs {
+    background: var(--bg-tertiary);
+}
+
+[data-theme="dark"] .loan-tab.active {
+    background: var(--bg-secondary);
+}
+
+[data-theme="dark"] .results-container {
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .result-item {
+    background: var(--bg-tertiary);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .info-tip {
+    background: rgba(93, 140, 201, 0.1);
+}
+
+[data-theme="dark"] .page-switcher {
+    background: linear-gradient(to top, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+}
+
+[data-theme="dark"] .page-tab.active {
+    background: rgba(76, 175, 80, 0.15);
+}

@@ -4080,3 +4080,144 @@
         padding: 8px 6px;
     }
 }
+
+/* ============================================
+   TOOLS PAGE - USER-FRIENDLY IMPROVEMENTS
+   ============================================ */
+
+/* Tool card improvements */
+.tool-card {
+    background: var(--white);
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.tool-card:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.tool-card-header {
+    background: linear-gradient(135deg, var(--off-white) 0%, var(--white) 100%);
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.tool-title h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--navy-blue);
+    margin-bottom: 4px;
+}
+
+/* Tool content improvements */
+.tool-content {
+    padding: 24px;
+}
+
+.tool-content .form-group {
+    margin-bottom: 20px;
+}
+
+.tool-content label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+    display: block;
+}
+
+/* Calculate buttons in tools */
+.tool-content .calculate-btn,
+.tool-btn {
+    width: 100%;
+    padding: 14px 24px;
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: 10px;
+    margin-top: 10px;
+}
+
+/* Results in tools */
+.tool-results {
+    background: linear-gradient(135deg, rgba(46, 125, 50, 0.05) 0%, rgba(30, 58, 95, 0.05) 100%);
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+.result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.result-row:last-child {
+    border-bottom: none;
+}
+
+.result-row .label {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.result-row .value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--navy-blue);
+}
+
+/* Tool badges */
+.tool-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Slider improvements */
+input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: var(--light-gray);
+    outline: none;
+    margin: 10px 0;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--green-primary) 0%, var(--green-dark) 100%);
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(46, 125, 50, 0.4);
+    transition: transform 0.2s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+}
+
+/* Dark mode for tools */
+[data-theme="dark"] .tool-card {
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .tool-card-header {
+    background: var(--bg-tertiary);
+}
+
+[data-theme="dark"] .tool-results {
+    background: rgba(93, 140, 201, 0.1);
+}
