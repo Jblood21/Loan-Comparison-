@@ -485,20 +485,28 @@
 
         .demo-btn {
             width: 100%;
-            padding: 14px;
-            background: var(--white);
-            border: 1px solid var(--light-gray);
+            padding: 16px 20px;
+            background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
+            border: none;
             border-radius: 12px;
-            color: var(--dark-gray);
-            font-size: 0.95rem;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(30, 58, 95, 0.3);
         }
 
         .demo-btn:hover {
-            background: var(--off-white);
-            border-color: var(--navy-blue);
-            color: var(--navy-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(30, 58, 95, 0.4);
+        }
+
+        .demo-btn svg {
+            stroke: white;
         }
 
         .server-status {
@@ -662,9 +670,19 @@
                 <button type="submit" class="auth-btn">Create Account</button>
             </form>
 
-            <div class="divider"><span>or</span></div>
+            <div class="divider"><span>or continue with</span></div>
 
-            <button type="button" class="demo-btn" id="demoLogin">Try Demo Account</button>
+            <button type="button" class="demo-btn" id="demoLogin">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+                Try Demo Account (No Sign Up Required)
+            </button>
+
+            <p class="login-help" id="loginHelp" style="text-align: center; margin-top: 16px; color: #6c757d; font-size: 0.85rem;">
+                First time here? Click <a href="#" id="switchToSignup" style="color: #2e7d32; font-weight: 600;">Create Account</a> to get started.
+            </p>
 
             <div id="serverStatus" class="server-status"></div>
         </div>
@@ -1034,6 +1052,32 @@
                 }
             } catch {}
         }
+
+        // Switch to signup link
+        document.getElementById('switchToSignup')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.querySelector('.auth-tab[data-tab="signup"]').click();
+        });
+
+        // Update help text when switching tabs
+        document.querySelectorAll('.auth-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const helpText = document.getElementById('loginHelp');
+                if (tab.dataset.tab === 'login') {
+                    helpText.innerHTML = 'First time here? Click <a href="#" id="switchToSignup" style="color: #2e7d32; font-weight: 600;">Create Account</a> to get started.';
+                    document.getElementById('switchToSignup')?.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        document.querySelector('.auth-tab[data-tab="signup"]').click();
+                    });
+                } else {
+                    helpText.innerHTML = 'Already have an account? Click <a href="#" id="switchToLogin" style="color: #1e3a5f; font-weight: 600;">Sign In</a>.';
+                    document.getElementById('switchToLogin')?.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        document.querySelector('.auth-tab[data-tab="login"]').click();
+                    });
+                }
+            });
+        });
 
         // Dark mode is handled by unified ThemeManager in theme.js
         // ThemeManager auto-initializes and applies saved theme
