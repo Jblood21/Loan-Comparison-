@@ -601,15 +601,15 @@
             </div>
 
             <div class="auth-tabs">
-                <button class="auth-tab active" data-tab="login">Sign In</button>
-                <button class="auth-tab" data-tab="signup">Create Account</button>
+                <button class="auth-tab active" data-tab="login" onclick="switchTab('login')">Sign In</button>
+                <button class="auth-tab" data-tab="signup" onclick="switchTab('signup')">Create Account</button>
             </div>
 
             <div id="authError" class="auth-message error"></div>
             <div id="authSuccess" class="auth-message success"></div>
 
             <!-- Login Form -->
-            <form id="loginForm" class="auth-form active">
+            <form id="loginForm" class="auth-form active" onsubmit="return handleLogin(event)">
                 <div class="form-group">
                     <label for="loginEmail">Email Address</label>
                     <input type="email" id="loginEmail" placeholder="you@company.com" required autocomplete="email">
@@ -622,7 +622,7 @@
             </form>
 
             <!-- Signup Form -->
-            <form id="signupForm" class="auth-form">
+            <form id="signupForm" class="auth-form" onsubmit="return handleSignup(event)">
                 <div class="form-row">
                     <div class="form-group">
                         <label for="signupFirstName">First Name</label>
@@ -672,7 +672,7 @@
 
             <div class="divider"><span>or continue with</span></div>
 
-            <button type="button" class="demo-btn" id="demoLogin">
+            <button type="button" class="demo-btn" id="demoLogin" onclick="demoLoginClick()">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                     <circle cx="12" cy="7" r="4"/>
@@ -690,6 +690,158 @@
 
     <script src="api.js"></script>
     <script>
+        // Immediate functions for onclick handlers (defined first for reliability)
+        function switchTab(tabName) {
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+            document.querySelector('.auth-tab[data-tab="' + tabName + '"]').classList.add('active');
+            document.getElementById(tabName + 'Form').classList.add('active');
+
+            // Update header
+            var header = document.querySelector('.auth-header h2');
+            var subtext = document.querySelector('.auth-header p');
+            if (tabName === 'login') {
+                header.textContent = 'Welcome back';
+                subtext.textContent = 'Sign in to your account to continue';
+            } else {
+                header.textContent = 'Create account';
+                subtext.textContent = 'Get started with your free account';
+            }
+        }
+
+        function demoLoginClick() {
+            var demoUser = {
+                firstName: 'Demo',
+                lastName: 'User',
+                company: 'Demo Mortgage Co.',
+                email: 'demo@example.com',
+                phone: '(555) 123-4567',
+                nmls: '123456'
+            };
+            var session = {
+                token: 'demo-' + Date.now(),
+                user: demoUser,
+                createdAt: Date.now(),
+                isDemo: true
+            };
+            sessionStorage.setItem('userSession', JSON.stringify(session));
+            alert('Demo login successful! Redirecting...');
+            window.location.href = 'index.html';
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            var email = document.getElementById('loginEmail').value;
+            var password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) {
+                alert('Please enter email and password');
+                return false;
+            }
+
+            // Check localStorage for user
+            var users = JSON.parse(localStorage.getItem('loanCompUsers') || '{}');
+            var user = users[email.toLowerCase()];
+
+            if (!user) {
+                alert('No account found. Please create an account first.');
+                return false;
+            }
+
+            // Simple password check
+            var hash = 0;
+            var str = password + 'loanCompSalt2024';
+            for (var i = 0; i < str.length; i++) {
+                var char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            var passwordHash = hash.toString(16);
+
+            if (user.passwordHash !== passwordHash) {
+                alert('Incorrect password');
+                return false;
+            }
+
+            // Create session
+            var session = {
+                token: 'local-' + Date.now(),
+                user: user,
+                createdAt: Date.now()
+            };
+            sessionStorage.setItem('userSession', JSON.stringify(session));
+            alert('Login successful! Redirecting...');
+            window.location.href = 'index.html';
+            return false;
+        }
+
+        function handleSignup(e) {
+            e.preventDefault();
+            var firstName = document.getElementById('signupFirstName').value;
+            var lastName = document.getElementById('signupLastName').value;
+            var company = document.getElementById('signupCompany').value;
+            var email = document.getElementById('signupEmail').value;
+            var phone = document.getElementById('signupPhone').value;
+            var nmls = document.getElementById('signupNMLS').value;
+            var password = document.getElementById('signupPassword').value;
+            var confirm = document.getElementById('signupConfirm').value;
+
+            if (!firstName || !lastName || !email || !password) {
+                alert('Please fill in all required fields');
+                return false;
+            }
+
+            if (password.length < 8) {
+                alert('Password must be at least 8 characters');
+                return false;
+            }
+
+            if (password !== confirm) {
+                alert('Passwords do not match');
+                return false;
+            }
+
+            // Hash password
+            var hash = 0;
+            var str = password + 'loanCompSalt2024';
+            for (var i = 0; i < str.length; i++) {
+                var char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            var passwordHash = hash.toString(16);
+
+            // Save user
+            var users = JSON.parse(localStorage.getItem('loanCompUsers') || '{}');
+            if (users[email.toLowerCase()]) {
+                alert('An account with this email already exists');
+                return false;
+            }
+
+            users[email.toLowerCase()] = {
+                firstName: firstName,
+                lastName: lastName,
+                company: company,
+                email: email.toLowerCase(),
+                phone: phone,
+                nmls: nmls,
+                passwordHash: passwordHash,
+                createdAt: new Date().toISOString()
+            };
+            localStorage.setItem('loanCompUsers', JSON.stringify(users));
+
+            // Create session
+            var session = {
+                token: 'local-' + Date.now(),
+                user: users[email.toLowerCase()],
+                createdAt: Date.now()
+            };
+            sessionStorage.setItem('userSession', JSON.stringify(session));
+            alert('Account created! Redirecting...');
+            window.location.href = 'index.html';
+            return false;
+        }
+
         // Security utilities
         const Security = {
             escapeHtml(str) {
