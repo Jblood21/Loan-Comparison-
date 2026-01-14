@@ -28,34 +28,14 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="tools.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Apply dark mode immediately to prevent flash -->
+    <script>
+        if (localStorage.getItem('loanComparisonDarkMode') === 'true') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+    </script>
 </head>
 <body>
-    <!-- Page Switcher Tab -->
-    <div class="page-switcher">
-        <a href="index.html" class="page-tab" data-page="forward">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                <polyline points="9 22 9 12 15 12 15 22"/>
-            </svg>
-            <span>Forward Mortgages</span>
-        </a>
-        <a href="hecm.html" class="page-tab" data-page="hecm">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="8" r="5"/>
-                <path d="M20 21a8 8 0 0 0-16 0"/>
-                <path d="M12 13v8"/>
-                <path d="M9 18h6"/>
-            </svg>
-            <span>Reverse Mortgages (HECM)</span>
-        </a>
-        <a href="tools.html" class="page-tab active" data-page="tools">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
-            </svg>
-            <span>Mortgage Tools</span>
-        </a>
-    </div>
-
     <div class="container">
         <header>
             <div class="header-content">
@@ -80,6 +60,130 @@
                 </div>
             </div>
         </header>
+
+        <!-- Settings Panel (Slide-out) -->
+        <div class="settings-panel hidden" id="settingsPanel">
+            <div class="settings-header">
+                <h2>Settings</h2>
+                <button class="close-settings" id="closeSettings">&times;</button>
+            </div>
+
+            <div class="settings-body">
+                <!-- Appearance Settings -->
+                <div class="settings-section">
+                    <h3>Appearance</h3>
+                    <p class="settings-note">Customize the look and feel of the application</p>
+
+                    <div class="branding-toggle">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="darkModeToggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="toggle-text">Dark Mode</span>
+                    </div>
+                </div>
+
+                <!-- Account Info -->
+                <div class="settings-section">
+                    <h3>My Account</h3>
+                    <p class="settings-note">Your information for documents and contact details</p>
+
+                    <div class="settings-form">
+                        <div class="form-group">
+                            <label>Your Name</label>
+                            <input type="text" id="loName" placeholder="John Smith">
+                        </div>
+                        <div class="form-group">
+                            <label>Company Name</label>
+                            <input type="text" id="loCompany" placeholder="ABC Mortgage">
+                        </div>
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                            <input type="tel" id="loPhone" placeholder="(555) 123-4567">
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="loEmail" placeholder="john@abcmortgage.com">
+                        </div>
+                        <div class="form-group">
+                            <label>NMLS #</label>
+                            <input type="text" id="loNMLS" placeholder="123456">
+                        </div>
+                    </div>
+
+                    <button class="save-settings-btn" id="saveLOSettings">Save Loan Officer Info</button>
+                </div>
+
+                <!-- Lender Information -->
+                <div class="settings-section">
+                    <h3>Lender Information</h3>
+                    <p class="settings-note">Enter your lending institution's details for documents and branding</p>
+
+                    <div class="settings-form">
+                        <div class="form-group">
+                            <label>Lender Name</label>
+                            <input type="text" id="lenderName" placeholder="First National Bank">
+                        </div>
+                        <div class="form-group">
+                            <label>Lender NMLS #</label>
+                            <input type="text" id="lenderNMLS" placeholder="123456">
+                        </div>
+                        <div class="form-group">
+                            <label>Main Phone</label>
+                            <input type="tel" id="lenderPhone" placeholder="(800) 555-1234">
+                        </div>
+                        <div class="form-group">
+                            <label>Website</label>
+                            <input type="url" id="lenderWebsite" placeholder="www.firstnationalbank.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Address</label>
+                            <input type="text" id="lenderAddress" placeholder="123 Main Street, Suite 100">
+                        </div>
+                        <div class="form-group">
+                            <label>City, State ZIP</label>
+                            <input type="text" id="lenderCityStateZip" placeholder="New York, NY 10001">
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Equal Housing Lender Statement</label>
+                            <textarea id="lenderDisclaimer" rows="2" placeholder="Equal Housing Lender. NMLS# 123456"></textarea>
+                        </div>
+                    </div>
+
+                    <button class="save-settings-btn" id="saveLenderSettings">Save Lender Info</button>
+                </div>
+
+                <!-- Help & Support Section -->
+                <div class="settings-section help-section">
+                    <h3>Help & Support</h3>
+                    <p class="settings-note">Get help using LoanDr. or contact us with questions</p>
+
+                    <div class="help-links">
+                        <a href="help.html" class="help-center-link">
+                            <svg class="help-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                            <div class="help-link-content">
+                                <strong>Help Center</strong>
+                                <span>Guides, FAQs, glossary, and tutorials</span>
+                            </div>
+                            <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                        </a>
+                        <a href="help.html#contact" class="help-center-link">
+                            <svg class="help-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                            <div class="help-link-content">
+                                <strong>Contact Support</strong>
+                                <span>Send us a message</span>
+                            </div>
+                            <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                        </a>
+                    </div>
+
+                    <div class="help-version">
+                        <small>LoanDr. v1.0 | Made for Loan Officers</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="settings-overlay hidden" id="settingsOverlay"></div>
 
         <!-- Tools Hero Section -->
         <section class="tools-hero">
@@ -112,6 +216,9 @@
                     <div class="tool-title">
                         <h3>Debt-to-Income Calculator</h3>
                         <span class="tool-badge">Affordability</span>
+                    </div>
+                    <div class="tool-select-checkbox">
+                        <input type="checkbox" class="tool-export-check" data-tool="dti" title="Add to report">
                     </div>
                     <button class="tool-expand-btn" aria-label="Expand">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -256,6 +363,9 @@
                         <h3>Rent vs Buy Calculator</h3>
                         <span class="tool-badge">Affordability</span>
                     </div>
+                    <div class="tool-select-checkbox">
+                        <input type="checkbox" class="tool-export-check" data-tool="rent-buy" title="Add to report">
+                    </div>
                     <button class="tool-expand-btn" aria-label="Expand">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polyline points="6 9 12 15 18 9"/>
@@ -386,6 +496,9 @@
                         <h3>Loan Program Eligibility</h3>
                         <span class="tool-badge">Affordability</span>
                     </div>
+                    <div class="tool-select-checkbox">
+                        <input type="checkbox" class="tool-export-check" data-tool="eligibility" title="Add to report">
+                    </div>
                     <button class="tool-expand-btn" aria-label="Expand">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polyline points="6 9 12 15 18 9"/>
@@ -480,6 +593,9 @@
                     <div class="tool-title">
                         <h3>Amortization Schedule</h3>
                         <span class="tool-badge comparison">Comparison</span>
+                    </div>
+                    <div class="tool-select-checkbox">
+                        <input type="checkbox" class="tool-export-check" data-tool="amortization" title="Add to report">
                     </div>
                     <button class="tool-expand-btn" aria-label="Expand">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -610,6 +726,9 @@
                     <div class="tool-title">
                         <h3>ARM vs Fixed-Rate</h3>
                         <span class="tool-badge comparison">Comparison</span>
+                    </div>
+                    <div class="tool-select-checkbox">
+                        <input type="checkbox" class="tool-export-check" data-tool="arm-fixed" title="Add to report">
                     </div>
                     <button class="tool-expand-btn" aria-label="Expand">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -753,6 +872,9 @@
                     <div class="tool-title">
                         <h3>HELOC vs Cash-Out Refi</h3>
                         <span class="tool-badge comparison">Comparison</span>
+                    </div>
+                    <div class="tool-select-checkbox">
+                        <input type="checkbox" class="tool-export-check" data-tool="heloc-refi" title="Add to report">
                     </div>
                     <button class="tool-expand-btn" aria-label="Expand">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -918,6 +1040,9 @@
                         <h3>PMI Removal Timeline</h3>
                         <span class="tool-badge analysis">Analysis</span>
                     </div>
+                    <div class="tool-select-checkbox">
+                        <input type="checkbox" class="tool-export-check" data-tool="pmi" title="Add to report">
+                    </div>
                     <button class="tool-expand-btn" aria-label="Expand">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polyline points="6 9 12 15 18 9"/>
@@ -1048,6 +1173,9 @@
                         <h3>Points Breakeven Calculator</h3>
                         <span class="tool-badge analysis">Analysis</span>
                     </div>
+                    <div class="tool-select-checkbox">
+                        <input type="checkbox" class="tool-export-check" data-tool="points" title="Add to report">
+                    </div>
                     <button class="tool-expand-btn" aria-label="Expand">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polyline points="6 9 12 15 18 9"/>
@@ -1169,6 +1297,9 @@
                         <h3>Refinance Breakeven</h3>
                         <span class="tool-badge analysis">Analysis</span>
                     </div>
+                    <div class="tool-select-checkbox">
+                        <input type="checkbox" class="tool-export-check" data-tool="refi-breakeven" title="Add to report">
+                    </div>
                     <button class="tool-expand-btn" aria-label="Expand">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polyline points="6 9 12 15 18 9"/>
@@ -1283,6 +1414,9 @@
                     <div class="tool-title">
                         <h3>Total Cost of Ownership</h3>
                         <span class="tool-badge analysis">Analysis</span>
+                    </div>
+                    <div class="tool-select-checkbox">
+                        <input type="checkbox" class="tool-export-check" data-tool="tco" title="Add to report">
                     </div>
                     <button class="tool-expand-btn" aria-label="Expand">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1416,6 +1550,9 @@
                         <h3>Buydown Calculator</h3>
                         <span class="tool-badge strategy">Strategy</span>
                     </div>
+                    <div class="tool-select-checkbox">
+                        <input type="checkbox" class="tool-export-check" data-tool="buydown" title="Add to report">
+                    </div>
                     <button class="tool-expand-btn" aria-label="Expand">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polyline points="6 9 12 15 18 9"/>
@@ -1489,6 +1626,9 @@
                     <div class="tool-title">
                         <h3>What-If Simulator</h3>
                         <span class="tool-badge strategy">Strategy</span>
+                    </div>
+                    <div class="tool-select-checkbox">
+                        <input type="checkbox" class="tool-export-check" data-tool="whatif" title="Add to report">
                     </div>
                     <button class="tool-expand-btn" aria-label="Expand">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1588,7 +1728,650 @@
                 </div>
             </div>
 
+            <!-- Buy vs Keep (Current Home) Calculator -->
+            <div class="tool-card large" data-category="comparison" id="buy-keep-tool">
+                <div class="tool-card-header">
+                    <div class="tool-icon comparison">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                            <path d="M9 22V12h6v10"/>
+                        </svg>
+                    </div>
+                    <div class="tool-title">
+                        <h3>Buy vs Keep Current Home</h3>
+                        <span class="tool-badge comparison">Comparison</span>
+                    </div>
+                    <div class="tool-select-checkbox">
+                        <input type="checkbox" class="tool-export-check" data-tool="buy-keep" title="Add to report">
+                    </div>
+                    <button class="tool-expand-btn" aria-label="Expand">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </button>
+                </div>
+                <p class="tool-description">Compare staying in your current home vs buying a new one</p>
+                <div class="tool-content">
+                    <div class="buy-keep-columns">
+                        <div class="buy-keep-column">
+                            <h4>Current Home</h4>
+                            <div class="tool-input-group">
+                                <label>Current Home Value</label>
+                                <div class="input-with-icon">
+                                    <span class="input-icon">$</span>
+                                    <input type="number" id="keep-home-value" value="400000" placeholder="400,000">
+                                </div>
+                            </div>
+                            <div class="tool-input-group">
+                                <label>Current Mortgage Balance</label>
+                                <div class="input-with-icon">
+                                    <span class="input-icon">$</span>
+                                    <input type="number" id="keep-mortgage-balance" value="250000" placeholder="250,000">
+                                </div>
+                            </div>
+                            <div class="tool-input-group">
+                                <label>Current Monthly Payment</label>
+                                <div class="input-with-icon">
+                                    <span class="input-icon">$</span>
+                                    <input type="number" id="keep-monthly-payment" value="1800" placeholder="1,800">
+                                </div>
+                            </div>
+                            <div class="tool-input-group">
+                                <label>Years Remaining on Mortgage</label>
+                                <input type="number" id="keep-years-remaining" value="22" placeholder="22">
+                            </div>
+                            <div class="tool-input-group">
+                                <label>Annual Maintenance Cost</label>
+                                <div class="input-with-icon">
+                                    <span class="input-icon">$</span>
+                                    <input type="number" id="keep-maintenance" value="4000" placeholder="4,000">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="buy-keep-column">
+                            <h4>New Home</h4>
+                            <div class="tool-input-group">
+                                <label>New Home Purchase Price</label>
+                                <div class="input-with-icon">
+                                    <span class="input-icon">$</span>
+                                    <input type="number" id="buy-home-price" value="550000" placeholder="550,000">
+                                </div>
+                            </div>
+                            <div class="tool-input-group">
+                                <label>Down Payment</label>
+                                <div class="input-with-icon">
+                                    <span class="input-icon">$</span>
+                                    <input type="number" id="buy-down-payment" value="110000" placeholder="110,000">
+                                </div>
+                            </div>
+                            <div class="tool-input-group">
+                                <label>Interest Rate</label>
+                                <div class="input-with-icon">
+                                    <input type="number" id="buy-interest-rate" value="6.5" step="0.125" placeholder="6.5">
+                                    <span class="input-icon right">%</span>
+                                </div>
+                            </div>
+                            <div class="tool-input-group">
+                                <label>Loan Term</label>
+                                <select id="buy-loan-term">
+                                    <option value="30" selected>30 Years</option>
+                                    <option value="15">15 Years</option>
+                                </select>
+                            </div>
+                            <div class="tool-input-group">
+                                <label>Estimated Closing Costs</label>
+                                <div class="input-with-icon">
+                                    <span class="input-icon">$</span>
+                                    <input type="number" id="buy-closing-costs" value="15000" placeholder="15,000">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tool-input-group">
+                        <label>Expected Annual Home Appreciation</label>
+                        <div class="input-with-icon" style="max-width: 200px;">
+                            <input type="number" id="buy-keep-appreciation" value="3" step="0.5" placeholder="3">
+                            <span class="input-icon right">%</span>
+                        </div>
+                    </div>
+                    <button class="tool-calculate-btn" onclick="calculateBuyVsKeep()">Compare Options</button>
+                    <div class="tool-results" id="buy-keep-results">
+                        <div class="buy-keep-comparison">
+                            <div class="buy-keep-card keep">
+                                <h4>Keep Current Home</h4>
+                                <div class="buy-keep-stat">
+                                    <span class="label">Monthly Cost</span>
+                                    <span class="value" id="keep-monthly-cost">$0</span>
+                                </div>
+                                <div class="buy-keep-stat">
+                                    <span class="label">5-Year Total Cost</span>
+                                    <span class="value" id="keep-5yr-cost">$0</span>
+                                </div>
+                                <div class="buy-keep-stat">
+                                    <span class="label">5-Year Equity Gain</span>
+                                    <span class="value" id="keep-5yr-equity">$0</span>
+                                </div>
+                                <div class="buy-keep-stat highlight">
+                                    <span class="label">5-Year Net Position</span>
+                                    <span class="value" id="keep-5yr-net">$0</span>
+                                </div>
+                            </div>
+                            <div class="buy-keep-vs">VS</div>
+                            <div class="buy-keep-card buy">
+                                <h4>Buy New Home</h4>
+                                <div class="buy-keep-stat">
+                                    <span class="label">Monthly Cost</span>
+                                    <span class="value" id="buy-monthly-cost">$0</span>
+                                </div>
+                                <div class="buy-keep-stat">
+                                    <span class="label">5-Year Total Cost</span>
+                                    <span class="value" id="buy-5yr-cost">$0</span>
+                                </div>
+                                <div class="buy-keep-stat">
+                                    <span class="label">5-Year Equity Gain</span>
+                                    <span class="value" id="buy-5yr-equity">$0</span>
+                                </div>
+                                <div class="buy-keep-stat highlight">
+                                    <span class="label">5-Year Net Position</span>
+                                    <span class="value" id="buy-5yr-net">$0</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="buy-keep-recommendation" id="buy-keep-recommendation"></div>
+                        <div class="buy-keep-chart-container">
+                            <canvas id="buyKeepChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rent Increase Simulator -->
+            <div class="tool-card large" data-category="strategy" id="rent-simulator-tool">
+                <div class="tool-card-header">
+                    <div class="tool-icon strategy">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 3v18h18"/>
+                            <path d="M18 17V9"/>
+                            <path d="M13 17V5"/>
+                            <path d="M8 17v-3"/>
+                        </svg>
+                    </div>
+                    <div class="tool-title">
+                        <h3>Rent Increase Simulator</h3>
+                        <span class="tool-badge strategy">Strategy</span>
+                    </div>
+                    <div class="tool-select-checkbox">
+                        <input type="checkbox" class="tool-export-check" data-tool="rent-simulator" title="Add to report">
+                    </div>
+                    <button class="tool-expand-btn" aria-label="Expand">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </button>
+                </div>
+                <p class="tool-description">Project future rent costs and compare to buying</p>
+                <div class="tool-content">
+                    <div class="rent-sim-inputs">
+                        <div class="tool-input-group">
+                            <label>Current Monthly Rent</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="rent-sim-current" value="2000" placeholder="2,000">
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Expected Annual Rent Increase</label>
+                            <div class="input-with-icon">
+                                <input type="number" id="rent-sim-increase" value="5" step="0.5" placeholder="5">
+                                <span class="input-icon right">%</span>
+                            </div>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Years to Project</label>
+                            <select id="rent-sim-years">
+                                <option value="5">5 Years</option>
+                                <option value="10" selected>10 Years</option>
+                                <option value="15">15 Years</option>
+                                <option value="20">20 Years</option>
+                                <option value="30">30 Years</option>
+                            </select>
+                        </div>
+                        <div class="tool-input-group">
+                            <label>Compare to Mortgage Payment</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="rent-sim-mortgage" value="2200" placeholder="2,200">
+                            </div>
+                        </div>
+                    </div>
+                    <button class="tool-calculate-btn" onclick="calculateRentSimulator()">Project Rent</button>
+                    <div class="tool-results" id="rent-sim-results">
+                        <div class="rent-sim-summary">
+                            <div class="rent-sim-stat">
+                                <span class="label">Rent in Year 1</span>
+                                <span class="value" id="rent-sim-year1">$0/mo</span>
+                            </div>
+                            <div class="rent-sim-stat">
+                                <span class="label">Rent at End</span>
+                                <span class="value" id="rent-sim-final">$0/mo</span>
+                            </div>
+                            <div class="rent-sim-stat">
+                                <span class="label">Total Rent Paid</span>
+                                <span class="value" id="rent-sim-total">$0</span>
+                            </div>
+                            <div class="rent-sim-stat highlight">
+                                <span class="label">Year Rent Exceeds Mortgage</span>
+                                <span class="value" id="rent-sim-crossover">Year 0</span>
+                            </div>
+                        </div>
+                        <div class="rent-sim-table-wrapper">
+                            <table class="rent-sim-table">
+                                <thead>
+                                    <tr>
+                                        <th>Year</th>
+                                        <th>Monthly Rent</th>
+                                        <th>Annual Rent</th>
+                                        <th>Cumulative Rent</th>
+                                        <th>vs Mortgage</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rent-sim-table-body"></tbody>
+                            </table>
+                        </div>
+                        <div class="rent-sim-chart-container">
+                            <canvas id="rentSimChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Life Events Timeline Calculator -->
+            <div class="tool-card large" data-category="strategy" id="life-events-tool">
+                <div class="tool-card-header">
+                    <div class="tool-icon strategy">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                    </div>
+                    <div class="tool-title">
+                        <h3>Life Events Timeline</h3>
+                        <span class="tool-badge strategy">Strategy</span>
+                    </div>
+                    <div class="tool-select-checkbox">
+                        <input type="checkbox" class="tool-export-check" data-tool="life-events" title="Add to report">
+                    </div>
+                    <button class="tool-expand-btn" aria-label="Expand">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </button>
+                </div>
+                <p class="tool-description">See how your mortgage fits around major life milestones like retirement, college, and career changes</p>
+                <div class="tool-content">
+                    <div class="life-events-section">
+                        <h4>Mortgage Details</h4>
+                        <div class="tool-form-grid">
+                            <div class="tool-input-group">
+                                <label>Loan Amount</label>
+                                <div class="input-with-icon">
+                                    <span class="input-icon">$</span>
+                                    <input type="number" id="le-loan-amount" value="400000" placeholder="400,000">
+                                </div>
+                            </div>
+                            <div class="tool-input-group">
+                                <label>Interest Rate</label>
+                                <div class="input-with-icon">
+                                    <input type="number" id="le-rate" value="6.5" step="0.125" placeholder="6.5">
+                                    <span class="input-icon right">%</span>
+                                </div>
+                            </div>
+                            <div class="tool-input-group">
+                                <label>Loan Term</label>
+                                <select id="le-term">
+                                    <option value="30" selected>30 Years</option>
+                                    <option value="20">20 Years</option>
+                                    <option value="15">15 Years</option>
+                                </select>
+                            </div>
+                            <div class="tool-input-group">
+                                <label>Your Current Age</label>
+                                <input type="number" id="le-current-age" value="35" placeholder="35">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="life-events-section">
+                        <h4>Life Events (Check all that apply)</h4>
+                        <div class="life-events-grid">
+                            <div class="life-event-item">
+                                <label class="event-checkbox">
+                                    <input type="checkbox" id="le-retirement" checked>
+                                    <span class="event-label">Retirement</span>
+                                </label>
+                                <div class="event-detail">
+                                    <label>Target Age</label>
+                                    <input type="number" id="le-retirement-age" value="65" placeholder="65">
+                                </div>
+                            </div>
+                            <div class="life-event-item">
+                                <label class="event-checkbox">
+                                    <input type="checkbox" id="le-college">
+                                    <span class="event-label">Child's College</span>
+                                </label>
+                                <div class="event-detail">
+                                    <label>Years Until College</label>
+                                    <input type="number" id="le-college-years" value="10" placeholder="10">
+                                </div>
+                            </div>
+                            <div class="life-event-item">
+                                <label class="event-checkbox">
+                                    <input type="checkbox" id="le-career-change">
+                                    <span class="event-label">Career Change</span>
+                                </label>
+                                <div class="event-detail">
+                                    <label>Years From Now</label>
+                                    <input type="number" id="le-career-years" value="5" placeholder="5">
+                                </div>
+                            </div>
+                            <div class="life-event-item">
+                                <label class="event-checkbox">
+                                    <input type="checkbox" id="le-downsize">
+                                    <span class="event-label">Plan to Downsize</span>
+                                </label>
+                                <div class="event-detail">
+                                    <label>Years From Now</label>
+                                    <input type="number" id="le-downsize-years" value="20" placeholder="20">
+                                </div>
+                            </div>
+                            <div class="life-event-item">
+                                <label class="event-checkbox">
+                                    <input type="checkbox" id="le-paid-off-goal">
+                                    <span class="event-label">Payoff Goal</span>
+                                </label>
+                                <div class="event-detail">
+                                    <label>Target Age</label>
+                                    <input type="number" id="le-payoff-age" value="60" placeholder="60">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="tool-calculate-btn" onclick="calculateLifeEvents()">Generate Timeline</button>
+
+                    <div class="tool-results" id="life-events-results">
+                        <div class="life-events-timeline" id="life-events-timeline"></div>
+                        <div class="life-events-insights" id="life-events-insights"></div>
+                        <div class="life-events-chart-container">
+                            <canvas id="lifeEventsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mortgage Stress Test Calculator -->
+            <div class="tool-card large" data-category="analysis" id="stress-test-tool">
+                <div class="tool-card-header">
+                    <div class="tool-icon analysis">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                            <line x1="12" y1="9" x2="12" y2="13"/>
+                            <line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                    </div>
+                    <div class="tool-title">
+                        <h3>Mortgage Stress Test</h3>
+                        <span class="tool-badge analysis">Analysis</span>
+                    </div>
+                    <div class="tool-select-checkbox">
+                        <input type="checkbox" class="tool-export-check" data-tool="stress-test" title="Add to report">
+                    </div>
+                    <button class="tool-expand-btn" aria-label="Expand">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </button>
+                </div>
+                <p class="tool-description">Test how your mortgage holds up against worst-case scenarios like rate increases, income loss, and market downturns</p>
+                <div class="tool-content">
+                    <div class="stress-test-section">
+                        <h4>Your Current Situation</h4>
+                        <div class="tool-form-grid">
+                            <div class="tool-input-group">
+                                <label>Home Value</label>
+                                <div class="input-with-icon">
+                                    <span class="input-icon">$</span>
+                                    <input type="number" id="st-home-value" value="500000" placeholder="500,000">
+                                </div>
+                            </div>
+                            <div class="tool-input-group">
+                                <label>Loan Amount</label>
+                                <div class="input-with-icon">
+                                    <span class="input-icon">$</span>
+                                    <input type="number" id="st-loan-amount" value="400000" placeholder="400,000">
+                                </div>
+                            </div>
+                            <div class="tool-input-group">
+                                <label>Current Interest Rate</label>
+                                <div class="input-with-icon">
+                                    <input type="number" id="st-rate" value="6.5" step="0.125" placeholder="6.5">
+                                    <span class="input-icon right">%</span>
+                                </div>
+                            </div>
+                            <div class="tool-input-group">
+                                <label>Loan Term (Years)</label>
+                                <select id="st-term">
+                                    <option value="30" selected>30 Years</option>
+                                    <option value="20">20 Years</option>
+                                    <option value="15">15 Years</option>
+                                </select>
+                            </div>
+                            <div class="tool-input-group">
+                                <label>Monthly Gross Income</label>
+                                <div class="input-with-icon">
+                                    <span class="input-icon">$</span>
+                                    <input type="number" id="st-income" value="12000" placeholder="12,000">
+                                </div>
+                            </div>
+                            <div class="tool-input-group">
+                                <label>Monthly Savings/Emergency Fund</label>
+                                <div class="input-with-icon">
+                                    <span class="input-icon">$</span>
+                                    <input type="number" id="st-savings" value="25000" placeholder="25,000">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stress-test-section">
+                        <h4>Stress Test Scenarios</h4>
+                        <div class="stress-scenarios">
+                            <div class="stress-scenario">
+                                <div class="scenario-header">
+                                    <label class="scenario-checkbox">
+                                        <input type="checkbox" id="st-rate-increase" checked>
+                                        <span class="scenario-icon rate">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                                                <polyline points="17 6 23 6 23 12"/>
+                                            </svg>
+                                        </span>
+                                        <span class="scenario-label">Interest Rate Spike</span>
+                                    </label>
+                                </div>
+                                <p class="scenario-desc">What if rates jump when your ARM adjusts?</p>
+                                <div class="scenario-input">
+                                    <label>Rate Increase</label>
+                                    <div class="input-with-icon small">
+                                        <input type="number" id="st-rate-increase-amt" value="2" step="0.5" placeholder="2">
+                                        <span class="input-icon right">%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="stress-scenario">
+                                <div class="scenario-header">
+                                    <label class="scenario-checkbox">
+                                        <input type="checkbox" id="st-income-loss" checked>
+                                        <span class="scenario-icon income">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                                                <line x1="1" y1="10" x2="23" y2="10"/>
+                                            </svg>
+                                        </span>
+                                        <span class="scenario-label">Income Disruption</span>
+                                    </label>
+                                </div>
+                                <p class="scenario-desc">How long can you survive with reduced income?</p>
+                                <div class="scenario-input">
+                                    <label>Income Reduction</label>
+                                    <div class="input-with-icon small">
+                                        <input type="number" id="st-income-loss-pct" value="50" step="10" placeholder="50">
+                                        <span class="input-icon right">%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="stress-scenario">
+                                <div class="scenario-header">
+                                    <label class="scenario-checkbox">
+                                        <input type="checkbox" id="st-market-drop" checked>
+                                        <span class="scenario-icon market">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                                                <polyline points="9 22 9 12 15 12 15 22"/>
+                                            </svg>
+                                        </span>
+                                        <span class="scenario-label">Market Downturn</span>
+                                    </label>
+                                </div>
+                                <p class="scenario-desc">What if home values drop significantly?</p>
+                                <div class="scenario-input">
+                                    <label>Value Decline</label>
+                                    <div class="input-with-icon small">
+                                        <input type="number" id="st-market-drop-pct" value="20" step="5" placeholder="20">
+                                        <span class="input-icon right">%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="stress-scenario">
+                                <div class="scenario-header">
+                                    <label class="scenario-checkbox">
+                                        <input type="checkbox" id="st-emergency-sell">
+                                        <span class="scenario-icon sell">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <circle cx="9" cy="21" r="1"/>
+                                                <circle cx="20" cy="21" r="1"/>
+                                                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                                            </svg>
+                                        </span>
+                                        <span class="scenario-label">Forced Sale</span>
+                                    </label>
+                                </div>
+                                <p class="scenario-desc">Could you sell and walk away without owing?</p>
+                                <div class="scenario-input">
+                                    <label>Selling Costs</label>
+                                    <div class="input-with-icon small">
+                                        <input type="number" id="st-selling-costs" value="8" step="1" placeholder="8">
+                                        <span class="input-icon right">%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="tool-calculate-btn" onclick="calculateStressTest()">Run Stress Test</button>
+
+                    <div class="tool-results" id="stress-test-results">
+                        <div class="stress-test-summary">
+                            <div class="stress-score-container">
+                                <div class="stress-score" id="stress-score">
+                                    <svg viewBox="0 0 100 50">
+                                        <path class="score-bg" d="M 10 50 A 40 40 0 0 1 90 50"/>
+                                        <path class="score-fill" id="stress-score-fill" d="M 10 50 A 40 40 0 0 1 90 50"/>
+                                    </svg>
+                                    <div class="score-value" id="stress-score-value">0</div>
+                                    <div class="score-label">Resilience Score</div>
+                                </div>
+                            </div>
+                            <div class="stress-rating" id="stress-rating"></div>
+                        </div>
+                        <div class="stress-scenarios-results" id="stress-scenarios-results"></div>
+                        <div class="stress-recommendations" id="stress-recommendations"></div>
+                    </div>
+                </div>
+            </div>
+
         </div>
+
+        <!-- Tool Export Floating Button -->
+        <div class="tool-export-fab" id="toolExportFab" style="display:none;">
+            <span class="export-count" id="exportCount">0</span>
+            <button class="export-fab-btn" onclick="openToolExportModal()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <polyline points="10 9 9 9 8 9"/>
+                </svg>
+                Generate Report
+            </button>
+        </div>
+
+        <!-- Tool Export Modal -->
+        <div class="tool-export-modal hidden" id="toolExportModal">
+            <div class="tool-export-modal-content">
+                <div class="tool-export-modal-header">
+                    <h2>Generate Tools Report</h2>
+                    <button class="close-modal" onclick="closeToolExportModal()">&times;</button>
+                </div>
+                <div class="tool-export-modal-body">
+                    <div class="export-client-info">
+                        <h4>Client Information</h4>
+                        <div class="export-form-row">
+                            <div class="tool-input-group">
+                                <label>Client Name</label>
+                                <input type="text" id="export-client-name" placeholder="John & Jane Doe">
+                            </div>
+                            <div class="tool-input-group">
+                                <label>Property Address</label>
+                                <input type="text" id="export-property-address" placeholder="123 Main St, City, State">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="export-selected-tools">
+                        <h4>Selected Calculators</h4>
+                        <div id="export-tools-list"></div>
+                    </div>
+                    <div class="export-notes">
+                        <h4>Additional Notes</h4>
+                        <textarea id="export-notes" rows="3" placeholder="Any additional notes for the client..."></textarea>
+                    </div>
+                </div>
+                <div class="tool-export-modal-footer">
+                    <button class="btn-secondary" onclick="closeToolExportModal()">Cancel</button>
+                    <button class="btn-primary" onclick="generateToolsReport()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Download Report
+                    </button>
+                    <button class="btn-primary" onclick="printToolsReport()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 6 2 18 2 18 9"/>
+                            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                            <rect x="6" y="14" width="12" height="8"/>
+                        </svg>
+                        Print Report
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="tool-export-overlay hidden" id="toolExportOverlay" onclick="closeToolExportModal()"></div>
 
         <!-- Footer -->
         <footer class="tools-footer">
@@ -1597,5 +2380,21 @@
     </div>
 
     <script src="tools.js"></script>
+
+    <!-- Bottom Navigation Bar -->
+    <nav id="bottomNav">
+        <a href="index.html">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span>Forward</span>
+        </a>
+        <a href="hecm.html">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>
+            <span>Reverse</span>
+        </a>
+        <a href="tools.html" class="active">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            <span>Tools</span>
+        </a>
+    </nav>
 </body>
 </html>

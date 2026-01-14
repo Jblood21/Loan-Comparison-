@@ -781,12 +781,14 @@ class SettingsManager {
     openSettings() {
         document.getElementById('settingsPanel')?.classList.remove('hidden');
         document.getElementById('settingsOverlay')?.classList.remove('hidden');
+        document.body.classList.add('settings-open');
         this.updateTitleCompanyList();
     }
 
     closeSettings() {
         document.getElementById('settingsPanel')?.classList.add('hidden');
         document.getElementById('settingsOverlay')?.classList.add('hidden');
+        document.body.classList.remove('settings-open');
     }
 
     populateLoanOfficerInfo() {
@@ -2933,6 +2935,7 @@ class LoanManager {
         const propertyAddress = Security.escapeHtml(document.getElementById('propertyAddress')?.value || '[Property Address]');
         const loanOfficerName = Security.escapeHtml(document.getElementById('loanOfficerName')?.value || '[Loan Officer]');
         const companyName = Security.escapeHtml(document.getElementById('companyName')?.value || '[Company Name]');
+        const companyNMLS = Security.escapeHtml(document.getElementById('companyNMLS')?.value || '');
         const contactInfo = Security.escapeHtml(document.getElementById('contactInfo')?.value || '[Contact Info]');
         const additionalNotes = Security.escapeHtml(document.getElementById('additionalNotes')?.value || '');
         const showTimePeriod = document.getElementById('showTimePeriodToggle')?.checked !== false;
@@ -3017,7 +3020,7 @@ class LoanManager {
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap;">
                         <div>
                             <h1 style="color: #1a1a2e; margin: 0 0 5px 0; font-size: 28px; font-weight: 600;">Loan<span style="color: #2e7d32; font-weight: 800;">dr</span> Comparison Summary</h1>
-                            <p style="color: #667eea; margin: 0; font-size: 14px; font-weight: 500;">${companyName}${lender.nmls ? ` | NMLS# ${lender.nmls}` : ''}</p>
+                            <p style="color: #667eea; margin: 0; font-size: 14px; font-weight: 500;">${companyName}${companyNMLS ? ` | NMLS# ${companyNMLS}` : ''}</p>
                         </div>
                         <div style="text-align: right; color: #666; font-size: 13px;">
                             <p style="margin: 0 0 3px 0;"><strong>Date:</strong> ${date}</p>

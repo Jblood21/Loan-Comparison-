@@ -1657,10 +1657,1373 @@ function updateWhatIfChart(loanAmount, rate, term, extra) {
     });
 }
 
-// Initialize dark mode from localStorage
+// ============================================
+// LIFE EVENTS TIMELINE CALCULATOR
+// ============================================
+function calculateLifeEvents() {
+    const loanAmount = parseFloat(document.getElementById('le-loan-amount').value) || 0;
+    const rate = parseFloat(document.getElementById('le-rate').value) || 0;
+    const term = parseInt(document.getElementById('le-term').value) || 30;
+    const currentAge = parseInt(document.getElementById('le-current-age').value) || 35;
+
+    const monthlyPayment = calculateMonthlyPayment(loanAmount, rate, term);
+    const currentYear = new Date().getFullYear();
+
+    // Gather life events
+    const events = [];
+
+    // Mortgage start (always included)
+    events.push({
+        year: currentYear,
+        age: currentAge,
+        type: 'mortgage',
+        title: 'Mortgage Begins',
+        detail: `${formatCurrency(monthlyPayment)}/month for ${term} years`
+    });
+
+    // Mortgage payoff
+    events.push({
+        year: currentYear + term,
+        age: currentAge + term,
+        type: 'mortgage',
+        title: 'Mortgage Paid Off',
+        detail: `Total paid: ${formatCurrency(monthlyPayment * term * 12)}`
+    });
+
+    // Retirement
+    if (document.getElementById('le-retirement').checked) {
+        const retirementAge = parseInt(document.getElementById('le-retirement-age').value) || 65;
+        const yearsToRetirement = retirementAge - currentAge;
+        events.push({
+            year: currentYear + yearsToRetirement,
+            age: retirementAge,
+            type: 'retirement',
+            title: 'Retirement',
+            detail: calculateRetirementDetail(yearsToRetirement, term, monthlyPayment, loanAmount, rate)
+        });
+    }
+
+    // College
+    if (document.getElementById('le-college').checked) {
+        const collegeYears = parseInt(document.getElementById('le-college-years').value) || 10;
+        events.push({
+            year: currentYear + collegeYears,
+            age: currentAge + collegeYears,
+            type: 'college',
+            title: "Child's College Begins",
+            detail: calculateCollegeDetail(collegeYears, monthlyPayment, loanAmount, rate)
+        });
+    }
+
+    // Career change
+    if (document.getElementById('le-career-change').checked) {
+        const careerYears = parseInt(document.getElementById('le-career-years').value) || 5;
+        events.push({
+            year: currentYear + careerYears,
+            age: currentAge + careerYears,
+            type: 'career',
+            title: 'Career Change',
+            detail: calculateCareerDetail(careerYears, monthlyPayment, loanAmount, rate)
+        });
+    }
+
+    // Downsize
+    if (document.getElementById('le-downsize').checked) {
+        const downsizeYears = parseInt(document.getElementById('le-downsize-years').value) || 20;
+        events.push({
+            year: currentYear + downsizeYears,
+            age: currentAge + downsizeYears,
+            type: 'downsize',
+            title: 'Plan to Downsize',
+            detail: calculateDownsizeDetail(downsizeYears, loanAmount, rate, term)
+        });
+    }
+
+    // Payoff goal
+    if (document.getElementById('le-paid-off-goal').checked) {
+        const payoffAge = parseInt(document.getElementById('le-payoff-age').value) || 60;
+        const yearsToPayoff = payoffAge - currentAge;
+        events.push({
+            year: currentYear + yearsToPayoff,
+            age: payoffAge,
+            type: 'payoff',
+            title: 'Payoff Goal',
+            detail: calculatePayoffGoalDetail(yearsToPayoff, term, monthlyPayment, loanAmount, rate)
+        });
+    }
+
+    // Sort by year
+    events.sort((a, b) => a.year - b.year);
+
+    // Generate timeline HTML
+    const timelineDiv = document.getElementById('life-events-timeline');
+    timelineDiv.innerHTML = `
+        <div class="timeline-container">
+            <div class="timeline-line"></div>
+            ${events.map(e => `
+                <div class="timeline-event">
+                    <div class="timeline-marker ${e.type}"></div>
+                    <div class="timeline-content ${e.type}">
+                        <div class="timeline-year">${e.year} (Age ${e.age})</div>
+                        <div class="timeline-title">${e.title}</div>
+                        <div class="timeline-detail">${e.detail}</div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+
+    // Generate insights
+    const insightsDiv = document.getElementById('life-events-insights');
+    const insights = generateLifeEventInsights(events, currentAge, term, monthlyPayment, loanAmount, rate);
+    insightsDiv.innerHTML = insights.map(i => `
+        <div class="insight-card ${i.type}">
+            <h5>${i.title}</h5>
+            <p>${i.message}</p>
+        </div>
+    `).join('');
+
+    // Chart
+    const ctx = document.getElementById('lifeEventsChart')?.getContext('2d');
+    if (ctx) {
+        if (charts.lifeEvents) charts.lifeEvents.destroy();
+
+        const years = [];
+        const balances = [];
+        const equity = [];
+        let balance = loanAmount;
+        const monthlyRate = rate / 100 / 12;
+
+        for (let y = 0; y <= term; y++) {
+            years.push(currentYear + y);
+            balances.push(balance);
+            equity.push(loanAmount - balance);
+
+            for (let m = 0; m < 12 && balance > 0; m++) {
+                const interest = balance * monthlyRate;
+                const principal = monthlyPayment - interest;
+                balance = Math.max(0, balance - principal);
+            }
+        }
+
+        charts.lifeEvents = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: years,
+                datasets: [
+                    {
+                        label: 'Loan Balance',
+                        data: balances,
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        fill: true
+                    },
+                    {
+                        label: 'Equity Built',
+                        data: equity,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => `${ctx.dataset.label}: ${formatCurrency(ctx.raw)}`
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        ticks: { callback: (v) => formatCurrency(v) }
+                    }
+                }
+            }
+        });
+    }
+
+    document.getElementById('life-events-results').style.display = 'block';
+
+    // Store for export
+    window.lifeEventsResults = { events, insights };
+}
+
+function calculateRetirementDetail(yearsToRetirement, term, monthlyPayment, loanAmount, rate) {
+    if (yearsToRetirement >= term) {
+        return `Mortgage will be paid off ${yearsToRetirement - term} years before retirement!`;
+    } else {
+        const remainingYears = term - yearsToRetirement;
+        const balance = calculateRemainingBalance(loanAmount, rate, term, yearsToRetirement);
+        return `${formatCurrency(balance)} remaining balance at retirement (${remainingYears} years left)`;
+    }
+}
+
+function calculateCollegeDetail(collegeYears, monthlyPayment, loanAmount, rate) {
+    const balance = calculateRemainingBalance(loanAmount, rate, 30, collegeYears);
+    const equityBuilt = loanAmount - balance;
+    return `${formatCurrency(equityBuilt)} equity built by this point. Could refinance to free up cash.`;
+}
+
+function calculateCareerDetail(careerYears, monthlyPayment, loanAmount, rate) {
+    const totalPaid = monthlyPayment * careerYears * 12;
+    return `${formatCurrency(totalPaid)} paid by career change. Ensure 6+ months emergency fund.`;
+}
+
+function calculateDownsizeDetail(downsizeYears, loanAmount, rate, term) {
+    const balance = calculateRemainingBalance(loanAmount, rate, term, downsizeYears);
+    const equityBuilt = loanAmount - balance;
+    return `${formatCurrency(equityBuilt)} in equity to roll into new home (plus appreciation)`;
+}
+
+function calculatePayoffGoalDetail(yearsToPayoff, term, monthlyPayment, loanAmount, rate) {
+    if (yearsToPayoff >= term) {
+        return `Standard payments will pay off ${term - yearsToPayoff} years early!`;
+    } else {
+        const balance = calculateRemainingBalance(loanAmount, rate, term, yearsToPayoff);
+        const extraNeeded = balance / (yearsToPayoff * 12);
+        return `Need extra ${formatCurrency(extraNeeded)}/month to pay off ${term - yearsToPayoff} years early`;
+    }
+}
+
+function calculateRemainingBalance(loanAmount, rate, term, yearsElapsed) {
+    const monthlyRate = rate / 100 / 12;
+    const monthlyPayment = calculateMonthlyPayment(loanAmount, rate, term);
+
+    let balance = loanAmount;
+    for (let i = 0; i < yearsElapsed * 12 && balance > 0; i++) {
+        const interest = balance * monthlyRate;
+        const principal = monthlyPayment - interest;
+        balance = Math.max(0, balance - principal);
+    }
+    return balance;
+}
+
+function generateLifeEventInsights(events, currentAge, term, monthlyPayment, loanAmount, rate) {
+    const insights = [];
+
+    const retirement = events.find(e => e.type === 'retirement');
+    const mortgageEnd = events.find(e => e.type === 'mortgage' && e.title.includes('Paid Off'));
+
+    if (retirement && mortgageEnd) {
+        if (retirement.year > mortgageEnd.year) {
+            insights.push({
+                type: 'success',
+                title: 'Mortgage-Free Retirement!',
+                message: `Your mortgage will be paid off ${retirement.year - mortgageEnd.year} years before retirement. That's ${formatCurrency(monthlyPayment * (retirement.year - mortgageEnd.year) * 12)} you won't need to budget for in retirement.`
+            });
+        } else {
+            const yearsRemaining = mortgageEnd.year - retirement.year;
+            insights.push({
+                type: 'warning',
+                title: 'Mortgage Extends Past Retirement',
+                message: `You'll still have ${yearsRemaining} years of payments after retiring. Consider making extra payments or refinancing to a shorter term.`
+            });
+        }
+    }
+
+    const payoff = events.find(e => e.type === 'payoff');
+    if (payoff && mortgageEnd && payoff.year < mortgageEnd.year) {
+        const yearsEarly = mortgageEnd.year - payoff.year;
+        insights.push({
+            type: 'info',
+            title: 'Early Payoff Strategy',
+            message: `To meet your payoff goal ${yearsEarly} years early, increase monthly payments or make periodic lump sum contributions.`
+        });
+    }
+
+    const college = events.find(e => e.type === 'college');
+    if (college) {
+        insights.push({
+            type: 'info',
+            title: 'College Planning Tip',
+            message: `When college expenses hit, you may want to pause extra mortgage payments and redirect to education costs. Your home equity can also be tapped via HELOC if needed.`
+        });
+    }
+
+    return insights;
+}
+
+// ============================================
+// STRESS TEST CALCULATOR
+// ============================================
+function calculateStressTest() {
+    const homeValue = parseFloat(document.getElementById('st-home-value').value) || 0;
+    const loanAmount = parseFloat(document.getElementById('st-loan-amount').value) || 0;
+    const rate = parseFloat(document.getElementById('st-rate').value) || 0;
+    const term = parseInt(document.getElementById('st-term').value) || 30;
+    const monthlyIncome = parseFloat(document.getElementById('st-income').value) || 0;
+    const savings = parseFloat(document.getElementById('st-savings').value) || 0;
+
+    const currentPayment = calculateMonthlyPayment(loanAmount, rate, term);
+    const currentLTV = (loanAmount / homeValue) * 100;
+
+    const results = [];
+    let totalScore = 0;
+    let testsRun = 0;
+
+    // Rate Increase Test
+    if (document.getElementById('st-rate-increase').checked) {
+        const rateIncrease = parseFloat(document.getElementById('st-rate-increase-amt').value) || 2;
+        const newRate = rate + rateIncrease;
+        const newPayment = calculateMonthlyPayment(loanAmount, newRate, term);
+        const paymentIncrease = newPayment - currentPayment;
+        const newDTI = (newPayment / monthlyIncome) * 100;
+
+        let status, score;
+        if (newDTI <= 36) {
+            status = 'pass';
+            score = 100;
+        } else if (newDTI <= 43) {
+            status = 'warning';
+            score = 60;
+        } else {
+            status = 'fail';
+            score = 20;
+        }
+
+        results.push({
+            name: 'Interest Rate Spike',
+            status,
+            description: `If rates increase ${rateIncrease}%, your payment rises ${formatCurrency(paymentIncrease)}/month`,
+            stat: formatCurrency(newPayment),
+            statLabel: 'New Payment'
+        });
+        totalScore += score;
+        testsRun++;
+    }
+
+    // Income Loss Test
+    if (document.getElementById('st-income-loss').checked) {
+        const incomeLossPct = parseFloat(document.getElementById('st-income-loss-pct').value) || 50;
+        const monthsOfRunway = Math.floor(savings / (currentPayment + 1500));
+
+        let status, score;
+        if (monthsOfRunway >= 6) {
+            status = 'pass';
+            score = 100;
+        } else if (monthsOfRunway >= 3) {
+            status = 'warning';
+            score = 50;
+        } else {
+            status = 'fail';
+            score = 10;
+        }
+
+        results.push({
+            name: 'Income Disruption',
+            status,
+            description: `With ${incomeLossPct}% income reduction, your emergency fund covers ${monthsOfRunway} months`,
+            stat: `${monthsOfRunway} mo`,
+            statLabel: 'Runway'
+        });
+        totalScore += score;
+        testsRun++;
+    }
+
+    // Market Drop Test
+    if (document.getElementById('st-market-drop').checked) {
+        const marketDropPct = parseFloat(document.getElementById('st-market-drop-pct').value) || 20;
+        const newHomeValue = homeValue * (1 - marketDropPct / 100);
+        const newLTV = (loanAmount / newHomeValue) * 100;
+        const equity = newHomeValue - loanAmount;
+
+        let status, score;
+        if (newLTV <= 80) {
+            status = 'pass';
+            score = 100;
+        } else if (newLTV <= 100) {
+            status = 'warning';
+            score = 50;
+        } else {
+            status = 'fail';
+            score = 0;
+        }
+
+        results.push({
+            name: 'Market Downturn',
+            status,
+            description: `A ${marketDropPct}% value drop leaves you with ${formatCurrency(equity)} equity (${newLTV.toFixed(1)}% LTV)`,
+            stat: equity >= 0 ? formatCurrency(equity) : `-${formatCurrency(Math.abs(equity))}`,
+            statLabel: 'Remaining Equity'
+        });
+        totalScore += score;
+        testsRun++;
+    }
+
+    // Forced Sale Test
+    if (document.getElementById('st-emergency-sell').checked) {
+        const sellingCostsPct = parseFloat(document.getElementById('st-selling-costs').value) || 8;
+        const sellingCosts = homeValue * (sellingCostsPct / 100);
+        const netProceeds = homeValue - loanAmount - sellingCosts;
+
+        let status, score;
+        if (netProceeds >= 10000) {
+            status = 'pass';
+            score = 100;
+        } else if (netProceeds >= 0) {
+            status = 'warning';
+            score = 60;
+        } else {
+            status = 'fail';
+            score = 0;
+        }
+
+        results.push({
+            name: 'Forced Sale',
+            status,
+            description: `After ${sellingCostsPct}% selling costs, you'd ${netProceeds >= 0 ? 'walk away with' : 'need to bring'} ${formatCurrency(Math.abs(netProceeds))}`,
+            stat: netProceeds >= 0 ? formatCurrency(netProceeds) : `-${formatCurrency(Math.abs(netProceeds))}`,
+            statLabel: netProceeds >= 0 ? 'Net Proceeds' : 'Shortfall'
+        });
+        totalScore += score;
+        testsRun++;
+    }
+
+    // Calculate overall score
+    const overallScore = testsRun > 0 ? Math.round(totalScore / testsRun) : 0;
+
+    let rating, ratingClass;
+    if (overallScore >= 80) {
+        rating = 'Excellent Resilience';
+        ratingClass = 'excellent';
+    } else if (overallScore >= 60) {
+        rating = 'Good Standing';
+        ratingClass = 'good';
+    } else if (overallScore >= 40) {
+        rating = 'Some Vulnerabilities';
+        ratingClass = 'fair';
+    } else {
+        rating = 'High Risk';
+        ratingClass = 'poor';
+    }
+
+    // Update score display
+    const scoreValue = document.getElementById('stress-score-value');
+    const scoreFill = document.getElementById('stress-score-fill');
+    const ratingDiv = document.getElementById('stress-rating');
+
+    scoreValue.textContent = overallScore;
+    scoreFill.className = `score-fill ${ratingClass}`;
+    scoreFill.style.strokeDashoffset = 126 - (126 * overallScore / 100);
+
+    ratingDiv.className = `stress-rating ${ratingClass}`;
+    ratingDiv.innerHTML = `
+        <h3>${rating}</h3>
+        <p>${getRatingDescription(ratingClass)}</p>
+    `;
+
+    // Display scenario results
+    const resultsDiv = document.getElementById('stress-scenarios-results');
+    resultsDiv.innerHTML = results.map(r => `
+        <div class="scenario-result">
+            <div class="scenario-result-icon ${r.status}">
+                ${getResultIcon(r.status)}
+            </div>
+            <div class="scenario-result-content">
+                <h4>${r.name}</h4>
+                <p>${r.description}</p>
+            </div>
+            <div class="scenario-result-stat">
+                <div class="value">${r.stat}</div>
+                <div class="label">${r.statLabel}</div>
+            </div>
+        </div>
+    `).join('');
+
+    // Generate recommendations
+    const recsDiv = document.getElementById('stress-recommendations');
+    const recommendations = generateStressRecommendations(results, savings, currentPayment, currentLTV);
+    recsDiv.innerHTML = `
+        <h4>Recommendations to Improve Resilience</h4>
+        <ul>
+            ${recommendations.map(r => `<li>${r}</li>`).join('')}
+        </ul>
+    `;
+
+    document.getElementById('stress-test-results').style.display = 'block';
+
+    // Store for export
+    window.stressTestResults = {
+        score: overallScore,
+        rating,
+        results,
+        recommendations
+    };
+}
+
+function getRatingDescription(ratingClass) {
+    const descriptions = {
+        excellent: 'Your mortgage situation can handle most financial shocks. You have strong reserves and manageable debt.',
+        good: 'You\'re in solid shape for most scenarios, but consider building additional reserves for extra security.',
+        fair: 'Some stress scenarios could challenge your finances. Review the results below for areas to strengthen.',
+        poor: 'Multiple vulnerabilities detected. Consider building emergency savings and exploring options to reduce risk.'
+    };
+    return descriptions[ratingClass];
+}
+
+function getResultIcon(status) {
+    if (status === 'pass') {
+        return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
+    } else if (status === 'warning') {
+        return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+    } else {
+        return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+    }
+}
+
+function generateStressRecommendations(results, savings, currentPayment, currentLTV) {
+    const recs = [];
+
+    const failedTests = results.filter(r => r.status === 'fail');
+    const warningTests = results.filter(r => r.status === 'warning');
+
+    const monthsOfSavings = savings / (currentPayment + 1500);
+    if (monthsOfSavings < 6) {
+        recs.push(`Build emergency fund to 6 months of expenses (${formatCurrency((6 - monthsOfSavings) * (currentPayment + 1500))} more needed)`);
+    }
+
+    if (currentLTV > 80) {
+        recs.push('Consider making extra principal payments to reach 20% equity faster and eliminate PMI');
+    }
+
+    if (failedTests.some(t => t.name.includes('Rate'))) {
+        recs.push('If you have an ARM, consider refinancing to a fixed-rate mortgage for payment stability');
+    }
+
+    if (failedTests.some(t => t.name.includes('Sale')) || warningTests.some(t => t.name.includes('Sale'))) {
+        recs.push('Avoid selling in a down market if possible. Build equity cushion with extra payments.');
+    }
+
+    if (recs.length === 0) {
+        recs.push('Maintain your current financial habits - you\'re well prepared for adversity');
+        recs.push('Consider investing extra funds since your emergency reserves are solid');
+    }
+
+    return recs;
+}
+
+// ============================================
+// BUY VS KEEP CALCULATOR
+// ============================================
+function calculateBuyVsKeep() {
+    // Current home inputs
+    const keepHomeValue = parseFloat(document.getElementById('keep-home-value').value) || 0;
+    const keepMortgageBalance = parseFloat(document.getElementById('keep-mortgage-balance').value) || 0;
+    const keepMonthlyPayment = parseFloat(document.getElementById('keep-monthly-payment').value) || 0;
+    const keepYearsRemaining = parseInt(document.getElementById('keep-years-remaining').value) || 0;
+    const keepMaintenance = parseFloat(document.getElementById('keep-maintenance').value) || 0;
+
+    // New home inputs
+    const buyHomePrice = parseFloat(document.getElementById('buy-home-price').value) || 0;
+    const buyDownPayment = parseFloat(document.getElementById('buy-down-payment').value) || 0;
+    const buyInterestRate = parseFloat(document.getElementById('buy-interest-rate').value) || 0;
+    const buyLoanTerm = parseInt(document.getElementById('buy-loan-term').value) || 30;
+    const buyClosingCosts = parseFloat(document.getElementById('buy-closing-costs').value) || 0;
+    const appreciation = parseFloat(document.getElementById('buy-keep-appreciation').value) / 100 || 0.03;
+
+    // Calculate new home loan
+    const newLoanAmount = buyHomePrice - buyDownPayment;
+    const newMonthlyPayment = calculateMonthlyPayment(newLoanAmount, buyInterestRate, buyLoanTerm);
+
+    // 5-year projections
+    const years = 5;
+
+    // Keep scenario
+    let keepTotalCost = 0;
+    let keepCurrentValue = keepHomeValue;
+    let keepCurrentBalance = keepMortgageBalance;
+    const keepMonthlyRate = 0.05 / 12; // Estimated rate for remaining balance calc
+
+    for (let y = 1; y <= years; y++) {
+        keepTotalCost += keepMonthlyPayment * 12 + keepMaintenance;
+        keepCurrentValue *= (1 + appreciation);
+        // Simplified balance reduction
+        keepCurrentBalance -= (keepMortgageBalance / (keepYearsRemaining || 25)) * 1;
+    }
+    keepCurrentBalance = Math.max(0, keepCurrentBalance);
+    const keepEquityGain = (keepCurrentValue - keepHomeValue) + (keepMortgageBalance - keepCurrentBalance);
+    const keepNetPosition = keepEquityGain - keepTotalCost;
+
+    // Buy scenario
+    let buyTotalCost = buyDownPayment + buyClosingCosts;
+    let buyCurrentValue = buyHomePrice;
+    let buyCurrentBalance = newLoanAmount;
+    const buyMonthlyRate = buyInterestRate / 100 / 12;
+
+    // Add selling costs from current home (6% realtor fees typically)
+    const sellingCosts = keepHomeValue * 0.06;
+
+    for (let y = 1; y <= years; y++) {
+        buyTotalCost += newMonthlyPayment * 12 + (buyHomePrice * 0.01); // 1% maintenance
+        buyCurrentValue *= (1 + appreciation);
+        // Calculate principal paid
+        for (let m = 0; m < 12; m++) {
+            const interest = buyCurrentBalance * buyMonthlyRate;
+            const principal = newMonthlyPayment - interest;
+            buyCurrentBalance = Math.max(0, buyCurrentBalance - principal);
+        }
+    }
+
+    const buyEquityGain = (buyCurrentValue - buyHomePrice) + (newLoanAmount - buyCurrentBalance);
+    // Net position includes equity from selling current home
+    const currentHomeEquity = keepHomeValue - keepMortgageBalance - sellingCosts;
+    const buyNetPosition = buyEquityGain + currentHomeEquity - buyTotalCost;
+
+    // Update display
+    document.getElementById('keep-monthly-cost').textContent = formatCurrency(keepMonthlyPayment + keepMaintenance / 12);
+    document.getElementById('keep-5yr-cost').textContent = formatCurrency(keepTotalCost);
+    document.getElementById('keep-5yr-equity').textContent = formatCurrency(keepEquityGain);
+    document.getElementById('keep-5yr-net').textContent = formatCurrency(keepNetPosition);
+
+    document.getElementById('buy-monthly-cost').textContent = formatCurrency(newMonthlyPayment + (buyHomePrice * 0.01) / 12);
+    document.getElementById('buy-5yr-cost').textContent = formatCurrency(buyTotalCost);
+    document.getElementById('buy-5yr-equity').textContent = formatCurrency(buyEquityGain);
+    document.getElementById('buy-5yr-net').textContent = formatCurrency(buyNetPosition);
+
+    // Recommendation
+    const recDiv = document.getElementById('buy-keep-recommendation');
+    if (keepNetPosition > buyNetPosition) {
+        recDiv.className = 'buy-keep-recommendation';
+        recDiv.innerHTML = `<h4>Keeping your current home appears better financially</h4>
+            <p>Over ${years} years, staying in your current home results in a net position ${formatCurrency(keepNetPosition - buyNetPosition)} better than buying a new home. Consider the non-financial factors like space needs and location preferences.</p>`;
+    } else {
+        recDiv.className = 'buy-keep-recommendation new-wins';
+        recDiv.innerHTML = `<h4>Buying a new home may be the better choice</h4>
+            <p>Over ${years} years, buying a new home results in a net position ${formatCurrency(buyNetPosition - keepNetPosition)} better than keeping your current home. This accounts for selling costs and equity transfer.</p>`;
+    }
+
+    // Chart
+    const ctx = document.getElementById('buyKeepChart')?.getContext('2d');
+    if (ctx) {
+        if (charts.buyKeep) charts.buyKeep.destroy();
+
+        const labels = ['Year 1', 'Year 2', 'Year 3', 'Year 4', 'Year 5'];
+        const keepData = [];
+        const buyData = [];
+
+        let runningKeepCost = 0;
+        let runningBuyCost = buyDownPayment + buyClosingCosts;
+        let runningKeepValue = keepHomeValue;
+        let runningBuyValue = buyHomePrice;
+        let runningKeepBalance = keepMortgageBalance;
+        let runningBuyBalance = newLoanAmount;
+
+        for (let y = 1; y <= years; y++) {
+            runningKeepCost += keepMonthlyPayment * 12 + keepMaintenance;
+            runningBuyCost += newMonthlyPayment * 12 + (buyHomePrice * 0.01);
+            runningKeepValue *= (1 + appreciation);
+            runningBuyValue *= (1 + appreciation);
+            runningKeepBalance -= (keepMortgageBalance / keepYearsRemaining);
+            for (let m = 0; m < 12; m++) {
+                const interest = runningBuyBalance * buyMonthlyRate;
+                runningBuyBalance = Math.max(0, runningBuyBalance - (newMonthlyPayment - interest));
+            }
+
+            const keepNet = (runningKeepValue - runningKeepBalance) - runningKeepCost;
+            const buyNet = (runningBuyValue - runningBuyBalance) + currentHomeEquity - runningBuyCost;
+            keepData.push(keepNet);
+            buyData.push(buyNet);
+        }
+
+        charts.buyKeep = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Keep Current Home',
+                        data: keepData,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Buy New Home',
+                        data: buyData,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => `${ctx.dataset.label}: ${formatCurrency(ctx.raw)}`
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        ticks: {
+                            callback: (value) => formatCurrency(value)
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    document.getElementById('buy-keep-results').style.display = 'block';
+
+    // Store results for export
+    window.buyKeepResults = {
+        keep: {
+            monthlyPayment: keepMonthlyPayment + keepMaintenance / 12,
+            totalCost5yr: keepTotalCost,
+            equityGain5yr: keepEquityGain,
+            netPosition5yr: keepNetPosition
+        },
+        buy: {
+            monthlyPayment: newMonthlyPayment + (buyHomePrice * 0.01) / 12,
+            totalCost5yr: buyTotalCost,
+            equityGain5yr: buyEquityGain,
+            netPosition5yr: buyNetPosition
+        },
+        recommendation: keepNetPosition > buyNetPosition ? 'keep' : 'buy'
+    };
+}
+
+// ============================================
+// RENT INCREASE SIMULATOR
+// ============================================
+function calculateRentSimulator() {
+    const currentRent = parseFloat(document.getElementById('rent-sim-current').value) || 0;
+    const annualIncrease = parseFloat(document.getElementById('rent-sim-increase').value) / 100 || 0.05;
+    const years = parseInt(document.getElementById('rent-sim-years').value) || 10;
+    const mortgagePayment = parseFloat(document.getElementById('rent-sim-mortgage').value) || 0;
+
+    let rent = currentRent;
+    let totalRent = 0;
+    let crossoverYear = null;
+    const tableData = [];
+    const rentData = [];
+    const mortgageData = [];
+
+    for (let y = 1; y <= years; y++) {
+        const annualRent = rent * 12;
+        totalRent += annualRent;
+
+        const difference = rent - mortgagePayment;
+        const differenceClass = difference > 0 ? 'exceeds' : 'below';
+
+        if (rent > mortgagePayment && crossoverYear === null) {
+            crossoverYear = y;
+        }
+
+        tableData.push({
+            year: y,
+            monthlyRent: rent,
+            annualRent: annualRent,
+            cumulativeRent: totalRent,
+            vsMortgage: difference,
+            differenceClass: differenceClass
+        });
+
+        rentData.push(rent);
+        mortgageData.push(mortgagePayment);
+
+        // Increase rent for next year
+        rent *= (1 + annualIncrease);
+    }
+
+    const finalRent = tableData[years - 1].monthlyRent;
+
+    // Update display
+    document.getElementById('rent-sim-year1').textContent = formatCurrency(currentRent) + '/mo';
+    document.getElementById('rent-sim-final').textContent = formatCurrency(finalRent) + '/mo';
+    document.getElementById('rent-sim-total').textContent = formatCurrency(totalRent);
+    document.getElementById('rent-sim-crossover').textContent = crossoverYear ? `Year ${crossoverYear}` : 'Never';
+
+    // Build table
+    const tbody = document.getElementById('rent-sim-table-body');
+    tbody.innerHTML = tableData.map(row => `
+        <tr>
+            <td>Year ${row.year}</td>
+            <td>${formatCurrency(row.monthlyRent)}</td>
+            <td>${formatCurrency(row.annualRent)}</td>
+            <td>${formatCurrency(row.cumulativeRent)}</td>
+            <td class="${row.differenceClass}">${row.vsMortgage >= 0 ? '+' : ''}${formatCurrency(row.vsMortgage)}</td>
+        </tr>
+    `).join('');
+
+    // Chart
+    const ctx = document.getElementById('rentSimChart')?.getContext('2d');
+    if (ctx) {
+        if (charts.rentSim) charts.rentSim.destroy();
+
+        const labels = tableData.map(d => `Year ${d.year}`);
+
+        charts.rentSim = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Monthly Rent',
+                        data: rentData,
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Fixed Mortgage Payment',
+                        data: mortgageData,
+                        borderColor: '#10b981',
+                        borderDash: [5, 5],
+                        fill: false,
+                        pointRadius: 0
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => `${ctx.dataset.label}: ${formatCurrency(ctx.raw)}`
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        ticks: {
+                            callback: (value) => formatCurrency(value)
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    document.getElementById('rent-sim-results').style.display = 'block';
+
+    // Store results for export
+    window.rentSimResults = {
+        currentRent: currentRent,
+        finalRent: finalRent,
+        totalRentPaid: totalRent,
+        crossoverYear: crossoverYear,
+        mortgagePayment: mortgagePayment,
+        annualIncrease: annualIncrease * 100,
+        years: years
+    };
+}
+
+// ============================================
+// TOOL EXPORT SYSTEM
+// ============================================
+const toolNames = {
+    'dti': 'Debt-to-Income Calculator',
+    'rent-buy': 'Rent vs Buy Calculator',
+    'eligibility': 'Loan Program Eligibility',
+    'amortization': 'Amortization Schedule',
+    'arm-fixed': 'ARM vs Fixed Comparison',
+    'heloc-refi': 'HELOC vs Cash-Out Refi',
+    'pmi': 'PMI Removal Timeline',
+    'points': 'Points Breakeven Calculator',
+    'refi-breakeven': 'Refinance Breakeven',
+    'tco': 'Total Cost of Ownership',
+    'buydown': 'Buydown Calculator',
+    'whatif': 'What-If Simulator',
+    'buy-keep': 'Buy vs Keep Current Home',
+    'rent-simulator': 'Rent Increase Simulator',
+    'life-events': 'Life Events Timeline',
+    'stress-test': 'Mortgage Stress Test'
+};
+
+function updateExportFab() {
+    const checkboxes = document.querySelectorAll('.tool-export-check:checked');
+    const fab = document.getElementById('toolExportFab');
+    const countEl = document.getElementById('exportCount');
+
+    if (checkboxes.length > 0) {
+        fab.style.display = 'flex';
+        countEl.textContent = checkboxes.length;
+    } else {
+        fab.style.display = 'none';
+    }
+}
+
+function openToolExportModal() {
+    const modal = document.getElementById('toolExportModal');
+    const overlay = document.getElementById('toolExportOverlay');
+    const toolsList = document.getElementById('export-tools-list');
+
+    // Get selected tools
+    const checkboxes = document.querySelectorAll('.tool-export-check:checked');
+    const selectedTools = Array.from(checkboxes).map(cb => cb.dataset.tool);
+
+    // Build list of selected tools
+    toolsList.innerHTML = selectedTools.map(tool => {
+        const toolCard = document.querySelector(`[data-tool="${tool}"]`)?.closest('.tool-card');
+        const hasResults = toolCard?.querySelector('.tool-results')?.style.display !== 'none';
+
+        return `
+            <div class="export-tool-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 11l3 3L22 4"/>
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                </svg>
+                <span class="tool-name">${toolNames[tool] || tool}</span>
+                <span class="tool-status">${hasResults ? 'Calculated' : 'Pending'}</span>
+            </div>
+        `;
+    }).join('');
+
+    modal.classList.remove('hidden');
+    overlay.classList.remove('hidden');
+}
+
+function closeToolExportModal() {
+    document.getElementById('toolExportModal').classList.add('hidden');
+    document.getElementById('toolExportOverlay').classList.add('hidden');
+}
+
+function generateToolsReport() {
+    const clientName = document.getElementById('export-client-name').value || 'Client';
+    const propertyAddress = document.getElementById('export-property-address').value || '';
+    const notes = document.getElementById('export-notes').value || '';
+
+    const checkboxes = document.querySelectorAll('.tool-export-check:checked');
+    const selectedTools = Array.from(checkboxes).map(cb => cb.dataset.tool);
+
+    // Get LO info
+    const loInfo = JSON.parse(localStorage.getItem('loandrUserInfo') || '{}');
+    const lenderInfo = JSON.parse(localStorage.getItem('loandrLenderInfo') || '{}');
+
+    let reportHTML = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Mortgage Analysis Report - ${clientName}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; padding: 40px; max-width: 900px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 3px solid #1e3a5f; }
+        .header h1 { color: #1e3a5f; font-size: 2rem; margin-bottom: 10px; }
+        .header p { color: #666; }
+        .client-info { background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
+        .client-info h3 { color: #1e3a5f; margin-bottom: 10px; }
+        .client-row { display: flex; gap: 40px; }
+        .client-row div { flex: 1; }
+        .client-row label { font-size: 0.85rem; color: #666; display: block; }
+        .client-row span { font-weight: 600; }
+        .tool-section { margin-bottom: 35px; page-break-inside: avoid; }
+        .tool-section h2 { color: #1e3a5f; font-size: 1.3rem; padding-bottom: 10px; border-bottom: 2px solid #e2e8f0; margin-bottom: 15px; }
+        .result-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 15px; }
+        .result-item { background: #f8fafc; padding: 15px; border-radius: 8px; }
+        .result-item label { display: block; font-size: 0.85rem; color: #666; margin-bottom: 5px; }
+        .result-item .value { font-size: 1.2rem; font-weight: 700; color: #1e3a5f; }
+        .recommendation { background: #ecfdf5; border-left: 4px solid #10b981; padding: 15px; border-radius: 0 8px 8px 0; }
+        .recommendation h4 { color: #10b981; margin-bottom: 5px; }
+        .recommendation p { font-size: 0.9rem; color: #666; }
+        .notes-section { background: #f1f5f9; padding: 20px; border-radius: 8px; margin-top: 30px; }
+        .notes-section h3 { color: #1e3a5f; margin-bottom: 10px; }
+        .footer { margin-top: 50px; padding-top: 20px; border-top: 2px solid #e2e8f0; text-align: center; font-size: 0.85rem; color: #666; }
+        .footer .lo-info { margin-bottom: 15px; }
+        .footer .lo-name { font-weight: 600; color: #1e3a5f; font-size: 1rem; }
+        .disclaimer { font-size: 0.75rem; color: #999; margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0; }
+        @media print {
+            body { padding: 20px; }
+            .tool-section { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Mortgage Analysis Report</h1>
+        <p>Prepared on ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+    </div>
+
+    <div class="client-info">
+        <h3>Prepared For</h3>
+        <div class="client-row">
+            <div>
+                <label>Client Name</label>
+                <span>${clientName}</span>
+            </div>
+            ${propertyAddress ? `<div><label>Property Address</label><span>${propertyAddress}</span></div>` : ''}
+        </div>
+    </div>
+`;
+
+    // Add each selected tool's results
+    selectedTools.forEach(tool => {
+        reportHTML += generateToolSection(tool);
+    });
+
+    // Add notes if provided
+    if (notes) {
+        reportHTML += `
+    <div class="notes-section">
+        <h3>Additional Notes</h3>
+        <p>${notes.replace(/\n/g, '<br>')}</p>
+    </div>
+`;
+    }
+
+    // Footer with LO info
+    reportHTML += `
+    <div class="footer">
+        <div class="lo-info">
+            ${loInfo.name ? `<div class="lo-name">${loInfo.name}</div>` : ''}
+            ${loInfo.company ? `<div>${loInfo.company}</div>` : ''}
+            ${loInfo.nmls ? `<div>NMLS# ${loInfo.nmls}</div>` : ''}
+            ${loInfo.phone ? `<div>${loInfo.phone}</div>` : ''}
+            ${loInfo.email ? `<div>${loInfo.email}</div>` : ''}
+        </div>
+        <div class="disclaimer">
+            This report is for informational purposes only and does not constitute a loan commitment or guarantee of terms.
+            Actual rates, payments, and terms may vary based on market conditions and individual qualifications.
+            Please consult with a licensed mortgage professional for personalized advice.
+        </div>
+    </div>
+</body>
+</html>
+`;
+
+    // Open in new window for printing/saving
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(reportHTML);
+    printWindow.document.close();
+}
+
+function generateToolSection(tool) {
+    let html = '';
+
+    switch(tool) {
+        case 'buy-keep':
+            if (window.buyKeepResults) {
+                const r = window.buyKeepResults;
+                html = `
+    <div class="tool-section">
+        <h2>Buy vs Keep Current Home Analysis</h2>
+        <div class="result-grid">
+            <div class="result-item">
+                <label>Keep - Monthly Cost</label>
+                <div class="value">${formatCurrency(r.keep.monthlyPayment)}</div>
+            </div>
+            <div class="result-item">
+                <label>Buy - Monthly Cost</label>
+                <div class="value">${formatCurrency(r.buy.monthlyPayment)}</div>
+            </div>
+            <div class="result-item">
+                <label>Keep - 5-Year Net Position</label>
+                <div class="value">${formatCurrency(r.keep.netPosition5yr)}</div>
+            </div>
+            <div class="result-item">
+                <label>Buy - 5-Year Net Position</label>
+                <div class="value">${formatCurrency(r.buy.netPosition5yr)}</div>
+            </div>
+        </div>
+        <div class="recommendation">
+            <h4>${r.recommendation === 'keep' ? 'Keeping current home recommended' : 'Buying new home may be better'}</h4>
+            <p>Based on 5-year projections including equity growth and costs.</p>
+        </div>
+    </div>
+`;
+            }
+            break;
+
+        case 'rent-simulator':
+            if (window.rentSimResults) {
+                const r = window.rentSimResults;
+                html = `
+    <div class="tool-section">
+        <h2>Rent Increase Projection</h2>
+        <div class="result-grid">
+            <div class="result-item">
+                <label>Current Monthly Rent</label>
+                <div class="value">${formatCurrency(r.currentRent)}</div>
+            </div>
+            <div class="result-item">
+                <label>Rent After ${r.years} Years</label>
+                <div class="value">${formatCurrency(r.finalRent)}</div>
+            </div>
+            <div class="result-item">
+                <label>Total Rent Paid (${r.years} years)</label>
+                <div class="value">${formatCurrency(r.totalRentPaid)}</div>
+            </div>
+            <div class="result-item">
+                <label>Year Rent Exceeds ${formatCurrency(r.mortgagePayment)} Mortgage</label>
+                <div class="value">${r.crossoverYear ? `Year ${r.crossoverYear}` : 'Never'}</div>
+            </div>
+        </div>
+        <div class="recommendation">
+            <h4>At ${r.annualIncrease}% annual increase</h4>
+            <p>Monthly rent grows from ${formatCurrency(r.currentRent)} to ${formatCurrency(r.finalRent)} over ${r.years} years.</p>
+        </div>
+    </div>
+`;
+            }
+            break;
+
+        case 'life-events':
+            if (window.lifeEventsResults) {
+                const r = window.lifeEventsResults;
+                html = `
+    <div class="tool-section">
+        <h2>Life Events Timeline</h2>
+        <p>Key milestones mapped against your mortgage:</p>
+        <ul style="margin: 15px 0; padding-left: 20px;">
+            ${r.events.map(e => `<li><strong>${e.year} (Age ${e.age}):</strong> ${e.title} - ${e.detail}</li>`).join('')}
+        </ul>
+        ${r.insights.length > 0 ? `
+        <div class="recommendation">
+            <h4>${r.insights[0].title}</h4>
+            <p>${r.insights[0].message}</p>
+        </div>
+        ` : ''}
+    </div>
+`;
+            }
+            break;
+
+        case 'stress-test':
+            if (window.stressTestResults) {
+                const r = window.stressTestResults;
+                html = `
+    <div class="tool-section">
+        <h2>Mortgage Stress Test</h2>
+        <div class="result-grid">
+            <div class="result-item" style="grid-column: span 2;">
+                <label>Overall Resilience Score</label>
+                <div class="value">${r.score}/100 - ${r.rating}</div>
+            </div>
+        </div>
+        <p style="margin: 15px 0;"><strong>Scenario Results:</strong></p>
+        <ul style="margin: 10px 0; padding-left: 20px;">
+            ${r.results.map(res => `<li><strong>${res.name}:</strong> ${res.status.toUpperCase()} - ${res.description}</li>`).join('')}
+        </ul>
+        <div class="recommendation">
+            <h4>Recommendations</h4>
+            <ul style="margin: 0; padding-left: 20px;">
+                ${r.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+            </ul>
+        </div>
+    </div>
+`;
+            }
+            break;
+
+        default:
+            html = `
+    <div class="tool-section">
+        <h2>${toolNames[tool] || tool}</h2>
+        <p>Calculator results - please run calculation to generate data.</p>
+    </div>
+`;
+    }
+
+    return html;
+}
+
+function printToolsReport() {
+    generateToolsReport();
+}
+
+// Initialize dark mode and user info from localStorage
 document.addEventListener('DOMContentLoaded', () => {
-    const darkMode = localStorage.getItem('darkMode') === 'true';
+    const darkMode = localStorage.getItem('loanComparisonDarkMode') === 'true';
     if (darkMode) {
         document.documentElement.setAttribute('data-theme', 'dark');
+    }
+
+    // Update dark mode toggle checkbox to match current state
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    if (darkModeToggle) {
+        darkModeToggle.checked = darkMode;
+    }
+
+    // Load user info for header display
+    const loInfo = JSON.parse(localStorage.getItem('loandrUserInfo') || '{}');
+    const userName = document.getElementById('userName');
+    const userCompany = document.getElementById('userCompany');
+    if (userName && loInfo.name) userName.textContent = loInfo.name;
+    if (userCompany && loInfo.company) userCompany.textContent = loInfo.company;
+
+    // Setup export checkbox listeners
+    document.querySelectorAll('.tool-export-check').forEach(checkbox => {
+        checkbox.addEventListener('change', updateExportFab);
+        // Prevent click from expanding card
+        checkbox.addEventListener('click', (e) => e.stopPropagation());
+    });
+});
+
+// ============================================
+// SETTINGS PANEL
+// ============================================
+function openSettings() {
+    const panel = document.getElementById('settingsPanel');
+    const overlay = document.getElementById('settingsOverlay');
+    if (panel) panel.classList.remove('hidden');
+    if (overlay) overlay.classList.remove('hidden');
+    document.body.classList.add('settings-open');
+
+    // Update dark mode toggle to current state
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    if (darkModeToggle) {
+        darkModeToggle.checked = localStorage.getItem('loanComparisonDarkMode') === 'true';
+    }
+
+    // Load saved settings
+    loadSavedSettings();
+}
+
+function closeSettings() {
+    const panel = document.getElementById('settingsPanel');
+    const overlay = document.getElementById('settingsOverlay');
+    if (panel) panel.classList.add('hidden');
+    if (overlay) overlay.classList.add('hidden');
+    document.body.classList.remove('settings-open');
+}
+
+function loadSavedSettings() {
+    // Load LO info (using same localStorage keys as main app)
+    const loInfo = JSON.parse(localStorage.getItem('loandrUserInfo') || '{}');
+    const loName = document.getElementById('loName');
+    const loCompany = document.getElementById('loCompany');
+    const loPhone = document.getElementById('loPhone');
+    const loEmail = document.getElementById('loEmail');
+    const loNMLS = document.getElementById('loNMLS');
+    if (loName) loName.value = loInfo.name || '';
+    if (loCompany) loCompany.value = loInfo.company || '';
+    if (loPhone) loPhone.value = loInfo.phone || '';
+    if (loEmail) loEmail.value = loInfo.email || '';
+    if (loNMLS) loNMLS.value = loInfo.nmls || '';
+
+    // Update header display
+    const userName = document.getElementById('userName');
+    const userCompany = document.getElementById('userCompany');
+    if (userName && loInfo.name) userName.textContent = loInfo.name;
+    if (userCompany && loInfo.company) userCompany.textContent = loInfo.company;
+
+    // Load lender info
+    const lenderInfo = JSON.parse(localStorage.getItem('loandrLenderInfo') || '{}');
+    const lenderName = document.getElementById('lenderName');
+    const lenderNMLS = document.getElementById('lenderNMLS');
+    const lenderPhone = document.getElementById('lenderPhone');
+    const lenderWebsite = document.getElementById('lenderWebsite');
+    if (lenderName) lenderName.value = lenderInfo.name || '';
+    if (lenderNMLS) lenderNMLS.value = lenderInfo.nmls || '';
+    if (lenderPhone) lenderPhone.value = lenderInfo.phone || '';
+    if (lenderWebsite) lenderWebsite.value = lenderInfo.website || '';
+}
+
+function saveLOInfo() {
+    const loInfo = {
+        name: document.getElementById('loName')?.value || '',
+        company: document.getElementById('loCompany')?.value || '',
+        phone: document.getElementById('loPhone')?.value || '',
+        email: document.getElementById('loEmail')?.value || '',
+        nmls: document.getElementById('loNMLS')?.value || ''
+    };
+    localStorage.setItem('loandrUserInfo', JSON.stringify(loInfo));
+
+    // Update header display
+    const userName = document.getElementById('userName');
+    const userCompany = document.getElementById('userCompany');
+    if (userName) userName.textContent = loInfo.name;
+    if (userCompany) userCompany.textContent = loInfo.company;
+
+    showSaveConfirmation('Loan Officer info saved!');
+}
+
+function saveLenderInfo() {
+    const lenderInfo = {
+        name: document.getElementById('lenderName')?.value || '',
+        nmls: document.getElementById('lenderNMLS')?.value || '',
+        phone: document.getElementById('lenderPhone')?.value || '',
+        website: document.getElementById('lenderWebsite')?.value || ''
+    };
+    localStorage.setItem('loandrLenderInfo', JSON.stringify(lenderInfo));
+    showSaveConfirmation('Lender info saved!');
+}
+
+function showSaveConfirmation(message) {
+    // Create temporary notification
+    const notification = document.createElement('div');
+    notification.className = 'save-notification';
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: var(--navy-blue);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        z-index: 10000;
+        animation: fadeIn 0.3s ease;
+    `;
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, 2000);
+}
+
+// Event listeners for settings panel
+document.addEventListener('DOMContentLoaded', () => {
+    // Settings button click
+    const settingsBtn = document.getElementById('settingsBtn');
+    if (settingsBtn) {
+        settingsBtn.addEventListener('click', openSettings);
+    }
+
+    // Close settings button
+    const closeSettingsBtn = document.getElementById('closeSettings');
+    if (closeSettingsBtn) {
+        closeSettingsBtn.addEventListener('click', closeSettings);
+    }
+
+    // Overlay click to close
+    const settingsOverlay = document.getElementById('settingsOverlay');
+    if (settingsOverlay) {
+        settingsOverlay.addEventListener('click', closeSettings);
+    }
+
+    // Dark mode toggle
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    if (darkModeToggle) {
+        darkModeToggle.addEventListener('change', () => {
+            const isDark = darkModeToggle.checked;
+            localStorage.setItem('loanComparisonDarkMode', isDark ? 'true' : 'false');
+            if (isDark) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+            }
+        });
+    }
+
+    // Save LO info button
+    const saveLOBtn = document.getElementById('saveLOSettings');
+    if (saveLOBtn) {
+        saveLOBtn.addEventListener('click', saveLOInfo);
+    }
+
+    // Save lender info button
+    const saveLenderBtn = document.getElementById('saveLenderSettings');
+    if (saveLenderBtn) {
+        saveLenderBtn.addEventListener('click', saveLenderInfo);
     }
 });

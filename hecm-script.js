@@ -1137,12 +1137,14 @@ const SettingsManager = {
     openSettings() {
         this.settingsPanel?.classList.remove('hidden');
         this.settingsOverlay?.classList.remove('hidden');
+        document.body.classList.add('settings-open');
         document.body.style.overflow = 'hidden';
     },
 
     closeSettings() {
         this.settingsPanel?.classList.add('hidden');
         this.settingsOverlay?.classList.add('hidden');
+        document.body.classList.remove('settings-open');
         document.body.style.overflow = '';
     },
 
@@ -1150,17 +1152,17 @@ const SettingsManager = {
         const isDark = this.darkModeToggle?.checked;
         if (isDark) {
             document.documentElement.setAttribute('data-theme', 'dark');
-            localStorage.setItem('theme', 'dark');
+            localStorage.setItem('loanComparisonDarkMode', 'true');
         } else {
             document.documentElement.removeAttribute('data-theme');
-            localStorage.setItem('theme', 'light');
+            localStorage.setItem('loanComparisonDarkMode', 'false');
         }
     },
 
     loadSettings() {
         // Load theme
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark') {
+        const savedTheme = localStorage.getItem('loanComparisonDarkMode');
+        if (savedTheme === 'true') {
             document.documentElement.setAttribute('data-theme', 'dark');
             if (this.darkModeToggle) this.darkModeToggle.checked = true;
         }
