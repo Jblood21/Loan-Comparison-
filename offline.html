@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Offline - LoanDr.</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="theme.js"></script>
+    <style>
+        .offline-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+            background: var(--bg-primary);
+        }
+
+        .offline-icon {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 30px;
+            opacity: 0.6;
+        }
+
+        .offline-title {
+            font-size: 2rem;
+            color: var(--navy-blue);
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .offline-message {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 400px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .retry-btn {
+            padding: 15px 40px;
+            background: var(--navy-blue);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .retry-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(30, 58, 95, 0.3);
+        }
+
+        .retry-btn:active {
+            transform: translateY(0);
+        }
+
+        .cached-pages {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .cached-pages h3 {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .cached-links {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .cached-link {
+            padding: 10px 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--navy-blue);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .cached-link:hover {
+            background: var(--navy-blue);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <svg class="offline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M18.364 5.636a9 9 0 010 12.728M5.636 18.364a9 9 0 010-12.728"/>
+            <path d="M8.464 15.536a5 5 0 010-7.072M15.536 8.464a5 5 0 010 7.072"/>
+            <circle cx="12" cy="12" r="1"/>
+            <line x1="2" y1="2" x2="22" y2="22" stroke-width="2"/>
+        </svg>
+
+        <h1 class="offline-title">You're Offline</h1>
+
+        <p class="offline-message">
+            It looks like you've lost your internet connection.
+            Some features may be unavailable until you reconnect.
+        </p>
+
+        <button class="retry-btn" onclick="window.location.reload()">
+            Try Again
+        </button>
+
+        <div class="cached-pages">
+            <h3>Cached pages you can still access:</h3>
+            <div class="cached-links">
+                <a href="index.html" class="cached-link">Forward Mortgages</a>
+                <a href="hecm.html" class="cached-link">Reverse Mortgages</a>
+                <a href="tools.html" class="cached-link">Mortgage Tools</a>
+                <a href="help.html" class="cached-link">Help Center</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-retry when back online
+        window.addEventListener('online', () => {
+            window.location.reload();
+        });
+    </script>
+</body>
+</html>

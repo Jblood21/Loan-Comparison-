@@ -1109,7 +1109,7 @@ const SettingsManager = {
         this.settingsBtn?.addEventListener('click', () => this.openSettings());
         this.closeSettingsBtn?.addEventListener('click', () => this.closeSettings());
         this.settingsOverlay?.addEventListener('click', () => this.closeSettings());
-        this.darkModeToggle?.addEventListener('change', () => this.toggleDarkMode());
+        // Dark mode toggle is handled by unified ThemeManager in theme.js - no duplicate listener needed
 
         // Load saved settings
         this.loadSettings();
@@ -1910,6 +1910,11 @@ document.addEventListener('DOMContentLoaded', () => {
     ScenarioManager.init();
     HECMChartManager.init();
     PLFLookup.init();
+
+    // Ensure theme toggle is properly bound after all initializations
+    if (typeof ThemeManager !== 'undefined') {
+        ThemeManager.setupToggle();
+    }
 
     // Scenario tabs
     const tabs = document.querySelectorAll('.loan-tab');

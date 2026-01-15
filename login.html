@@ -2,8 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
     <title>Sign In - LoanDr.</title>
+
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="LoanDr.">
+    <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+    <link rel="apple-touch-icon" href="icons/icon.svg">
 
     <!-- Security Headers -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
@@ -12,6 +21,14 @@
     <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
 
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="app.css">
+    <meta name="theme-color" content="#1e3a5f">
+
+    <!-- Core modules - load early for theme flash prevention -->
+    <script src="theme.js"></script>
+    <script src="security.js"></script>
+    <script src="pwa.js" defer></script>
+
     <style>
         :root {
             --navy-blue: #1e3a5f;
@@ -59,7 +76,50 @@
             justify-content: center;
             padding: 20px;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: var(--off-white);
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 25%, #1e3a5f 50%, #2e7d32 75%, #1b5e20 100%);
+            background-size: 400% 400%;
+            animation: gradientFlow 15s ease infinite;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(circle at 20% 80%, rgba(46, 125, 50, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(30, 58, 95, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(129, 199, 132, 0.2) 0%, transparent 40%),
+                radial-gradient(circle at 90% 90%, rgba(21, 42, 69, 0.5) 0%, transparent 40%);
+            pointer-events: none;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            animation: floatPattern 60s linear infinite;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        @keyframes gradientFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes floatPattern {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
         }
 
         .auth-wrapper {
@@ -70,17 +130,22 @@
             background: var(--white);
             border-radius: 24px;
             overflow: hidden;
-            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15);
-            border: 1px solid var(--light-gray);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4), 0 0 100px rgba(46, 125, 50, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 1;
         }
 
         .auth-branding {
             flex: 1;
-            background: linear-gradient(135deg, var(--navy-blue) 0%, var(--navy-dark) 50%, var(--green-dark) 100%);
+            background: linear-gradient(145deg, #1a365d 0%, #234e82 50%, #2d6a4f 100%);
+            backdrop-filter: blur(20px);
             padding: 60px 50px;
             display: flex;
             flex-direction: column;
             justify-content: center;
+            align-items: center;
+            text-align: center;
             position: relative;
             overflow: hidden;
         }
@@ -92,8 +157,21 @@
             left: -50%;
             width: 200%;
             height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 60%);
-            animation: shimmer 15s infinite linear;
+            background:
+                radial-gradient(circle at 30% 30%, rgba(74, 144, 226, 0.3) 0%, transparent 40%),
+                radial-gradient(circle at 70% 70%, rgba(64, 224, 208, 0.2) 0%, transparent 40%);
+            animation: shimmer 20s infinite linear;
+        }
+
+        .auth-branding::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(0deg, rgba(0,0,0,0.3) 0%, transparent 50%, rgba(0,0,0,0.2) 100%);
+            pointer-events: none;
         }
 
         @keyframes shimmer {
@@ -104,46 +182,72 @@
         .branding-content {
             position: relative;
             z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .brand-logo {
-            margin-bottom: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: logoFloat 3s ease-in-out infinite;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 100px rgba(255, 255, 255, 0.4);
+        }
+
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .brand-logo img {
+            width: 320px;
+            height: auto;
+            filter: none;
         }
 
         .brand-logo svg {
-            width: 70px;
-            height: 70px;
+            width: 280px;
+            height: 280px;
         }
 
         .brand-title {
-            font-size: 2.4rem;
+            font-size: 3.5rem;
             font-weight: 700;
-            color: var(--white);
-            margin-bottom: 15px;
+            color: #ffffff;
+            margin-bottom: 20px;
             line-height: 1.2;
+            text-shadow: 0 6px 25px rgba(0, 0, 0, 0.6);
         }
 
         .brand-title .logo-accent {
             color: #81c784;
             font-weight: 800;
+            text-shadow: 0 0 30px rgba(129, 199, 132, 0.6);
         }
 
         .brand-subtitle {
-            font-size: 1.1rem;
-            color: rgba(255, 255, 255, 0.85);
+            font-size: 1.15rem;
+            color: rgba(255, 255, 255, 0.9);
             line-height: 1.6;
             margin-bottom: 40px;
+            max-width: 350px;
         }
 
         .brand-features {
             list-style: none;
+            text-align: left;
         }
 
         .brand-features li {
             display: flex;
             align-items: center;
             gap: 12px;
-            color: rgba(255, 255, 255, 0.9);
+            color: rgba(255, 255, 255, 0.95);
             font-size: 1rem;
             margin-bottom: 15px;
         }
@@ -153,11 +257,12 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 24px;
-            height: 24px;
-            background: rgba(255, 255, 255, 0.2);
+            width: 26px;
+            height: 26px;
+            background: linear-gradient(135deg, rgba(46, 125, 50, 0.6) 0%, rgba(129, 199, 132, 0.4) 100%);
             border-radius: 50%;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
+            box-shadow: 0 4px 15px rgba(46, 125, 50, 0.4);
         }
 
         .auth-form-container {
@@ -380,20 +485,28 @@
 
         .demo-btn {
             width: 100%;
-            padding: 14px;
-            background: var(--white);
-            border: 1px solid var(--light-gray);
+            padding: 16px 20px;
+            background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
+            border: none;
             border-radius: 12px;
-            color: var(--dark-gray);
-            font-size: 0.95rem;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(30, 58, 95, 0.3);
         }
 
         .demo-btn:hover {
-            background: var(--off-white);
-            border-color: var(--navy-blue);
-            color: var(--navy-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(30, 58, 95, 0.4);
+        }
+
+        .demo-btn svg {
+            stroke: white;
         }
 
         .server-status {
@@ -422,8 +535,21 @@
                 padding: 40px 30px;
             }
 
+            .brand-logo {
+                padding: 20px 30px;
+            }
+
+            .brand-logo img {
+                width: 200px;
+            }
+
+            .brand-logo svg {
+                width: 160px;
+                height: 160px;
+            }
+
             .brand-title {
-                font-size: 1.8rem;
+                font-size: 2.2rem;
             }
 
             .brand-features {
@@ -455,8 +581,9 @@
         <div class="auth-branding">
             <div class="branding-content">
                 <div class="brand-logo">
-                    <img src="logo.svg" alt="LoanDr." class="logo-img-header" style="height: 80px;">
+                    <img src="logo.svg" alt="LoanDr.">
                 </div>
+                <h1 class="brand-title">Loan<span class="logo-accent">Dr.</span></h1>
                 <p class="brand-subtitle">Professional mortgage comparison software for loan officers. Create detailed loan estimates and closing cost breakdowns in minutes.</p>
                 <ul class="brand-features">
                     <li>Compare multiple loan scenarios side-by-side</li>
@@ -474,15 +601,15 @@
             </div>
 
             <div class="auth-tabs">
-                <button class="auth-tab active" data-tab="login">Sign In</button>
-                <button class="auth-tab" data-tab="signup">Create Account</button>
+                <button class="auth-tab active" data-tab="login" onclick="switchTab('login')">Sign In</button>
+                <button class="auth-tab" data-tab="signup" onclick="switchTab('signup')">Create Account</button>
             </div>
 
             <div id="authError" class="auth-message error"></div>
             <div id="authSuccess" class="auth-message success"></div>
 
             <!-- Login Form -->
-            <form id="loginForm" class="auth-form active">
+            <form id="loginForm" class="auth-form active" onsubmit="return handleLogin(event)">
                 <div class="form-group">
                     <label for="loginEmail">Email Address</label>
                     <input type="email" id="loginEmail" placeholder="you@company.com" required autocomplete="email">
@@ -495,7 +622,7 @@
             </form>
 
             <!-- Signup Form -->
-            <form id="signupForm" class="auth-form">
+            <form id="signupForm" class="auth-form" onsubmit="return handleSignup(event)">
                 <div class="form-row">
                     <div class="form-group">
                         <label for="signupFirstName">First Name</label>
@@ -543,9 +670,19 @@
                 <button type="submit" class="auth-btn">Create Account</button>
             </form>
 
-            <div class="divider"><span>or</span></div>
+            <div class="divider"><span>or continue with</span></div>
 
-            <button type="button" class="demo-btn" id="demoLogin">Try Demo Account</button>
+            <button type="button" class="demo-btn" id="demoLogin" onclick="demoLoginClick()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+                Try Demo Account (No Sign Up Required)
+            </button>
+
+            <p class="login-help" id="loginHelp" style="text-align: center; margin-top: 16px; color: #6c757d; font-size: 0.85rem;">
+                First time here? Click <a href="#" id="switchToSignup" style="color: #2e7d32; font-weight: 600;">Create Account</a> to get started.
+            </p>
 
             <div id="serverStatus" class="server-status"></div>
         </div>
@@ -553,6 +690,158 @@
 
     <script src="api.js"></script>
     <script>
+        // Immediate functions for onclick handlers (defined first for reliability)
+        function switchTab(tabName) {
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+            document.querySelector('.auth-tab[data-tab="' + tabName + '"]').classList.add('active');
+            document.getElementById(tabName + 'Form').classList.add('active');
+
+            // Update header
+            var header = document.querySelector('.auth-header h2');
+            var subtext = document.querySelector('.auth-header p');
+            if (tabName === 'login') {
+                header.textContent = 'Welcome back';
+                subtext.textContent = 'Sign in to your account to continue';
+            } else {
+                header.textContent = 'Create account';
+                subtext.textContent = 'Get started with your free account';
+            }
+        }
+
+        function demoLoginClick() {
+            var demoUser = {
+                firstName: 'Demo',
+                lastName: 'User',
+                company: 'Demo Mortgage Co.',
+                email: 'demo@example.com',
+                phone: '(555) 123-4567',
+                nmls: '123456'
+            };
+            var session = {
+                token: 'demo-' + Date.now(),
+                user: demoUser,
+                createdAt: Date.now(),
+                isDemo: true
+            };
+            sessionStorage.setItem('userSession', JSON.stringify(session));
+            alert('Demo login successful! Redirecting...');
+            window.location.href = 'index.html';
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            var email = document.getElementById('loginEmail').value;
+            var password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) {
+                alert('Please enter email and password');
+                return false;
+            }
+
+            // Check localStorage for user
+            var users = JSON.parse(localStorage.getItem('loanCompUsers') || '{}');
+            var user = users[email.toLowerCase()];
+
+            if (!user) {
+                alert('No account found. Please create an account first.');
+                return false;
+            }
+
+            // Simple password check
+            var hash = 0;
+            var str = password + 'loanCompSalt2024';
+            for (var i = 0; i < str.length; i++) {
+                var char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            var passwordHash = hash.toString(16);
+
+            if (user.passwordHash !== passwordHash) {
+                alert('Incorrect password');
+                return false;
+            }
+
+            // Create session
+            var session = {
+                token: 'local-' + Date.now(),
+                user: user,
+                createdAt: Date.now()
+            };
+            sessionStorage.setItem('userSession', JSON.stringify(session));
+            alert('Login successful! Redirecting...');
+            window.location.href = 'index.html';
+            return false;
+        }
+
+        function handleSignup(e) {
+            e.preventDefault();
+            var firstName = document.getElementById('signupFirstName').value;
+            var lastName = document.getElementById('signupLastName').value;
+            var company = document.getElementById('signupCompany').value;
+            var email = document.getElementById('signupEmail').value;
+            var phone = document.getElementById('signupPhone').value;
+            var nmls = document.getElementById('signupNMLS').value;
+            var password = document.getElementById('signupPassword').value;
+            var confirm = document.getElementById('signupConfirm').value;
+
+            if (!firstName || !lastName || !email || !password) {
+                alert('Please fill in all required fields');
+                return false;
+            }
+
+            if (password.length < 8) {
+                alert('Password must be at least 8 characters');
+                return false;
+            }
+
+            if (password !== confirm) {
+                alert('Passwords do not match');
+                return false;
+            }
+
+            // Hash password
+            var hash = 0;
+            var str = password + 'loanCompSalt2024';
+            for (var i = 0; i < str.length; i++) {
+                var char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            var passwordHash = hash.toString(16);
+
+            // Save user
+            var users = JSON.parse(localStorage.getItem('loanCompUsers') || '{}');
+            if (users[email.toLowerCase()]) {
+                alert('An account with this email already exists');
+                return false;
+            }
+
+            users[email.toLowerCase()] = {
+                firstName: firstName,
+                lastName: lastName,
+                company: company,
+                email: email.toLowerCase(),
+                phone: phone,
+                nmls: nmls,
+                passwordHash: passwordHash,
+                createdAt: new Date().toISOString()
+            };
+            localStorage.setItem('loanCompUsers', JSON.stringify(users));
+
+            // Create session
+            var session = {
+                token: 'local-' + Date.now(),
+                user: users[email.toLowerCase()],
+                createdAt: Date.now()
+            };
+            sessionStorage.setItem('userSession', JSON.stringify(session));
+            alert('Account created! Redirecting...');
+            window.location.href = 'index.html';
+            return false;
+        }
+
         // Security utilities
         const Security = {
             escapeHtml(str) {
@@ -916,12 +1205,34 @@
             } catch {}
         }
 
-        // Apply dark mode if saved
-        const darkMode = localStorage.getItem('loanComparisonDarkMode');
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (darkMode === 'true' || (darkMode === null && prefersDark)) {
-            document.documentElement.setAttribute('data-theme', 'dark');
-        }
+        // Switch to signup link
+        document.getElementById('switchToSignup')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.querySelector('.auth-tab[data-tab="signup"]').click();
+        });
+
+        // Update help text when switching tabs
+        document.querySelectorAll('.auth-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const helpText = document.getElementById('loginHelp');
+                if (tab.dataset.tab === 'login') {
+                    helpText.innerHTML = 'First time here? Click <a href="#" id="switchToSignup" style="color: #2e7d32; font-weight: 600;">Create Account</a> to get started.';
+                    document.getElementById('switchToSignup')?.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        document.querySelector('.auth-tab[data-tab="signup"]').click();
+                    });
+                } else {
+                    helpText.innerHTML = 'Already have an account? Click <a href="#" id="switchToLogin" style="color: #1e3a5f; font-weight: 600;">Sign In</a>.';
+                    document.getElementById('switchToLogin')?.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        document.querySelector('.auth-tab[data-tab="login"]').click();
+                    });
+                }
+            });
+        });
+
+        // Dark mode is handled by unified ThemeManager in theme.js
+        // ThemeManager auto-initializes and applies saved theme
     </script>
 </body>
 </html>

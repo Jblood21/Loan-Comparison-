@@ -1,0 +1,43 @@
+{
+  "name": "LoanDr. - Mortgage Comparison Tool",
+  "short_name": "LoanDr.",
+  "description": "Professional mortgage comparison and analysis tool for loan officers",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0f0f1a",
+  "theme_color": "#1e3a5f",
+  "scope": "/",
+  "lang": "en-US",
+  "categories": ["finance", "business", "productivity"],
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Forward Mortgages",
+      "short_name": "Forward",
+      "description": "Compare forward mortgage options",
+      "url": "/index.html"
+    },
+    {
+      "name": "Reverse Mortgages",
+      "short_name": "HECM",
+      "description": "Compare HECM reverse mortgage options",
+      "url": "/hecm.html"
+    },
+    {
+      "name": "Mortgage Tools",
+      "short_name": "Tools",
+      "description": "Access mortgage calculators and tools",
+      "url": "/tools.html"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}
