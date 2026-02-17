@@ -457,9 +457,23 @@ const UserSession = {
     }
 };
 
-// Check authentication on page load
-if (!UserSession.requireAuth()) {
-    // Will redirect to login
+// Check authentication on page load - allow guest access
+if (!UserSession.isLoggedIn()) {
+    // Create a guest session instead of redirecting
+    const guestSession = {
+        token: 'guest-' + Date.now(),
+        user: {
+            firstName: 'Guest',
+            lastName: 'User',
+            company: '',
+            email: '',
+            phone: '',
+            nmls: ''
+        },
+        createdAt: Date.now(),
+        isGuest: true
+    };
+    sessionStorage.setItem('userSession', JSON.stringify(guestSession));
 }
 
 // ============================================
